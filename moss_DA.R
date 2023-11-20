@@ -1,7 +1,7 @@
 library(pacman)
 p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
        phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize)
-source("moss_functions.R")
+source("myFunctions.R")
 psMossMAGs <- readRDS("data/psMossMAGs.RDS")
 
 # DA Ancom-BC differential abundance across compartment:

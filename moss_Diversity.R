@@ -1,5 +1,6 @@
 library(pacman)
 p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize)
+source("myFunctions.R")
 
 psMossGTDB <- readRDS("data/psMossGTDB.RDS")
 psMossMAGs <- readRDS("data/psMossMAGs.RDS")

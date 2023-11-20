@@ -1,6 +1,6 @@
 library(pacman)
 p_load(ape, phyloseq, tidyverse, magrittr, ggtree, ggtreeExtra, ggnewscale)
-source("moss_functions.R")
+source("myFunctions.R")
 
 # We go through a phyloseq object to easily link trees and MAGs together
 # Import PhyloPhlAn output into a (subset) phyloseq object
