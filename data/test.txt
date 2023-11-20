@@ -1,0 +1,500 @@
+   #[1]alternate [2]alternate
+
+   Le site ne fonctionnera pas correctement dans le cas où les témoins
+   sont désactivés.
+
+   Javascript est désactivé dans votre navigateur. Pour une meilleure
+   expérience sur notre site, assurez-vous d'activer JavaScript dans votre
+   navigateur.
+
+   IFRAME:
+   [3]https://www.googletagmanager.com/ns.html?id=GTM-N3C6WPV&gtm_auth=lFg
+   px5jgV4MJ9U5gAJOYTg&gtm_preview=env-2&gtm_cookies_win=x
+
+    Livraison gratuite en succursale dès 75 $ d'achats dans un délai
+   estimé à 5 à 7 jours ouvrables.
+
+   [4]Allez au contenu
+     * [5]Besoin d'aide ?
+     * [6]À propos
+     * [7]Carrières
+
+     * [8]English
+
+   (BUTTON) Menu [9]Société des alcools du Québec
+   (BUTTON) Ouvrir la barre de recherche Rechercher
+   Rechercher ____________________ Reset Pour accéder aux résultats
+   suggérés, utiliser les flèches du clavier (BUTTON) Lancer la recherche
+   (BUTTON) Fermer Fermer la barre de recherche
+     * (BUTTON)
+       Succursale préférée:
+   Adresse
+          +
+          +
+          +
+       Téléphone
+       Succursale préférée
+   Fermée temporairement
+       Heures d'ouverture
+          + Dimanche
+          + Lundi
+          + Mardi
+          + Mercredi
+          + Aujourd'hui, Jeudi
+          + Vendredi
+          + Samedi
+       Pour les heures d'ouverture, veuillez appeler le magasin.
+       [10]Voir les produits de cette succursale [11]Voir les coups de
+       coeur de l'équipe
+       (BUTTON) Fermer
+       [12]Détails [13]Trouver une succursale
+     * [14]Succursales
+     * (BUTTON) Mon compte
+       Mon compte
+       (BUTTON) Fermer
+       [15]Me connecter
+       Complétez dès maintenant votre inscription et laissez-vous inspirer
+       par nos produits et offres.
+       [16]Compléter mon inscription
+
+   [17]Mon panier produits dans votre panier
+
+   [18]Menu
+
+     * [19]Produits
+          +
+               o [20]Vin
+                 [21]Vin
+                    # [22]Vin blanc
+                    # [23]Vin rouge
+                    # [24]Vin rosé
+                    # [25]Vin nature
+                    # [26]Vin orange
+                    # [27]Voir tous les vins
+               o [28]Champagne et mousseux
+               o [29]Porto et vin fortifié
+               o [30]Vin de dessert
+               o [31]Spiritueux
+                 [32]Spiritueux
+                    # [33]Scotch et whisky
+                    # [34]Liqueur et crème
+                    # [35]Gin
+                    # [36]Rhum
+                    # [37]Vodka
+                    # [38]Téquila
+                    # [39]Cognac et brandy
+                    # [40]Voir tous les spiritueux
+               o [41]Apéritif
+               o [42]Prêt-à-boire
+               o [43]Cidre
+               o [44]Hydromel
+               o [45]Bière
+               o [46]Saké
+               o
+               o [47]Nouvel Arrivage
+               o [48]Gamme Cellier
+               o [49]Produits en loterie
+            En vedette
+               o [50]Produits bio
+               o [51]0,5% d'alcool et moins
+               o [52]Petits prix
+               o [53]Dernière chance en ligne
+               o [54]Coup de coeur des employés
+               o [55]Incontournables Cellier
+               o [56]Espace Québec
+               o [57]Tous les produits
+          +
+
+Produits à
+0,5 % d'alcool
+et moins
+            [58]Magasiner
+     * [59]Espace Québec
+          +
+               o [60]Vin Origine Québec
+                 [61]Vin Origine Québec
+                    # [62]Vin blanc
+                    # [63]Vin rouge
+                    # [64]Vin rosé
+                    # [65]Vin mousseux
+                    # [66]Vin de glace
+               o [67]Vermouth et vin fortifié
+               o [68]Hydromel
+               o [69]Cidre et poiré Origine Québec
+                 [70]Cidre et poiré Origine Québec
+                    # [71]Cidre mousseux
+                    # [72]Cidre de glace
+               o [73]Bière
+               o [74]Érable
+               o [75]Petit fruit
+               o [76]Apéritif
+               o [77]Prêt-à-boire
+               o [78]Spiritueux
+                 [79]Spiritueux
+                    # [80]Gin
+                    # [81]Vodka
+                    # [82]Liqueur et crème
+                    # [83]Whisky
+                    # [84]Eau-de-vie
+                    # [85]Brandy
+               o [86]Vin embouteillé au Québec
+               o [87]Découvrez les identifiants
+                 [88]Découvrez les identifiants
+                    # [89]Origine Québec
+                    # [90]Préparé au Québec
+                    # [91]Embouteillé au Québec
+               o [92]Espace Québec
+                 [93]Espace Québec
+                    # [94]Certifié IGP
+                    # [95]Les cidres du Québec
+                    # [96]Balado
+          +
+
+Les produits
+Origine Québec
+            [97]Découvrir
+     * [98]Nouveautés
+          +
+               o [99]Cidres nature Origine Québec
+               o [100]Grands vins du monde
+               o [101]Vins italiens de renom
+               o [102]Nouvel arrivage hebdomadaire
+               o [103]Les suggestions de la semaine
+               o [104]Toutes les nouveautés
+          +
+
+Trouvailles
+de la semaine
+            [105]Magasiner
+     * [106]Promotions
+          +
+               o [107]Circulaire
+               o [108]Solde d'inventaire en ligne
+               o [109]Mes offres Inspire
+               o [110]Rabais et points bonis
+               o [111]SAQ Dépôt
+          +
+
+Circulaire du 21 septembre au 9 octobre
+            [112]Magasiner
+     * [113]Inspiration
+          +
+               o [114]Tendances de saison
+                 [115]Tendances de saison
+                    # [116]La face bio du vin québécois
+                    # [117]Le crabe à l'honneur
+                    # [118]Les faibles en alcool
+                    # [119]Sucre et vin
+                    # [120]Voir tous les contenus
+               o [121]Contenu éducatif
+                 [122]Contenu éducatif
+                    # [123]Dégustation et service
+                    # [124]Champagne et mousseux
+                    # [125]Vin nature
+                    # [126]Méthodes de production
+                    # [127]Faible en alcool
+                    # [128]Voir tous les contenus éducatifs
+               o [129]Recettes
+                 [130]Recettes
+                    # [131]Poissons et fruits de mer
+                    # [132]Toutes les recettes
+               o [133]Espace cocktail
+                 [134]Espace cocktail
+                    # [135]Cocktails sans alcool
+                    # [136]Tous les cocktails
+               o [137]Accords vins et mets
+                 [138]Accords vins et mets
+                    # [139]Toutes les recettes
+                    # [140]À chaque plat son vin
+                    # [141]Pastilles de goût
+                    # [142]Voir les accords vins et mets
+            Encore plus
+               o [143]Événements SAQ Inspire
+          +
+
+La saison des pommes
+            [144]Lire l'article
+     * [145]SAQ Inspire
+          +
+               o [146]Membre Inspire
+                 [147]Membre Inspire
+                    # [148]Mon compte
+                    # [149]Mes offres Inspire
+                    # [150]Mon profil d'achat
+                    # [151]Mes favoris
+                    # [152]Mon relevé de points
+               o [153]Découvrez le programme
+                 [154]Découvrez le programme
+                    # [155]Devenir membre
+                    # [156]Économisez avec Inspire
+                    # [157]Découvrez les astuces
+                    # [158]Événements SAQ Inspire
+                    # [159]Concours SAQ Inspire
+                    # [160]Foire aux questions
+                    # [161]Protection de vos données
+          +
+
+Vivez l'expérience Inspire
+            [162]Découvrir
+
+     * Mon compte
+       Mon compte
+       (BUTTON) Fermer
+       [163]Me connecter
+       Complétez dès maintenant votre inscription et laissez-vous inspirer
+       par nos produits et offres.
+       [164]Compléter mon inscription
+
+   Succursale préférée:
+   Plus de détails
+   Moins de détails
+   Succursale préférée:
+
+   Adresse
+     *
+     *
+     *
+
+   Téléphone
+
+   Succursale préférée
+
+   Fermée temporairement
+   Heures d'ouverture
+     * Dimanche
+     * Lundi
+     * Mardi
+     * Mercredi
+     * Aujourd'hui, Jeudi
+     * Vendredi
+     * Samedi
+
+   Pour les heures d'ouverture, veuillez appeler le magasin.
+   [165]Voir les produits de cette succursale [166]Voir les coups de coeur
+   de l'équipe
+   (BUTTON) Fermer
+   [167]Détails [168]Trouver une succursale
+   [169]Succursales
+
+     * [170]Produits
+          +
+               o [171]Vin
+                 [172]Vin
+                    # [173]Vin blanc
+                    # [174]Vin rouge
+                    # [175]Vin rosé
+                    # [176]Vin nature
+                    # [177]Vin orange
+                    # [178]Voir tous les vins
+               o [179]Champagne et mousseux
+               o [180]Porto et vin fortifié
+               o [181]Vin de dessert
+               o [182]Spiritueux
+                 [183]Spiritueux
+                    # [184]Scotch et whisky
+                    # [185]Liqueur et crème
+                    # [186]Gin
+                    # [187]Rhum
+                    # [188]Vodka
+                    # [189]Téquila
+                    # [190]Cognac et brandy
+                    # [191]Voir tous les spiritueux
+               o [192]Apéritif
+               o [193]Prêt-à-boire
+               o [194]Cidre
+               o [195]Hydromel
+               o [196]Bière
+               o [197]Saké
+               o
+               o [198]Nouvel Arrivage
+               o [199]Gamme Cellier
+               o [200]Produits en loterie
+            En vedette
+               o [201]Produits bio
+               o [202]0,5% d'alcool et moins
+               o [203]Petits prix
+               o [204]Dernière chance en ligne
+               o [205]Coup de coeur des employés
+               o [206]Incontournables Cellier
+               o [207]Espace Québec
+               o [208]Tous les produits
+     * [209]Espace Québec
+          +
+               o [210]Vin Origine Québec
+                 [211]Vin Origine Québec
+                    # [212]Vin blanc
+                    # [213]Vin rouge
+                    # [214]Vin rosé
+                    # [215]Vin mousseux
+                    # [216]Vin de glace
+               o [217]Vermouth et vin fortifié
+               o [218]Hydromel
+               o [219]Cidre et poiré Origine Québec
+                 [220]Cidre et poiré Origine Québec
+                    # [221]Cidre mousseux
+                    # [222]Cidre de glace
+               o [223]Bière
+               o [224]Érable
+               o [225]Petit fruit
+               o [226]Apéritif
+               o [227]Prêt-à-boire
+               o [228]Spiritueux
+                 [229]Spiritueux
+                    # [230]Gin
+                    # [231]Vodka
+                    # [232]Liqueur et crème
+                    # [233]Whisky
+                    # [234]Eau-de-vie
+                    # [235]Brandy
+               o [236]Vin embouteillé au Québec
+               o [237]Découvrez les identifiants
+                 [238]Découvrez les identifiants
+                    # [239]Origine Québec
+                    # [240]Préparé au Québec
+                    # [241]Embouteillé au Québec
+               o [242]Espace Québec
+                 [243]Espace Québec
+                    # [244]Certifié IGP
+                    # [245]Les cidres du Québec
+                    # [246]Balado
+     * [247]Nouveautés
+          +
+               o [248]Cidres nature Origine Québec
+               o [249]Grands vins du monde
+               o [250]Vins italiens de renom
+               o [251]Nouvel arrivage hebdomadaire
+               o [252]Les suggestions de la semaine
+               o [253]Toutes les nouveautés
+     * [254]Promotions
+          +
+               o [255]Circulaire
+               o [256]Solde d'inventaire en ligne
+               o [257]Mes offres Inspire
+               o [258]Rabais et points bonis
+               o [259]SAQ Dépôt
+     * [260]Inspiration
+          +
+               o [261]Tendances de saison
+                 [262]Tendances de saison
+                    # [263]La face bio du vin québécois
+                    # [264]Le crabe à l'honneur
+                    # [265]Les faibles en alcool
+                    # [266]Sucre et vin
+                    # [267]Voir tous les contenus
+               o [268]Contenu éducatif
+                 [269]Contenu éducatif
+                    # [270]Dégustation et service
+                    # [271]Champagne et mousseux
+                    # [272]Vin nature
+                    # [273]Méthodes de production
+                    # [274]Faible en alcool
+                    # [275]Voir tous les contenus éducatifs
+               o [276]Recettes
+                 [277]Recettes
+                    # [278]Poissons et fruits de mer
+                    # [279]Toutes les recettes
+               o [280]Espace cocktail
+                 [281]Espace cocktail
+                    # [282]Cocktails sans alcool
+                    # [283]Tous les cocktails
+               o [284]Accords vins et mets
+                 [285]Accords vins et mets
+                    # [286]Toutes les recettes
+                    # [287]À chaque plat son vin
+                    # [288]Pastilles de goût
+                    # [289]Voir les accords vins et mets
+            Encore plus
+               o [290]Événements SAQ Inspire
+     * [291]SAQ Inspire
+          +
+               o [292]Membre Inspire
+                 [293]Membre Inspire
+                    # [294]Mon compte
+                    # [295]Mes offres Inspire
+                    # [296]Mon profil d'achat
+                    # [297]Mes favoris
+                    # [298]Mon relevé de points
+               o [299]Découvrez le programme
+                 [300]Découvrez le programme
+                    # [301]Devenir membre
+                    # [302]Économisez avec Inspire
+                    # [303]Découvrez les astuces
+                    # [304]Événements SAQ Inspire
+                    # [305]Concours SAQ Inspire
+                    # [306]Foire aux questions
+                    # [307]Protection de vos données
+
+     * [308]Besoin d'aide ?
+     * [309]À propos
+     * [310]Carrières
+
+     [311]English
+
+     * [312]Accueil
+     * [313]Produits
+     * [314]Bière
+     * [315]Bière dorée
+     * [316]Bière spontanée
+     * 13697177
+
+   [317]Aller à la fin de la galerie d'images
+   [318]Aller au début de la galerie d'images
+   [319]Brasserie Cantillon Gueuze
+   [320]Brasserie Cantillon Gueuze
+   Gamme de produit : Produit Cellier
+
+Brasserie Cantillon Gueuze
+
+   Bière dorée de type Spontanée
+   | 375 ml
+   | Belgique
+   Chargeur
+   100 % of 100
+    |  [321]2  avis [322]Ajoutez votre commentaire
+   10,85 $
+   (BUTTON) Bientôt en loterie
+   (BUTTON) Processus de la loterie
+     *
+
+Choisissez vos produits
+       Lorsqu'un produit est offert en loterie, indiquez la quantité
+       souhaitée et participez à la loterie.
+       Patientez jusqu'au tirage au sort.
+       [323]En savoir plus
+     *
+
+Consultez les résultats du tirage
+       Nous vous aviserons par courriel si vous avez remporté la chance
+       d'acheter des produits.
+       [324]En savoir plus
+     *
+
+Achetez vos produits
+       Achetez les produits qui vous ont été alloués dans SAQ.COM avant la
+       fin de la période d'achat. Vous devez respecter ce délai afin de
+       pouvoir effectuer l'achat de ces produits.
+       [325]En savoir plus
+     *
+
+Profitez du 2e tour
+       Si des produits ne sont pas tous réclamés, un second tirage sera
+       effectué parmi les participants n'ayant pas gagné au premier tour.
+       [326]En apprendre d'avantage
+
+   [327]Ajouter à mes favoris
+     * [328]Infos détaillées
+     * [329]Avis 2
+
+   Infos détaillées
+
+Infos détaillées
+
+   Tirant quelque peu sur l'orangé, cette gueuze est d'une grande
+   définition aromatique. La pomme rencontre le citron et le pamplemousse
+   en passant par des notes grillées, funky et subtilement lactées. La
+   bulle est fine, abondante et légère. Tendue, la bouche confirme les
+   notes olfactives et offre une incroyable persistance. Une grande bière.
+
+   Différentes éditions de ce produit, correspondant à des années de
+   brassage distinctes, sont offertes en loterie. Nous ne pouvons garantir
+   quelle édition du produit les gagnants se verront attribuer.
