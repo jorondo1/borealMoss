@@ -52,33 +52,30 @@ div_plots %>%
 ### BETA DIVERSITY ###
 #####################
 
-deseq_MAGs <- phyloseq_to_deseq2(psMossMAGs, ~Compartment)
+vst.mx <- psMossMAGs %>% 
+  phyloseq_to_deseq2(~Compartment) %>% # DESeq2 object
+  estimateSizeFactors(., geoMeans = apply(
+    counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
+  DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
+  SummarizedExperiment::assay(.) %>% t %>% 
+  { .[. < 0] <- 0; . }
 
-# Create function for computation (taken from online website of phyloseq)
-gm_mean = function(x, na.rm=TRUE){
-  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-}
+dist.mx <- vegan::vegdist(vst.mx, distance = "jaccard")
+PCoA <- capscale(dist.mx~1, distance = "jaccard")
 
-# Estimate factor size
-deseq_MAGs = estimateSizeFactors(deseq_MAGs, geoMeans = apply(counts(deseq_MAGs), 1, gm_mean))
+# Plot data
+plot.df <- data.frame(PCOA1 = PCoA %>% scores %$% sites %>% .[,1], 
+                      PCOA2 = PCoA %>% scores %$% sites %>% .[,2]) %>%
+  cbind(subset.ps %>% sample_data %>% data.frame)
 
-# Blind version
-vst <- DESeq2::varianceStabilizingTransformation(deseq_MAGs, blind=T)
-vst.mat <- SummarizedExperiment::assay(vst) # Extract transformed asv table
-t.vst.mat<-t(vst.mat)
-t.vst.mat[which(t.vst.mat<0)]<-0
-
-t.comm.vst <- vegdist(t.vst.mat, "jaccard")
-t.comm.vst
-t.pcoa.vst <- capscale(t.vst.mat~1, distance="jaccard")
-t.pcoa.vst$CA$eig[1:3]/sum(t.pcoa.vst$CA$eig)
-eig.test <- t.pcoa.vst$CA$eig
+PCoA$CA$eig[1:3]/sum(PCoA$CA$eig)
+eig.test <- PCoA$CA$eig
 eig.test[1]/sum(abs(eig.test)) 
 eig.test[2]/sum(abs(eig.test))
 eig.test[3]/sum(abs(eig.test))
 
-div_plots$MDS1<-scores(t.pcoa.vst)$sites[,1]
-div_plots$MDS2<-scores(t.pcoa.vst)$sites[,2]
+div_plots$MDS1<-scores(PCoA)$sites[,1]
+div_plots$MDS2<-scores(PCoA)$sites[,2]
 
 # Ordination plot between compartments
 div_plots %>% 
