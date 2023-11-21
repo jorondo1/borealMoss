@@ -302,8 +302,8 @@ for id in "${ids[@]}"; do
 	rm ${id}.zip
 done
 rm -r README.md ncbi_dataset
-
-cd ..
+cp /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/genomes/* .
+cd ../..
 
 # Create Config file
 phylophlan_write_config_file \
@@ -315,11 +315,11 @@ phylophlan_write_config_file \
 # Run Phylophlan
 phylophlan --nproc 24 --verbose \
 --genome_extension .fa -t a \
--i /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/genomes/ \
--o /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/phylophlan \
---diversity high --fast \
+-i $PARENT_DIR/Phylogeny/genomes \
+-o $PARENT_DIR/Phylogeny/Phylophlan \
+--diversity high --accurate \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
--f novel_species_config_aa.cfg
+-f Phylogeny/config_aa.cfg
 
 
 
