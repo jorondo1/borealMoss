@@ -289,6 +289,7 @@ singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast 
 
 ##############################
 ### PHYLOGENY ################
+##############################
 
 # Download relevant genomes
 readarray -t ids < <(cut -d',' -f1 SM_abund/gtdb_taxonomy_subset.csv | grep GC)
@@ -303,6 +304,9 @@ for id in "${ids[@]}"; do
 done
 rm -r README.md ncbi_dataset
 cp /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/genomes/* .
+for file in *.fa; do
+    mv "$file" "$(echo $file | sed 's/\.fa$/.fna/')"
+done
 cd ../..
 
 # Create Config file
@@ -313,13 +317,30 @@ phylophlan_write_config_file \
 --tree1 fasttree --tree2 raxml --overwrite
 
 # Run Phylophlan
-phylophlan --nproc 24 --verbose \
---genome_extension .fa -t a \
+phylophlan --nproc 48 --verbose \
+-t a \
 -i $PARENT_DIR/Phylogeny/genomes \
 -o $PARENT_DIR/Phylogeny/Phylophlan \
 --diversity high --accurate \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
 -f Phylogeny/config_aa.cfg
 
+###################################
+## What the fuck is in our reads ##
+###################################
+ncbi_nt=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/nt
+ncbi_env=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/env_nt
 
+module add mugqic/blast/2.3.0+
+
+## Reads 5000 (fasta!!)
+## Contigs 1000 chaque
+split -l 5000 $ALT_FASTA $OUTPUT_PATH/blast_step/${SPECIE_TAXON}_${ASSEMBLY_ID}_alt_part_
+
+blastn -query $SLURM_TMPDIR/infile.fa \
+        -db $SLURM_TMPDIR/inbd.fa \
+        -out $SLURM_TMPDIR/infile.fa.blastout \
+        -evalue 0.01 \
+        -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 1 -num_threads 12 \
+        -outfmt "6 qseqid qlen sseqid slen qstart qend sstart send evalue bitscore score length pident nident mismatch"
 
