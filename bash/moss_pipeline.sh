@@ -128,6 +128,27 @@ bash $ILL_PIPELINES/scripts/dereplicate_bins.dRep.sh \
 	-comp 50 \
 	-con 10
 
+#####################
+### CLEAN UP GUNC ###
+#####################
+
+module load apptainer
+mkdir -p $DREP_OUT/gunc
+singularity exec -e -B /home:/home -B /fast:/fast \
+	/home/def-ilafores/programs/gunc_1.0.5.sif \
+	gunc run -t 12 -d $DREP_OUT/dereplicated_genomes \
+	--db_file /fast/def-ilafores/gunc_db/gunc_db_progenomes2.1.dmnd \
+	-o $DREP_OUT/gunc
+
+# Remove contaminated genomes
+cat $DREP_OUT/gunc/GUNC.progenomes_2.1.maxCSS_level.tsv | \
+	grep -v "n_genes_mapped" | \
+	awk '{if($8 > 0.45 && $9 > 0.05 && $12 > 0.5)print$1}' > $DREP_OUT/gunc/gunc_contaminated.txt
+
+for R in $(cat $DREP_OUT/gunc/gunc_contaminated.txt); do 
+rm $DREP_OUT/dereplicated_genomes/${R}.fa 
+done
+
 # Print assembly stats (custom function in /home/ronj2303/functions.sh)
 assembly_stats
 
@@ -202,7 +223,7 @@ done
 #################################
 ### CONTAINMENT & ABUNDANCE #####
 #################################
-#cd genome_sketches
+# cd genome_sketches
 singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast \
 	$SOURMASH index index_custom_k31 /fast/def-ilafores/sourmash_db/gtdb-rs214-reps.k31.zip moss_MAGs_renamed/*
 
@@ -253,7 +274,7 @@ bash /nfs3_ib/nfs-ip34$ILL_PIPELINES/generateslurm_functionnal_profile.humann.sh
 readarray -t ids < <(cat SM_abund/*gtdb_gather.csv | awk -F\" '{print $2}' | awk -F' ' '{print $1}' | sort -u)
 mkdir -p Annotations/translated_genomes && cd $_
 
-# Download all genomes found by Sourmash in GTDB (via Genbank)
+# Download CDS of all genomes found by Sourmash in GTDB (via Genbank)
 for id in "${ids[@]}"; do
 	curl -OJX GET "https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/accession/${id}/download?include_annotation_type=PROT_FASTA&filename=${id}.zip" -H "Accept: application/zip"
     unzip -o ${id}.zip
@@ -317,13 +338,15 @@ phylophlan_write_config_file \
 --tree1 fasttree --tree2 raxml --overwrite
 
 # Run Phylophlan
-phylophlan --nproc 48 --verbose \
+phylophlan --nproc 72 --verbose \
 -t a \
 -i $PARENT_DIR/Phylogeny/genomes \
 -o $PARENT_DIR/Phylogeny/Phylophlan \
---diversity high --accurate \
+--diversity high --fast \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
 -f Phylogeny/config_aa.cfg
+
+# To rerun if crashed: find Phylogeny/Phylophlan -type f -name "*.bkp" -size 0 -exec rm {} \;
 
 ###################################
 ## What the fuck is in our reads ##
@@ -332,15 +355,18 @@ ncbi_nt=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_0
 ncbi_env=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/env_nt
 
 module add mugqic/blast/2.3.0+
+mkdir -p DarkMatter/fasta/split DarkMatter/blast/nt
+sample="S-22-POLJUN-B"
 
-## Reads 5000 (fasta!!)
-## Contigs 1000 chaque
-split -l 5000 $ALT_FASTA $OUTPUT_PATH/blast_step/${SPECIE_TAXON}_${ASSEMBLY_ID}_alt_part_
+# Split reads into smaller
+awk 'NR%4==1{print ">"substr($0,2)} NR%4==2{print}' preproc/${sample}/${sample}_paired_1.fastq | \
+split -l 10000 - DarkMatter/fasta/split/${sample}_paired_1 --a '.fa'
 
-blastn -query $SLURM_TMPDIR/infile.fa \
-        -db $SLURM_TMPDIR/inbd.fa \
-        -out $SLURM_TMPDIR/infile.fa.blastout \
+# BLASTING preproc reads
+blastn -query  DarkMatter/fasta/split/${sample}_paired_1aa.fa \
+        -db $ncbi_nt \
+        -out DarkMatter/blast/nt/${sample}_paired_1aa.blastout \
         -evalue 0.01 \
-        -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 1 -num_threads 12 \
-        -outfmt "6 qseqid qlen sseqid slen qstart qend sstart send evalue bitscore score length pident nident mismatch"
+        -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 24 \
+        -outfmt "6 staxids sscinames slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
 
