@@ -13,3 +13,4 @@ MAG_summary <- inner_join(
           by = "MAG") %>% selecet(-Species)
 
 MAG_summary %>% write_tsv("out/MAG_summary.txt")
+
