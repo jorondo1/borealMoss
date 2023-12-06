@@ -176,12 +176,13 @@ bash $ILL_PIPELINES/scripts/annotate_bins.sh \
 mkdir -p $MAG_DIR/mash_dist
 
 # Build sketch
-cd /fast/def-ilafores/EnsemblBacteria57 #HAS MOVED!!!!
+cd $ILAFORES/EnsemblBacteria57 #HAS MOVED!!!!
 cp $PARENT_DIR/Hannah_MAGs/*.gz .
-find -type f -name '*.fa.gz' | sed 's/\.\///' > genomes_list.txt
+find -type f -name '*.fa.gz' | sed 's/\.\///' > $MAG_DIR/mash_dist/genomes_list.txt
+cd $MAG_DIR/mash_dist
 
 novel_genomes #from custom functions in /home/ronj2303/functions.sh
-cd ..
+cd ../..
 
 #############
 ## SOURMASH #
@@ -368,5 +369,5 @@ blastn -query  DarkMatter/fasta/split/${sample}_paired_1aa.fa \
         -out DarkMatter/blast/nt/${sample}_paired_1aa.blastout \
         -evalue 0.01 \
         -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 24 \
-        -outfmt "6 staxids sscinames slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
+        -outfmt "6 staxids slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
 
