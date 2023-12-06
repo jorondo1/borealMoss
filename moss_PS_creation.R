@@ -3,7 +3,7 @@ p_load(tidyverse, magrittr, RColorBrewer, phyloseq, ape)
 source("myFunctions.R")
 
 # Sarah's PS object (based on Kraken taxonomic assignment)
-sarah.ps<- readRDS("ps_comptype.RDS")
+sarah.ps<- readRDS("data/ps_comptype.RDS")
 abund_GTDB <- parse_SM("data/SM_abund/*gtdb_gather.csv")
 abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv")
 
@@ -49,7 +49,10 @@ sampleData <- sarah.ps %>% sample_data %>% as("data.frame") %>%
 
 # Generate PS objects
 psMossGTDB <- makePhyloSeq(abund_GTDB, sampleData, taxonomy)
-psMossMAGs <- makePhyloSeq(abund_MAGs, sampleData, taxonomy)
+psMossMAGs <- makePhyloSeq(abund_MAGs, sampleData, taxonomy) %>% 
+  # TEMPORARY : REMOVE MAG identified as contaminated by GUNC
+  prune_taxa(taxa_names(.) !="Green_AO.bin.6",.)
+
 
 write_rds(psMossGTDB,"data/psMossGTDB.RDS")
 write_rds(psMossMAGs,"data/psMossMAGs.RDS")
