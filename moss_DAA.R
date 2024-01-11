@@ -20,7 +20,7 @@ DA_pairwise_comp <- ancombc2(
   verbose = TRUE,
   n_cl = 10 # 10 cores for parallel computing
 ); DA_pairwise_comp$res %>% colnames
-write_rds(DA_pairwise_comp,"data/DA_pairwise_comp")
+# write_rds(DA_pairwise_comp,"data/DA_pairwise_comp")
 
 # Our waterfall plot function:
 waterfall_plot <- function(sp_name, df, title, caption) {
