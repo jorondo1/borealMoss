@@ -338,8 +338,16 @@ phylophlan_write_config_file \
 --msa mafft --trim trimal \
 --tree1 fasttree --tree2 raxml --overwrite
 
+phylophlan --nproc 48 \
+	--verbose --genome_extension .fna \
+	-t a -i $PARENT_DIR/Phylogeny/genomes \
+	-o /fast/def-ilafores/temp/phylophlan_jrl \
+	--diversity high --fast \
+	--databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
+	-f /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/novel_species_config_aa.jfl.cfg
+
 # Run Phylophlan
-phylophlan --nproc 72 --verbose \
+phylophlan --nproc 48 --verbose \
 -t a \
 -i $PARENT_DIR/Phylogeny/genomes \
 -o $PARENT_DIR/Phylogeny/Phylophlan \

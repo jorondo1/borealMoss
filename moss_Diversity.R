@@ -1,5 +1,5 @@
 library(pacman)
-p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize)
+p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize, patchwork)
 source("myFunctions.R")
 
 psMossGTDB <- readRDS("data/psMossGTDB.RDS")
@@ -7,90 +7,105 @@ psMossMAGs <- readRDS("data/psMossMAGs.RDS")
 
 MAGs_melt <- psMossMAGs %>% psmelt %>% 
   select(OTU, Sample, Abundance, Compartment, Microsite, Host, Domain:Species)
+
 ######################
 ### ALPHA DIVERSITY ###
 ######################
 
 # Shannon diversity calculated by rarefaction
 # This function normalises if the Shannon diversity is not normal
+div.boxplot <- function(ps, title) {
+  rare_MAGs <- rarefy_even_depth(ps,
+                                      #  sample.size = 260000, 
+                                      replace = FALSE,
+                                      verbose = TRUE,  
+                                      trimOTUs = TRUE,
+                                      rngseed = 4466) %>% 
+    estimate_richness(measure = c("Shannon")) 
+  shapiro.test(rare_MAGs$Shannon)
+  
+  shannon.norm <- bestNormalize(rare_MAGs$Shannon) #orderNorm
+  shapiro.test(shannon.norm$x.t)
+  
+  div_plots <- data.frame(sample_data(ps),
+             Shannon=shannon.norm$x.t)
+  
+  cbind(sample_data(ps), shannon.norm$x.t) %>% 
+    mutate(Compartment = as.factor(Compartment))
+  
+  div_plots %>% 
+    ggplot(aes(x = Compartment, y = Shannon)) +
+      geom_boxplot(aes(fill = Compartment)) +
+      facet_wrap("Host", ncol = 4) +
+      theme_bw() +
+      ggtitle(title) +
+      ylab("Shannon Alpha-diversity") +
+      theme(axis.text.x  = element_text (size=12, color="black", angle=45, vjust = 1, hjust = 1),
+            axis.text.y  = element_text (size=12, color="black"),
+            axis.title.x  = element_text(size=12, color="black"),
+            axis.title.y  = element_text(size=12, color="black"),
+            strip.text = element_text(size = 14)) +
+      scale_fill_manual(values = c("tan4", "springgreen4")) +
+      guides(fill="none") + coord_fixed(2)
+}
 
-rare_MAGs <- rarefy_even_depth(psMossMAGs,
-                                    #  sample.size = 260000, 
-                                    replace = FALSE,
-                                    verbose = TRUE,  
-                                    trimOTUs = TRUE,
-                                    rngseed = 4466) %>% 
-  estimate_richness(measure = c("Shannon")) 
-shapiro.test(rare_MAGs$Shannon)
+alpha_MAGs.plot <- div.boxplot(psMossMAGs, "Alpha diversity with nMAGs.")
+alpha_GTDB.plot <- div.boxplot(psMossGTDB, "Alpha diversity without nMAGs.")
 
-shannon.norm <- bestNormalize(rare_MAGs$Shannon) #orderNorm
-shapiro.test(shannon.norm$x.t)
-
-div_plots <- data.frame(sample_data(psMossMAGs),
-           Shannon=shannon.norm$x.t)
-
-cbind(sample_data(psMossMAGs), shannon.norm$x.t) %>% 
-  mutate(Compartment = as.factor(Compartment)) 
-
-div_plots %>% 
-  ggplot(aes(x = Compartment, y = Shannon)) +
-  geom_boxplot(aes(fill = Compartment)) + 
-  facet_wrap("Host", ncol = 4, 
-             labeller = label_wrap_gen(width=10)) +
-  theme_bw() +
-  ggtitle("TAXONOMIC DIVERSITY OF MOSS COMPARTMENTS") + 
-  ylab("SHANNON ALPHA-DIVERSITY") + 
-  theme(axis.text.x  = element_text (size=12, color="black", angle=45, vjust = 1, hjust = 1),
-        axis.text.y  = element_text (size=12, color="black"),
-        axis.title.x  = element_text(size=12, color="black"),
-        axis.title.y  = element_text(size=12, color="black"),
-        strip.text = element_text(size = 14)) + 
-  scale_fill_manual(values = c("tan4", "springgreen4")) + 
-  guides(fill="none") + coord_fixed(2)
-
+alpha_MAGs.plot + alpha_GTDB.plot
+  
 #####################
 ### BETA DIVERSITY ###
 #####################
 
-vst.mx <- psMossMAGs %>% 
-  phyloseq_to_deseq2(~Compartment) %>% # DESeq2 object
-  estimateSizeFactors(., geoMeans = apply(
-    counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
-  DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
-  SummarizedExperiment::assay(.) %>% t %>% 
-  { .[. < 0] <- 0; . }
+ord.fun <- function(ps, title) {
+  vst.mx <- ps %>% 
+    phyloseq_to_deseq2(~Compartment) %>% # DESeq2 object
+    estimateSizeFactors(., geoMeans = apply(
+      counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
+    DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
+    SummarizedExperiment::assay(.) %>% t %>% 
+    { .[. < 0] <- 0; . }
+  
+  dist.mx <- vegan::vegdist(vst.mx, distance = "jaccard")
+  PCoA <- capscale(dist.mx~1, distance = "jaccard")
+  
+  # Plot data
+  plot.df <- data.frame(PCOA1 = PCoA %>% scores %$% sites %>% .[,1], 
+                        PCOA2 = PCoA %>% scores %$% sites %>% .[,2]) %>%
+    cbind(ps %>% sample_data %>% data.frame)
+  
+  PCoA$CA$eig[1:3]/sum(PCoA$CA$eig)
+  eig.test <- PCoA$CA$eig
+  
+  div_plots <- data.frame(sample_data(ps))
+  div_plots$MDS1<-scores(PCoA)$sites[,1]
+  div_plots$MDS2<-scores(PCoA)$sites[,2]
+  
+  # Ordination plot between compartments
+  div_plots %>% 
+    ggplot(aes(x = MDS1, y = MDS2, colour = Compartment)) + 
+    stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = Compartment)) +   
+    geom_point(size = 5, aes(shape = Host)) + 
+    ggtitle(title) +
+    theme_bw() +
+    theme(plot.title = element_text(size = 18),
+          legend.title = element_text(colour="black", size=16, face="bold"),
+          legend.text = element_text(colour="black", size = 14)) + 
+    guides(fill="none") + 
+    labs(
+      x = paste0("PCoA 1 [",round(100*eig.test[1]/sum(abs(eig.test)),1),"% ]"),
+      y = paste0("PCoA 2 [",round(100*eig.test[2]/sum(abs(eig.test)),1),"% ]"),
+    ) +
+    scale_fill_manual(values = c("tan4", "springgreen3")) + 
+    scale_color_manual(values = c("lightsalmon4", "springgreen4")) 
+}
 
-dist.mx <- vegan::vegdist(vst.mx, distance = "jaccard")
-PCoA <- capscale(dist.mx~1, distance = "jaccard")
+beta_MAGs.plot <- ord.fun(psMossMAGs, "Beta diversity with nMAGs.")
+beta_GTDB.plot <- ord.fun(psMossGTDB, "Beta diversity without nMAGs.")
 
-# Plot data
-plot.df <- data.frame(PCOA1 = PCoA %>% scores %$% sites %>% .[,1], 
-                      PCOA2 = PCoA %>% scores %$% sites %>% .[,2]) %>%
-  cbind(subset.ps %>% sample_data %>% data.frame)
-
-PCoA$CA$eig[1:3]/sum(PCoA$CA$eig)
-eig.test <- PCoA$CA$eig
-eig.test[1]/sum(abs(eig.test)) 
-eig.test[2]/sum(abs(eig.test))
-eig.test[3]/sum(abs(eig.test))
-
-div_plots$MDS1<-scores(PCoA)$sites[,1]
-div_plots$MDS2<-scores(PCoA)$sites[,2]
-
-# Ordination plot between compartments
-div_plots %>% 
-  ggplot(aes(MDS1, MDS2, colour = Compartment)) + 
-  stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = Compartment)) +   
-  geom_point(size = 5, aes(shape = Host)) + 
-  ggtitle("TAXONOMIC BETA-DIVERSITY BETWEEN SITE TYPES") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 18),
-        legend.title = element_text(colour="black", size=16, face="bold"),
-        legend.text = element_text(colour="black", size = 14)) + 
-  guides(fill="none") + 
-  scale_fill_manual(values = c("tan4", "springgreen3")) + 
-  scale_color_manual(values = c("lightsalmon4", "springgreen4")) +  
-  coord_fixed()
+beta_MAGs.plot + beta_GTDB.plot +
+  plot_layout(guides = 'collect')
 
 # Ordination plot between HOST SPECIES
 div_plots %>% 

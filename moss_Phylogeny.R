@@ -26,7 +26,7 @@ speciesMAG <- MAGs.ps %>%
 
 # using tree as ggtree argument causes FATAL CRASH, using ps for now
 p <- ggtree(MAGs.ps, layout="circular") +  # Override the colour mapping shape by creating sham geom_point
-  geom_tippoint(mapping = aes(color = Phylum), size = 3.5) 
+  geom_tippoint(mapping = aes(color = Class), size = 3.5) 
 
 # Add LFC (from DAA) to significant species
 speciesLFC <- readRDS("data/DA_results.RDS") %>% 
@@ -53,4 +53,12 @@ pQS <- gheatmap(p, data = hm.mx["LFC"],
 gheatmap(pQS, data = hm.mx["QS"], 
          offset=0.1, width=.1, colnames = FALSE) +
   scale_fill_viridis_c(option="A", name="Quality score")
+
+
+# research credits report figure 
+gheatmap(p, data = hm.mx["QS"], 
+         offset=0.01, width=.1, colnames = FALSE) +
+  scale_fill_viridis_c(option="A", name="Quality score") +
+ # ggtitle("Novel species MAGs phylogeny and assembly quality scores.") +
+  theme(text = element_text(size = 26))
 
