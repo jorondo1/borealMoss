@@ -35,18 +35,17 @@ waterfall_plot <- function(sp_name, df, title, caption) {
     
   df_fig %>%
     ggplot(aes(x = taxon, y = !!sym(paste0("lfc_",sp_name)), fill = direct)) + 
-    geom_bar(stat = "identity", width = 0.7, color = "black", 
+    geom_bar(stat = "identity", width = 1, color = "white",
              position = position_dodge(width = 0.4)) +
     geom_errorbar(aes(ymin = !!sym(paste0("lfc_",sp_name)) - !!sym(paste0("se_",sp_name)), 
                       ymax = !!sym(paste0("lfc_",sp_name)) + !!sym(paste0("se_",sp_name))), 
                   width = 0.2, position = position_dodge(0.05), color = "black") + 
     labs(x = NULL, y = "Log fold change", 
          title = title, caption=caption) + 
-    scale_fill_discrete(name = NULL) +
+    scale_fill_manual(values = c("Positive LFC" = "springgreen4", "Negative LFC" = "lightsalmon4"))+
     scale_color_discrete(name = NULL) +
-    theme_minimal() + 
-    theme(plot.title = element_text(hjust = 0.5),
-          panel.grid.minor.y = element_blank(),
+    theme_minimal(base_size = 20) + 
+    theme(panel.grid.minor.y = element_blank(),
           axis.text.x = element_text(angle = 70, hjust = 1,
                                      color = df_fig$color),
           plot.margin = margin(t = 10, r = 10, b = 10, l = 30, unit = "pt")) +
@@ -54,13 +53,19 @@ waterfall_plot <- function(sp_name, df, title, caption) {
 }
 
 waterfall_plot("CompartmentGreen", DA_pairwise_comp, 
-               "Differentially abundant species in green compartment",
-               "Significantly abundant at p<0.01 (ajdusted).
+               "", #Differentially abundant species by compartment.
+               "Significantly abundant at p<0.05 (ajdusted).
                Restricted to species with >10% relative abundance that passed the sensitivity analysis.")
 
+waterfall_plot("CompartmentGreen", DA_pairwise_comp, 
+               "",
+               "") 
 # Export DA dataframe
 write_rds(df_fig, 'data/DA_results.RDS')
 
+#####################
+##### METABOLISM #####
+#####################
 # Pathway groups we are interested in
 pwGroups_interest <- c("Aromatics degradation", "Carbon fixation", 
                        "LPS metabolism", "Methane metabolism",
@@ -97,25 +102,37 @@ DAspec <- df_fig %>%
   left_join(taxID_list, by = "Species")
 
 # Prepare values matrix for Heatmap
-mat <- pwComp %>% 
+pattern_regex <- gsub(" ", "_", pwGroups_interest) %>% 
+  paste0("_") %>% 
+  paste(collapse = "|")
+
+prep_mat <- pwComp %>% 
   dplyr::select(pwName, any_of(DAspec$taxID)) %>% 
   # Filter out rows where the max of all values (except pwName) is 30% or less
   filter(apply(select(., -pwName), 1, max) > 30) %>% 
   # Remove rows full of zeros
-  filter(rowSums(select(., -pwName)) != 0) %>%
-  column_to_rownames('pwName') %>% as.matrix 
+  filter(rowSums(select(., -pwName)) != 0)
+
+# Generate pw group index to split heatmap by row
+groupIndex <- str_extract(prep_mat$pwName, pattern_regex) %>% 
+  str_replace("_", " ") %>% str_replace("_","") %>% as.vector
+
+# remove pw group from pathway name and generate final matrix
+mat <- prep_mat %>%
+  mutate(pwName = str_remove(pwName, pattern_regex)) %>% 
+  column_to_rownames('pwName') %>% as.matrix
 
 # Create Heatmap!
 ht <- Heatmap(mat,
         name = "Pathway Completeness across Compartments",
         col = colorRamp2(c(0, 50, 100), c("beige", "red", "darkorchid4")),
         column_split = DAspec$Compartment,
+        row_split = groupIndex,
         heatmap_legend_param = list(
           title = "Completeness",
           title_position = "lefttop",
           legend_direction = "horizontal"
         ),
-#        clustering_distance_rows = 'maximum',
         top_annotation = HeatmapAnnotation(df = data.frame(Compartment = DAspec$Compartment),
                                            col = list(Compartment = c("Green" = "springgreen3", 
                                                               "Brown" = "tan4")),
@@ -124,11 +141,17 @@ ht <- Heatmap(mat,
                                            show_annotation_name = FALSE
                                            ),
         row_names_gp = gpar(fontsize = 8),
+        row_names_rot=-45,
         column_names_gp = gpar(fontsize = 12),
         show_column_dend = FALSE,
         show_row_dend = FALSE,
         cluster_columns = TRUE)  # To keep the order of taxon as in DAspec
-draw(ht, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+
+draw(ht, heatmap_legend_side = "bot", 
+     annotation_legend_side = "bot",
+   #  column_title = "Carbon fixation and Methane metabolism pathway completeness.",
+    # column_title_gp=grid::gpar(fontsize=16)
+   )
 
 #####################################################
 ### BETA REGRESSION between PW% and compartment #####
@@ -154,9 +177,9 @@ coefficients_list <- list()
 for (i in colnames(pwComp_t[,5:dim(pwComp_t)[2]])) {
   print(i)
   model_call <- list(formula = as.formula(paste0(i,' ~ Compartment + LFC')), 
-                     data = pwComp_t, 
-                     link = 'logit')
-    coefficients_list[[i]] <- do.call("betareg", model_call) %>% 
+                     data = pwComp_t#, link = 'logit'
+                     )
+    coefficients_list[[i]] <- do.call("lm", model_call) %>% 
     summary %$% coefficients %>% 
     as.data.frame %>% 
     rownames_to_column("variable") %>% 
