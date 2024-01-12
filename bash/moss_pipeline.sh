@@ -347,13 +347,13 @@ phylophlan --nproc 48 \
 	-f /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/novel_species_config_aa.jfl.cfg
 
 # Run Phylophlan
-phylophlan --nproc 48 --verbose \
--t a \
--i $PARENT_DIR/Phylogeny/genomes \
--o $PARENT_DIR/Phylogeny/Phylophlan \
+phylophlan --nproc 48 \
+--verbose --genome_extension .fna \
+-t a -i /home/def-ilafores/analysis/boreal_moss/Phylogeny/genomes \
+-o /fast/def-ilafores/temp/phylophlan_jrl \
 --diversity high --fast \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
--f Phylogeny/config_aa.cfg
+-f /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/novel_species_config_aa.jfl.cfg
 
 # To rerun if crashed: find Phylogeny/Phylophlan -type f -name "*.bkp" -size 0 -exec rm {} \;
 
