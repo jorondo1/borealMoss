@@ -10,6 +10,8 @@ moss.ps <- read.tree("data/RAxML_bestTree.genomes_refined.tre") %>%
   # merge with our original phyloseq object; this creates a subset
   merge_phyloseq(readRDS("data/psMossMAGs.RDS")) 
 
+moss.melt <- psmelt(moss.ps)
+
 # Add LFC (from DAA) to significant species
 speciesLFC <- readRDS("data/DA_results.RDS") %>% 
   transmute(LFC = lfc_CompartmentGreen, 
@@ -38,15 +40,15 @@ hm.mx <- read_tsv("data/novel_quality_scores.txt",
   column_to_rownames("MAG")
 
 # Expand a Brewer palette to 12 colours:
-nTax <- moss.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
-myColors <- colorRampPalette(brewer.pal(9, "Set1"))(nTax+1) # +1 for NAs
+nClass <- moss.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
+classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass+1) # +1 for NAs
 
 # Plot the tree
 p <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
   ggtree(layout="fan", size=0.2) +  # Override the colour mapping shape by creating sham geom_point
   xlim(-0.6, NA) + # prevent the high-level branches from clustering in the middle
-  geom_tippoint(mapping = aes(color = Class), size = 1.5) +
-  scale_colour_manual(values = myColors, na.value = "grey10")
+  geom_tippoint(mapping = aes(color = Class), size = 2.5) +
+  scale_colour_manual(values = classCol, na.value = "grey10")
 
 # Add a heatmap
 ###! !!!!! Check if QS is aligned, there's no anchoring!
@@ -56,7 +58,7 @@ gheatmap(p, data = hm.mx["QS"],
   labs(color = "GTDB-Tk Class Assignment")
 
 ###############################################
-#### PLOT 2. Compartment-associated species ####
+#### PLOT 2. Compartment-associated Orders ####
 ###############################################
 
 # Subset taxa for tree layer
@@ -64,62 +66,77 @@ DA_species <- speciesLFC %>% filter(!is.na(compAss)) %$% Species
 DA_species.ps <- subset_taxa(moss.ps, Species %in% DA_species)
 
 # create table w/ normalised abundance 
-relab.df <- moss.ps %>% psmelt %>%
+relab <- moss.melt %>%
   group_by(Sample) %>% 
   mutate(total = sum(Abundance)) %>% 
   transmute(OTU = OTU,
             relAb = (Abundance/total),
             Compart = Compartment,
-            Species = Species) %>% 
+            Species = Species, 
+            Host = Host) %>% 
   inner_join(speciesLFC, by = "Species") %>%  # add compartment association
-  #filter(Compartment == compAss)
+  filter(!is.na(compAss))
+
+relab_comp.df <- relab %>% 
   group_by(Compart, OTU, Species, compAss) %>% 
   summarise(mean_relAb = mean(relAb)) %>% arrange(OTU) %>% 
   mutate(across(where(is.character),as.factor)) %>% 
   ungroup
   
-# Add a fake taxonomic level to access compAss by species
-tax_table(DA_species.ps) <- 
-  DA_species.ps@tax_table %>% as.data.frame %>% 
-  rownames_to_column("OTU") %>% # otherwise we lose them
-  left_join((relab.df %>% 
-              dplyr::select(Species, compAss) %>% 
-              unique), by = "Species") %>% 
-  column_to_rownames("OTU") %>% as.matrix # tax_table needs a matrix
-
 # PLOT !
-compColors <- c('lightsalmon4', 'darkolivegreen')
-ggtree(DA_species.ps, layout = "fan", size = 0.2) +
+compColors <- c('darkgoldenrod4', 'darkolivegreen3')
+nOrder <- DA_species.ps@tax_table %>% as.data.frame %$% Order %>% unique %>% length
+
+orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
+ggtree(DA_species.ps, #layout = "fan", 
+       size = 0.2) +
   # Node tips : 
-  geom_tippoint(mapping = aes(color = Family), size = 2) +
-  scale_colour_manual(values = myColors) +
+  geom_tippoint(mapping = aes(color = Order), size = 2) +
+  scale_colour_manual(values = classCol) +
+  #scale_colour_brewer(palette = "Set1") +
+  xlim(-1, NA) + # prevent the high-level branches from clustering in the middle
+  # Compartment-association tile
+  geom_fruit(relab_comp.df,
+             geom = geom_tile,
+             mapping = aes(y = OTU, x = 0.1, fill = compAss),
+             offset = 0, width = 0.1) +
   # Barplot :
-  geom_fruit(relab.df, 
+  geom_fruit(relab_comp.df, 
                 geom = geom_col, 
                 mapping = aes(y = OTU, 
                               x = mean_relAb, 
                               fill = Compart),
-                position = position_dodgex(width = 0.8),
-                pwidth = .6,
-                offset = .2, 
+                position = position_dodgex(width = 0.7),
+                pwidth = 1, offset = 0.1,
                 # Add a grid behind
                 axis.params=list(
                   axis       = "x",
-                  text.size  = 1.8,
-         #         hjust      = 1,
-          #        vjust      = 0.5,
+                  text.size  = 2,
                   nbreak     = 4,
-                ),
-                grid.params=list()
-                ) +
+                  text = "Mean relative abundance"
+                ), grid.params=list()) + 
   scale_fill_manual(values = compColors) +
-  labs(fill = "Sample type relative abundance",
-        colour = "Species compartment association") # +
-  # theme(legend.position = "bottom") +
-  # guides(
-  #   color = guide_legend(title.position = "top"),
-  #   fill = guide_legend(title.position = "top")
-  # ) 
+  labs(fill = "Compartment association",
+        colour = "Bacterial Order") # +
+
+#########################################################
+#### PLOT 3. Acetobacterales distribution across host ####
+#########################################################
+
+DA_acetobacterales <- DA_species.ps %>% psmelt %>% 
+  filter(Order == "Acetobacterales") %$% Species %>% unique
+  
+relab %>% 
+  filter(Species %in% DA_acetobacterales) %>% 
+  # Plot :
+  ggplot(aes(y = relAb, fill = Host)) +
+  geom_boxplot() +
+  facet_wrap( ~ Species, scales = "free") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank()) +
+  labs(title = "Compartment-associated Acetobacterales relative abundance across host moss.",
+       y = "Proportion of sample reads",
+       fill = "Host moss species")
 
 ##################################################################3
 
@@ -139,3 +156,11 @@ gheatmap(p, data = hm.mx["QS"],
  # ggtitle("Novel species MAGs phylogeny and assembly quality scores.") +
   theme(text = element_text(size = 26))
 
+# Add a fake taxonomic level to access compAss by species
+# tax_table(DA_species.ps) <- 
+#   DA_species.ps@tax_table %>% as.data.frame %>% 
+#   rownames_to_column("OTU") %>% # otherwise we lose them
+#   left_join((relab_comp.df %>% 
+#               dplyr::select(Species, compAss) %>% 
+#               unique), by = "Species") %>% 
+#   column_to_rownames("OTU") %>% as.matrix # tax_table needs a matrix

@@ -363,7 +363,7 @@ phylophlan --nproc 48 \
 ncbi_nt=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/nt
 ncbi_env=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/env_nt
 
-module add mugqic/blast/2.3.0+
+#module add mugqic/blast/2.3.0+
 mkdir -p DarkMatter/fasta/split DarkMatter/blast/nt
 sample="S-22-POLJUN-B"
 
@@ -372,10 +372,19 @@ awk 'NR%4==1{print ">"substr($0,2)} NR%4==2{print}' preproc/${sample}/${sample}_
 split -l 10000 - DarkMatter/fasta/split/${sample}_paired_1 --a '.fa'
 
 # BLASTING preproc reads
-blastn -query  DarkMatter/fasta/split/${sample}_paired_1aa.fa \
+blastn -query DarkMatter/fasta/split/${sample}_paired_1si.fa \
         -db $ncbi_nt \
-        -out DarkMatter/blast/nt/${sample}_paired_1aa.blastout \
+        -out DarkMatter/blast/nt/${sample}_paired_1si.blastout \
         -evalue 0.01 \
-        -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 24 \
+        -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 48 \
         -outfmt "6 staxids slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
+
+# JF's command
+module load gcc/9.3.0 blast+/2.12.0
+blastn -query DarkMatter/fasta/split/${sample}_paired_1si.fa \
+	-db /cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/nt \
+	-evalue 0.01 -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 48 \
+	-out DarkMatter/blast/nt/${sample}_paired_1si.blastout \
+	-outfmt "6 staxids slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
+
 
