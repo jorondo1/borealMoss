@@ -103,18 +103,13 @@ ggtree(DA_species.ps, #layout = "fan",
              mapping = aes(y = OTU, x = 0.1, fill = compAss),
              offset = 0, width = 0.1) +
   # Barplot :
-  geom_fruit(relab_comp.df, 
-                geom = geom_col, 
-                mapping = aes(y = OTU, 
-                              x = mean_relAb, 
-                              fill = Compart),
+  geom_fruit(relab_comp.df, geom = geom_col, 
+                mapping = aes(y = OTU, x = mean_relAb, fill = Compart),
                 position = position_dodgex(width = 0.7),
                 pwidth = 1, offset = 0.1,
                 # Add a grid behind
                 axis.params=list(
-                  axis       = "x",
-                  text.size  = 2,
-                  nbreak     = 4,
+                  axis = "x", text.size = 2, nbreak = 4,
                   text = "Mean relative abundance"
                 ), grid.params=list()) + 
   scale_fill_manual(values = compColors) +
