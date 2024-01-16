@@ -63,6 +63,42 @@ waterfall_plot("CompartmentGreen", DA_pairwise_comp,
 # Export DA dataframe
 write_rds(df_fig, 'data/DA_results.RDS')
 
+DA_host_order <- readRDS("data/DA_host_order")
+DA_host_order <- ancombc2(
+  data = psMossMAGs, 
+  tax_level= "Order",
+  p_adj_method="holm", 
+  prv_cut = 0.10, 
+  fix_formula="Host + Compartment", 
+  group = "Host", 
+  struc_zero = TRUE,
+  pairwise = TRUE,
+  alpha = 0.05,
+  verbose = TRUE,
+  n_cl = 10 # 10 cores for parallel computing
+); DA_host_order$res_pair %>% colnames
+# write_rds(DA_host_order,"data/DA_host_order")
+
+# We want to keep only taxa for which at least one differential
+# test is significant AND passed the sensitivity analysis. 
+# Let's dynamically produce a list of conditions: 
+
+# Extract all column suffixes
+suffixes <- DA_host_order$res_pair %>% 
+  dplyr::select(starts_with("diff_")) %>% colnames %>% 
+  str_replace("diff_","")
+
+# Create a character vector of conditions
+conditions <- purrr::map_chr(suffixes, ~ paste0(
+  "(`diff_", .x, "` == TRUE & `passed_ss_", .x, "` == TRUE)"
+  )) %>% paste(collapse = " | ")
+
+# evaluate this condition in a filter argument:
+host_DA.df <- DA_host_order$res_pair %>%
+  dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
+  filter(eval(parse(text = conditions))) 
+  
+
 #####################
 ##### METABOLISM #####
 #####################
