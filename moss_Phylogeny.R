@@ -80,7 +80,8 @@ relab <- moss.melt %>%
 # Compute sample-wise mean sequence proportion
 relab_comp.df <- relab %>% 
   group_by(Compart, OTU, Species, compAss) %>% 
-  summarise(mean_relAb = mean(relAb)) %>% 
+  summarise(mean_relAb = mean(relAb),
+            sd_relAb = sd(relAb)) %>% 
   mutate(across(where(is.character),as.factor)) %>% 
   ungroup %>% arrange(OTU)
   
@@ -92,31 +93,35 @@ orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
 tree_taxrank <- function(rank) {
 ggtree(DA_species.ps, #layout = "fan", 
        size = 0.2) +
-  # Node tips : 
-  geom_tippoint(mapping = aes(color = !!sym(rank)), size = 2) +
-  scale_colour_manual(values = classCol) +
-  #scale_colour_brewer(palette = "Set1") +
-  xlim(-1, NA) + # prevent the high-level branches from clustering in the middle
-  # Compartment-association tile
-  geom_fruit(relab_comp.df,
-             geom = geom_tile,
-             mapping = aes(y = OTU, x = 0.1, fill = compAss),
-             offset = 0, width = 0.1) +
-  # Barplot :
-  geom_fruit(relab_comp.df, geom = geom_col, 
-                mapping = aes(y = OTU, x = mean_relAb, fill = Compart),
-                position = position_dodgex(width = 0.7),
-                pwidth = 1, offset = 0.1,
-                # Add a grid behind
-                axis.params=list(
-                  axis = "x", text.size = 2, nbreak = 4,
-                  text = "Mean relative abundance"
-                ), grid.params=list()) + 
-  scale_fill_manual(values = compColors) +
-  labs(fill = "Compartment association",
-        colour = paste("Bacterial", rank)) +
-  theme(plot.margin = margin(t=20, r=20, b=20,l = -200),
-        legend.margin = margin(t=30))
+    # Node tips : 
+    geom_tippoint(mapping = aes(color = !!sym(rank)), size = 2) +
+    scale_colour_manual(values = classCol) +
+    #scale_colour_brewer(palette = "Set1") +
+    xlim(-1, NA) + # prevent the high-level branches from clustering in the middle
+    # Compartment-association tile
+    geom_fruit(relab_comp.df,
+               geom = geom_tile,
+               mapping = aes(y = OTU, x = 0.1, fill = compAss),
+               offset = 0, width = 0.1) +
+    geom_fruit(relab_comp.df, geom = geom_col, 
+                  mapping = aes(y = OTU, x = mean_relAb, fill = Compart),
+                  position = position_dodgex(width = 0.7),
+                  pwidth = 1, offset = 0.1,
+                  # Add a grid behind
+                  axis.params=list(
+                    axis = "x", text.size = 2, nbreak = 4,
+                    text = "Mean relative abundance"
+                  ), grid.params=list()) + 
+    scale_fill_manual(values = compColors) +
+    # geom_fruit(relab_comp.df, geom = geom_errorbar,
+    #            mapping = aes(y = OTU, xmin = mean_relAb - sd_relAb,
+    #                          xmax =  mean_relAb + sd_relAb),
+    #            position = position_dodgex(width = 0.7),
+    #            pwidth = 1, offset = 0.1) +
+    labs(fill = "Compartment association",
+          colour = paste("Bacterial", rank)) +
+    theme(plot.margin = margin(t=20, r=20, b=20,l = -200),
+          legend.margin = margin(t=30))
 }
 tree_taxrank('Order')
 tree_taxrank('Family')
