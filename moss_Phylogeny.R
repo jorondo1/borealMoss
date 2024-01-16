@@ -65,23 +65,24 @@ gheatmap(p, data = hm.mx["QS"],
 DA_species <- speciesLFC %>% filter(!is.na(compAss)) %$% Species
 DA_species.ps <- subset_taxa(moss.ps, Species %in% DA_species)
 
-# create table w/ normalised abundance 
+# table with sample total microbial sequences
 relab <- moss.melt %>%
   group_by(Sample) %>% 
   mutate(total = sum(Abundance)) %>% 
-  transmute(OTU = OTU,
+  transmute(OTU = OTU,  # keep all these variables
             relAb = (Abundance/total),
             Compart = Compartment,
             Species = Species, 
             Host = Host) %>% 
   inner_join(speciesLFC, by = "Species") %>%  # add compartment association
-  filter(!is.na(compAss))
+  filter(!is.na(compAss)) # keep only DA species
 
+# Compute sample-wise mean sequence proportion
 relab_comp.df <- relab %>% 
   group_by(Compart, OTU, Species, compAss) %>% 
-  summarise(mean_relAb = mean(relAb)) %>% arrange(OTU) %>% 
+  summarise(mean_relAb = mean(relAb)) %>% 
   mutate(across(where(is.character),as.factor)) %>% 
-  ungroup
+  ungroup %>% arrange(OTU)
   
 # PLOT !
 compColors <- c('darkgoldenrod4', 'darkolivegreen3')
@@ -128,7 +129,6 @@ DA_acetobacterales <- DA_species.ps %>% psmelt %>%
   
 relab %>% 
   filter(Species %in% DA_acetobacterales) %>% 
-  # Plot :
   ggplot(aes(y = relAb, fill = Host)) +
   geom_boxplot() +
   facet_wrap( ~ Species, scales = "free") +
