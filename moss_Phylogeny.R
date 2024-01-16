@@ -87,12 +87,13 @@ relab_comp.df <- relab %>%
 # PLOT !
 compColors <- c('darkgoldenrod4', 'darkolivegreen3')
 nOrder <- DA_species.ps@tax_table %>% as.data.frame %$% Order %>% unique %>% length
-
 orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
+
+tree_taxrank <- function(rank) {
 ggtree(DA_species.ps, #layout = "fan", 
        size = 0.2) +
   # Node tips : 
-  geom_tippoint(mapping = aes(color = Order), size = 2) +
+  geom_tippoint(mapping = aes(color = !!sym(rank)), size = 2) +
   scale_colour_manual(values = classCol) +
   #scale_colour_brewer(palette = "Set1") +
   xlim(-1, NA) + # prevent the high-level branches from clustering in the middle
@@ -118,7 +119,12 @@ ggtree(DA_species.ps, #layout = "fan",
                 ), grid.params=list()) + 
   scale_fill_manual(values = compColors) +
   labs(fill = "Compartment association",
-        colour = "Bacterial Order") # +
+        colour = paste("Bacterial", rank)) +
+  theme(plot.margin = margin(t=20, r=20, b=20,l = -200),
+        legend.margin = margin(t=30))
+}
+tree_taxrank('Order')
+tree_taxrank('Family')
 
 #########################################################
 #### PLOT 3. Acetobacterales distribution across host ####
