@@ -69,11 +69,8 @@ DA_species.ps <- subset_taxa(moss.ps, Species %in% DA_species)
 relab <- moss.melt %>%
   group_by(Sample) %>% 
   mutate(total = sum(Abundance)) %>% 
-  transmute(OTU = OTU,  # keep all these variables
-            relAb = (Abundance/total),
-            Compart = Compartment,
-            Species = Species, 
-            Host = Host) %>% 
+  mutate(relAb = (Abundance/total),
+            Compart = Compartment, .keep = 'unused') %>% 
   inner_join(speciesLFC, by = "Species") %>%  # add compartment association
   filter(!is.na(compAss)) # keep only DA species
 
@@ -86,7 +83,7 @@ relab_comp.df <- relab %>%
   ungroup %>% arrange(OTU)
   
 # PLOT !
-compColors <- c('darkgoldenrod4', 'darkolivegreen3')
+compColours <- c('darkgoldenrod4', 'darkolivegreen3')
 nOrder <- DA_species.ps@tax_table %>% as.data.frame %$% Order %>% unique %>% length
 orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
 
@@ -112,7 +109,7 @@ ggtree(DA_species.ps, #layout = "fan",
                     axis = "x", text.size = 2, nbreak = 4,
                     text = "Mean relative abundance"
                   ), grid.params=list()) + 
-    scale_fill_manual(values = compColors) +
+    scale_fill_manual(values = compColours) +
     # geom_fruit(relab_comp.df, geom = geom_errorbar,
     #            mapping = aes(y = OTU, xmin = mean_relAb - sd_relAb,
     #                          xmax =  mean_relAb + sd_relAb),
@@ -130,20 +127,55 @@ tree_taxrank('Family')
 #### PLOT 3. Acetobacterales distribution across host ####
 #########################################################
 
-DA_acetobacterales <- DA_species.ps %>% psmelt %>% 
-  filter(Order == "Acetobacterales") %$% Species %>% unique
+clade_host <- function(rank, taxa) {
+  DA <- DA_species.ps %>% psmelt %>% 
+    filter(!!sym(rank) == taxa) %$% Species %>% unique
   
-relab %>% 
-  filter(Species %in% DA_acetobacterales) %>% 
-  ggplot(aes(y = relAb, fill = Host)) +
-  geom_boxplot() +
-  facet_wrap( ~ Species, scales = "free") +
-  theme_minimal() +
-  theme(axis.text.x = element_blank()) +
-  labs(title = "Compartment-associated Acetobacterales relative abundance across host moss.",
-       y = "Proportion of sample reads",
-       fill = "Host moss species")
+  relab %>% 
+    filter(Species %in% DA &
+             Compart == compAss) %>%
+    ggplot(aes(y = relAb, fill = Host)) +
+    geom_boxplot() +
+    #facet_grid(rows = 'Species') +
+    facet_wrap( ~ Species, scales = "free") +
+    theme_minimal() +
+    theme(axis.text.x = element_blank()) +
+    labs(title = paste("Compartment-associated", taxa, "relative abundance across host moss."),
+         y = "Proportion of sample reads",
+         fill = "Host moss species")
+}
 
+clade_host("Order", "Acetobacterales")
+clade_host("Family", "Beijerinckiaceae")
+clade_host("Family", "Xanthobacteraceae")
+
+#########################################################
+#### PLOT 3. Compartment association across host for selected families ####
+#########################################################
+families <- c("Beijerinckiaceae", "Xanthobacteraceae")
+
+clade_host_compart <- function(clade, rank, taxa) {
+  relab %>% 
+    filter(!!sym(clade) %in% taxa) %>% 
+    group_by(Sample, !!sym(rank), Host, Compart) %>% 
+    summarise(relAb = sum(relAb)) %>% 
+    # PLOT 
+    ggplot(aes(x = Host, y = relAb)) + 
+    geom_boxplot(aes(fill = Compart)) + 
+    geom_point(aes(colour=Compart), size = 0.7,
+               position = position_jitterdodge()) +
+    scale_fill_manual(values = compColours) +
+    scale_colour_manual(values = c('black', 'black')) +
+    facet_grid(rows = paste0(rank,' ~ Host'), scales = "free") +
+    theme_light() + 
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank()) +
+    labs(y = "Proportion of sample sequences counts")
+}
+clade_host_compart('Family', 'Family', families) +
+  labs(title = "Clade sequence count distribution by Host and Family")
+clade_host_compart('Family', 'Genus', 'Acetobacteraceae') +
+  labs(title = "Acetobacteraceae sequence count distribution by Host and Genus")
 ##################################################################3
 
 # plot circular tree
