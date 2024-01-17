@@ -360,27 +360,22 @@ phylophlan --nproc 48 \
 ###################################
 ## What the fuck is in our reads ##
 ###################################
-ncbi_nt=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/nt
-ncbi_env=/cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/env_nt
 
-#module add mugqic/blast/2.3.0+
-mkdir -p DarkMatter/fasta/split DarkMatter/blast/nt
-sample="S-25-POLPIL-G"
+mkdir -p DarkMatter/fasta DarkMatter/blast/nt
+module load gcc/9.3.0 blast+/2.12.0 seqtk/1.3
+samples=$(find ./preproc -maxdepth 1 -type d -name 'S-*' -exec basename {} \;)
 
-# Split reads into smaller
-awk 'NR%4==1{print ">"substr($0,2)} NR%4==2{print}' preproc/${sample}/${sample}_paired_1.fastq | \
-split -l 100000 - DarkMatter/fasta/split/${sample}_paired_1 --a '.fa'
-subset=hd
+# Random select subset of reads
+for sample in $samples; do
+seqtk sample -s100 preproc/${sample}/${sample}_paired_1.fastq 100000 | \
+awk 'NR%4==1{print ">"substr($0,2)} NR%4==2{print}' > DarkMatter/fasta/${sample}_subset.fa
+done
 
 # Blasting against ncbi 
-module load gcc/9.3.0 blast+/2.12.0
-blastn -query DarkMatter/fasta/split/${sample}_paired_1${subset}.fa \
+for sample in $samples; do
+blastn -query DarkMatter/fasta/${sample}_subset.fa \
 	-db /cvmfs/bio.data.computecanada.ca/content/databases/Core/blast_dbs/2022_03_23/nt \
 	-evalue 0.01 -qcov_hsp_perc 75 -word_size 20 -max_target_seqs 5 -num_threads 48 \
-	-out DarkMatter/blast/nt/${sample}_paired_1${subset}.blastout \
+	-out DarkMatter/blast/nt/${sample}_subset.blastout \
 	-outfmt "6 staxids slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
-
-# manual check most abundant taxid
-cut -f1 DarkMatter/blast/nt/${sample}_paired_1${subset}.blastout | sort | uniq -c | sort -r | head -n 20
-wc -l DarkMatter/blast/nt/${sample}_paired_1${subset}.blastout
-
+done
