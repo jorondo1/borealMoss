@@ -104,14 +104,22 @@ host_DA.df <- DA_host_order$res_pair %>%
              values_drop_na = TRUE) %>% 
   mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
                                        TRUE~.x)),
-         textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"))
+         textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
+         Group = str_remove(Group, "Host"))
 
-ggplot(host_DA.df, aes(x = Group, y = taxon, fill = lfc)) +
+host_DA.df %>% 
+  filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
+ggplot(aes(x = Group, y = taxon, fill = lfc)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkred", high = "darkblue", mid = "white", 
                        midpoint = 0) +
   geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
-  scale_color_identity(guide = FALSE)
+  scale_color_identity(guide = FALSE) + theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  labs(Title = "Differential abundance relative to Dicranum undulatum.",
+       x = "",
+       y = "Bacterial Order",
+       fill = "Log-fold change\nin abundance") 
 
 #####################
 ##### METABOLISM #####
