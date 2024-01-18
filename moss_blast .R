@@ -37,7 +37,3 @@ for (i in 1:length(results)) {
   rbind(taxonomy)
 }
 
-cleaned_df <- combined_df %>%
-  filter(rank != "no rank") %>%
-  arrange(taxid)
-

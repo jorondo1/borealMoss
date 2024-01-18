@@ -64,19 +64,19 @@ waterfall_plot("CompartmentGreen", DA_pairwise_comp,
 write_rds(df_fig, 'data/DA_results.RDS')
 
 DA_host_order <- readRDS("data/DA_host_order")
-DA_host_order <- ancombc2(
-  data = psMossMAGs, 
-  tax_level= "Order",
-  p_adj_method="holm", 
-  prv_cut = 0.10, 
-  fix_formula="Host + Compartment", 
-  group = "Host", 
-  struc_zero = TRUE,
-  pairwise = TRUE,
-  alpha = 0.05,
-  verbose = TRUE,
-  n_cl = 10 # 10 cores for parallel computing
-); DA_host_order$res_pair %>% colnames
+DA_host_order <- psMossMAGs %>% 
+  ancombc2(
+    tax_level= "Order",
+    p_adj_method="holm", 
+    prv_cut = 0.10, 
+    fix_formula="Host + Compartment", 
+    group = "Host", 
+    struc_zero = TRUE,
+    pairwise = TRUE,
+    alpha = 0.05,
+    verbose = TRUE,
+    n_cl = 10 # 10 cores for parallel computing
+    ); DA_host_order$res_pair %>% colnames
 # write_rds(DA_host_order,"data/DA_host_order")
 
 # We want to keep only taxa for which at least one differential
@@ -96,8 +96,22 @@ conditions <- purrr::map_chr(suffixes, ~ paste0(
 # evaluate this condition in a filter argument:
 host_DA.df <- DA_host_order$res_pair %>%
   dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
-  filter(eval(parse(text = conditions))) 
-  
+  filter(eval(parse(text = conditions))) %>% 
+  # pivot to a long dataset, with one line per pairwise test per taxa
+  pivot_longer(cols = -taxon, 
+             names_to = c(".value", "Group"), 
+             names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
+             values_drop_na = TRUE) %>% 
+  mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
+                                       TRUE~.x)),
+         textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"))
+
+ggplot(host_DA.df, aes(x = Group, y = taxon, fill = lfc)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkred", high = "darkblue", mid = "white", 
+                       midpoint = 0) +
+  geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
+  scale_color_identity(guide = FALSE)
 
 #####################
 ##### METABOLISM #####
