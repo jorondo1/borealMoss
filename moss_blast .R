@@ -23,24 +23,21 @@ topTax <- topHits %$% staxids %>% unique
 
 ### Automatic querying 
 # don't use parallel processing, it generates error because it queries ncbi too much
-results3 <- lapply(
+ncbi_tax <- lapply(
   topTax, # Extract list of unique taxids
   function(id) { tryCatch( { classification(id, db = "ncbi") }, 
                            error = function(e) NA)})
 # sometimes querying a lot causes errors, which will introduce NAs in our set.
 # Find 
-NA_index <- sapply(results3, function(x) any(is.na(x))) %>% which
+NA_index <- sapply(ncbi_tax, function(x) any(is.na(x))) %>% which
 # and correct these :
 for (idx in NA_index) {
-  results3[[idx]] <- classification(topTax[idx], db = 'ncbi')
+  ncbi_tax[[idx]] <- classification(topTax[idx], db = 'ncbi')
   # if persistent, remove them :
-  if (results3[[idx]][1] %>% is.na) {
-    results3[[idx]] <- NULL
-  }
-}
-
-# Save that cause it takes time :
-# write_rds(results3, "data/taxid_results_full")
+  if (ncbi_tax[[idx]][1] %>% is.na) {
+    ncbi_tax[[idx]] <- NULL
+  } # Save that cause it takes time :
+} # write_rds(ncbi_tax, "data/taxid_results_full")
 
 ### Parsing the ncbi query output
 taxLvls <- c("staxids","superkingdom", "phylum","class",
@@ -50,11 +47,11 @@ taxonomy <- data.frame(matrix(ncol = length(taxLvls), nrow = 0))
 colnames(taxonomy) <- taxLvls
 
 # Parse the list into the new df:
-for (i in 1:length(results3)) {
+for (i in 1:length(ncbi_tax)) {
   #df$taxid <- names(results[[i]][1])  # Add taxid as a new column
-  taxonomy[i,] <- results3[[i]][1][[1]] %>% 
+  taxonomy[i,] <- ncbi_tax[[i]][1][[1]] %>% 
     dplyr::filter(rank %in% taxLvls) %$% name %>% 
-    c(names(results3[[i]][1]),.) %>% 
+    c(names(ncbi_tax[[i]][1]),.) %>% 
   rbind(taxonomy)
 }
 
@@ -132,7 +129,6 @@ blast_euk_sample %>%
   scale_fill_manual(values = phylaCols2) + 
   theme_light() +
   theme(axis.text.x = element_blank())
-
 
 ########################################################
 ### PLOT 3 : ...by streptophyta class ####
