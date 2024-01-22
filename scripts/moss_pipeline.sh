@@ -379,3 +379,12 @@ blastn -query DarkMatter/fasta/${sample}_subset.fa \
 	-out DarkMatter/blast/nt/${sample}_subset.blastout \
 	-outfmt "6 staxids slen qstart qend sstart send evalue bitscore score length pident nident mismatch qseqid qlen sseqid"
 done
+
+# For now we don't need much info
+mkdir -p DarkMatter/blast/nt/staxid_slen
+for file in $(find DarkMatter/blast/nt -name '*blastout'); do
+	name=$(basename $file)
+	cut -f1,4 $file > DarkMatter/blast/nt/staxid_slen/${name}
+done
+
+tar -zcvf blast.tar.gz $(find DarkMatter/blast/nt/staxid_slen -name "*.blastout")

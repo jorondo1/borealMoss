@@ -1,39 +1,121 @@
 library(pacman)
-p_load(tidyverse, magrittr, taxize, doParallel, foreach)
-numCores <- detectCores()
-registerDoParallel(numCores/2)
+p_load(tidyverse, magrittr, taxize, doParallel, foreach, RColorBrewer)
+options(ENTREZ_KEY = "b69981923f198d72f31791714be0639a2507")
 source("myFunctions.R")
 
+# Parse blast output
 colNames<- c("staxids", "slen", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "score", "length", "pident", "nident", "mismatch", "qseqid", "qlen", "sseqid")
-blastout <- read_delim("data/S-3-POLCOM-B_paired_1hd.blastout", col_names=colNames)
+blastout <- Sys.glob("data/blast/*.blastout") %>% 
+  map_dfr(~ read.table(.x, sep="\t", col.names = c("staxids", "slen")) %>% 
+            mutate(sample = basename(.x)), .x = .) %>% 
+  mutate(sample = str_remove(sample, "_subset.blastout"))
 
-taxids <- blastout %$% staxids %>% unique
+# Show top 1000 taxa per sample
+topHits <- blastout %>% 
+  group_by(staxids, sample) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  ungroup %>% group_by(sample) %>% 
+  slice_head(n=1000)
 
+# topBlast <- blastout %>%  filter(staxids %in% topTax)
+topTax <- topHits %$% staxids %>% unique
+
+### Automatic querying 
 # don't use parallel processing, it generates error because it queries ncbi too much
-# results <- foreach(id = taxids, .packages = "taxize") %dopar% {
-#   tryCatch({
-#     classification(id, db = "ncbi")
-#   }, error = function(e) NA)
-#                    }
+results3 <- lapply(
+  topTax, # Extract list of unique taxids
+  function(id) { tryCatch( { classification(id, db = "ncbi") }, 
+                           error = function(e) NA)})
+# sometimes querying a lot causes errors, which will introduce NAs in our set.
+# Find 
+NA_index <- sapply(results3, function(x) any(is.na(x))) %>% which
+# and correct these :
+for (idx in NA_index) {
+  results3[[idx]] <- classification(topTax[idx], db = 'ncbi')
+  # if persistent, remove them :
+  if (results3[[idx]][1] %>% is.na) {
+    results3[[idx]] <- NULL
+  }
+}
 
-results2 <- lapply(taxids, function(id) {
-  tryCatch({
-    classification(id, db = "ncbi")
-  }, error = function(e) NA)
-})
+# Save that cause it takes time :
+# write_rds(results3, "data/taxid_results_full")
 
-# Save that :
-write_rds(results, "data/taxid_results")
-
-taxLvls <- c("superkingdom", "phylum","class","order","family","genus","species")
-
+### Parsing the ncbi query output
+taxLvls <- c("staxids","superkingdom", "phylum","class",
+             "order","family","genus","species")
+# Create an empty df
 taxonomy <- data.frame(matrix(ncol = length(taxLvls), nrow = 0))
 colnames(taxonomy) <- taxLvls
-for (i in 1:length(results)) {
+
+# Parse the list into the new df:
+for (i in 1:length(results3)) {
   #df$taxid <- names(results[[i]][1])  # Add taxid as a new column
-  taxonomy <- results[[i]][1][[1]] %>% 
+  taxonomy[i,] <- results3[[i]][1][[1]] %>% 
     dplyr::filter(rank %in% taxLvls) %$% name %>% 
-    c(names(results[[i]][1]),.) %>% 
+    c(names(results3[[i]][1]),.) %>% 
   rbind(taxonomy)
 }
 
+# Create a reduced dataset limited to top species by sample
+blastout_short <- blastout %>% 
+  # Keep only staxids when they are in the top of a given sample
+  semi_join(topHits, by = c("staxids", "sample")) %>% 
+  # count number of bases attributed to a taxid, by sample
+  group_by(sample, staxids) %>% 
+  summarise(bp = sum(slen)) %>% 
+  # add Taxonomy
+  left_join(taxonomy %>% select(staxids, phylum, superkingdom), 
+            by = 'staxids') %>%
+  filter(superkingdom %in% c('Bacteria', 'Eukaryota')) %>% 
+  # add Sample metadata
+  left_join(readRDS('data/psMossMAGs.RDS') %>% 
+              sample_data %>% data.frame %>% 
+              rownames_to_column('sample') %>% 
+              dplyr::select(sample, Host, Location, Compartment),
+            by = 'sample') 
+  
+# Look at distribution across Kingdom
+blastout_short %>% 
+  group_by(Host, superkingdom) %>% 
+  summarise(sum = sum(bp)) %>% 
+  slice_head(n=10) %>% 
+  ggplot(aes(x = Host, y = sum, fill = superkingdom)) +
+  geom_col(position = 'fill')
+
+# Look at what phyla of eukaryotes there are
+blast_euk_host <- blastout_short %>% 
+  filter(superkingdom == 'Eukaryota') %>% 
+  group_by(Host, phylum) %>% 
+  summarise(sum = sum(bp)) %>% 
+  slice_max(n=8, order_by = sum)
+
+phylaCols <- colorRampPalette(
+  brewer.pal(8, "Set1"))(blast_euk_host$phylum %>% 
+                           unique %>% length)
+blast_euk_host %>% 
+  ggplot(aes(x = Host, y = sum, fill = phylum)) +
+  geom_col(position = 'fill') +
+  labs(title = 'Eukaryota phyla sequences') +
+  scale_fill_manual(values = phylaCols)
+
+# Phyla per sample faceted by Compartemnt
+blast_euk_sample <- blastout_short %>% 
+  filter(superkingdom == 'Eukaryota') %>% 
+  group_by(sample, phylum, Compartment) %>% 
+  summarise(sum = sum(bp)) %>% 
+  ungroup %>% group_by(sample) %>% 
+  slice_max(n=4, order_by = sum) 
+
+phylaCols2 <- colorRampPalette(
+  brewer.pal(8, "Set1"))(blast_euk_sample$phylum %>% 
+                           unique %>% length)
+blast_euk_sample %>% 
+  ggplot(aes(x = sample, y = sum, fill = phylum)) +
+  geom_col(position = 'fill') +
+  facet_wrap(~Compartment, scales = 'free_x') +
+  labs(title = 'Eukaryota phyla sequences') +
+  scale_fill_manual(values = phylaCols2) + 
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
