@@ -58,6 +58,10 @@ for (i in 1:length(results3)) {
   rbind(taxonomy)
 }
 
+#################################################
+### PLOT 1 : Sequence distribution by Kingdom ####
+#################################################
+
 # Create a reduced dataset limited to top species by sample
 blastout_short <- blastout %>% 
   # Keep only staxids when they are in the top of a given sample
@@ -66,7 +70,7 @@ blastout_short <- blastout %>%
   group_by(sample, staxids) %>% 
   summarise(bp = sum(slen)) %>% 
   # add Taxonomy
-  left_join(taxonomy %>% select(staxids, phylum, superkingdom), 
+  left_join(taxonomy ,#%>% select(staxids, phylum, superkingdom), 
             by = 'staxids') %>%
   filter(superkingdom %in% c('Bacteria', 'Eukaryota')) %>% 
   # add Sample metadata
@@ -74,15 +78,18 @@ blastout_short <- blastout %>%
               sample_data %>% data.frame %>% 
               rownames_to_column('sample') %>% 
               dplyr::select(sample, Host, Location, Compartment),
-            by = 'sample') 
-  
-# Look at distribution across Kingdom
+            by = 'sample') %>% ungroup
+
 blastout_short %>% 
   group_by(Host, superkingdom) %>% 
   summarise(sum = sum(bp)) %>% 
   slice_head(n=10) %>% 
   ggplot(aes(x = Host, y = sum, fill = superkingdom)) +
   geom_col(position = 'fill')
+
+##################################################
+### PLOT 2 : ... by eukaryotic Phylum, by Host ####
+##################################################
 
 # Look at what phyla of eukaryotes there are
 blast_euk_host <- blastout_short %>% 
@@ -91,6 +98,7 @@ blast_euk_host <- blastout_short %>%
   summarise(sum = sum(bp)) %>% 
   slice_max(n=8, order_by = sum)
 
+# Custom palette
 phylaCols <- colorRampPalette(
   brewer.pal(8, "Set1"))(blast_euk_host$phylum %>% 
                            unique %>% length)
@@ -100,13 +108,17 @@ blast_euk_host %>%
   labs(title = 'Eukaryota phyla sequences') +
   scale_fill_manual(values = phylaCols)
 
-# Phyla per sample faceted by Compartemnt
+########################################################
+### PLOT 3 : ...by eukaryotic Phylum and compartment ####
+########################################################
+
 blast_euk_sample <- blastout_short %>% 
   filter(superkingdom == 'Eukaryota') %>% 
-  group_by(sample, phylum, Compartment) %>% 
+  group_by(sample, phylum, Compartment, Host) %>% 
   summarise(sum = sum(bp)) %>% 
   ungroup %>% group_by(sample) %>% 
-  slice_max(n=4, order_by = sum) 
+  slice_max(n=4, order_by = sum) %>% 
+  mutate(Compartment = factor(Compartment, levels = c("Green","Brown")))
 
 phylaCols2 <- colorRampPalette(
   brewer.pal(8, "Set1"))(blast_euk_sample$phylum %>% 
@@ -114,8 +126,31 @@ phylaCols2 <- colorRampPalette(
 blast_euk_sample %>% 
   ggplot(aes(x = sample, y = sum, fill = phylum)) +
   geom_col(position = 'fill') +
-  facet_wrap(~Compartment, scales = 'free_x') +
+#  facet_wrap('Compartment', ncol = 1, scales = 'free_x') +
+  facet_wrap(~ Compartment+Host, nrow=2, scales = 'free_x') +
   labs(title = 'Eukaryota phyla sequences') +
   scale_fill_manual(values = phylaCols2) + 
-  theme_minimal() +
+  theme_light() +
   theme(axis.text.x = element_blank())
+
+
+########################################################
+### PLOT 3 : ...by streptophyta class ####
+########################################################
+
+blastout_short %>% 
+  filter(phylum == 'Streptophyta') %>% 
+  group_by(sample, class, Compartment, Host) %>% 
+  summarise(sum = sum(bp)) %>% 
+  ungroup %>% group_by(sample) %>% 
+  slice_max(n=4, order_by = sum) %>% 
+  mutate(Compartment = factor(Compartment, levels = c("Green","Brown"))) %>% 
+
+  ggplot(aes(x = sample, y = sum, fill = class)) +
+    geom_col(position = 'fill') +
+    facet_wrap(~ Compartment+Host, nrow=2, scales = 'free_x') +
+    labs(title = 'Streptophyta class sequences') +
+    scale_fill_manual(values = phylaCols2) + 
+    theme_light() +
+    theme(axis.text.x = element_blank())
+
