@@ -69,7 +69,7 @@ write_rds(df_fig, 'data/DA_results.RDS')
 DA_host_order <- readRDS("data/DA_host_order") # saved test, or rerun :
 DA_host_order <- psMossMAGs %>% 
   ancombc2(tax_level= "Order", p_adj_method="holm", prv_cut = 0.10, 
-    fix_formula="Host + Compartment", group = "Host", struc_zero = TRUE, 
+    fix_formula="Host + Compartment + Location", group = "Host", struc_zero = TRUE, 
     pairwise = TRUE, alpha = 0.05, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_order,"data/DA_host_order")
 
