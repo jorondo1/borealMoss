@@ -40,11 +40,11 @@ div.boxplot <- function(ps, title) {
       theme_bw() +
       ggtitle(title) +
       ylab("Shannon Alpha-diversity") +
-      theme(axis.text.x  = element_text (size=12, color="black", angle=45, vjust = 1, hjust = 1),
-            axis.text.y  = element_text (size=12, color="black"),
-            axis.title.x  = element_text(size=12, color="black"),
-            axis.title.y  = element_text(size=12, color="black"),
-            strip.text = element_text(size = 14)) +
+      # theme(axis.text.x  = element_text (size=12, color="black", angle=45, vjust = 1, hjust = 1),
+      #       axis.text.y  = element_text (size=12, color="black"),
+      #       axis.title.x  = element_text(size=12, color="black"),
+      #       axis.title.y  = element_text(size=12, color="black"),
+      #       strip.text = element_text(size = 14)) +
       scale_fill_manual(values = c("tan4", "springgreen4")) +
       guides(fill="none") + coord_fixed(2)
 }

@@ -63,63 +63,78 @@ waterfall_plot("CompartmentGreen", DA_pairwise_comp,
 # Export DA dataframe
 write_rds(df_fig, 'data/DA_results.RDS')
 
-DA_host_order <- readRDS("data/DA_host_order")
+#########################################
+######## PAIRWISE TEST ON HOST ###########
+#########################################
+DA_host_order <- readRDS("data/DA_host_order") # saved test, or rerun :
 DA_host_order <- psMossMAGs %>% 
-  ancombc2(
-    tax_level= "Order",
-    p_adj_method="holm", 
-    prv_cut = 0.10, 
-    fix_formula="Host + Compartment", 
-    group = "Host", 
-    struc_zero = TRUE,
-    pairwise = TRUE,
-    alpha = 0.05,
-    verbose = TRUE,
-    n_cl = 10 # 10 cores for parallel computing
-    ); DA_host_order$res_pair %>% colnames
+  ancombc2(tax_level= "Order", p_adj_method="holm", prv_cut = 0.10, 
+    fix_formula="Host + Compartment", group = "Host", struc_zero = TRUE, 
+    pairwise = TRUE, alpha = 0.05, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_order,"data/DA_host_order")
 
+DA_host_family <- psMossMAGs %>% 
+  ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
+           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
+
+DA_host_family <- psMossMAGs %>% 
+  ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
+           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
+
+DA_host_genus <- psMossMAGs %>% 
+  ancombc2(tax_level= "Genus", fix_formula="Host + Compartment", group = "Host", 
+           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
+
+# write_rds(DA_host_order,"data/DA_host_order")
 # We want to keep only taxa for which at least one differential
 # test is significant AND passed the sensitivity analysis. 
 # Let's dynamically produce a list of conditions: 
 
-# Extract all column suffixes
-suffixes <- DA_host_order$res_pair %>% 
-  dplyr::select(starts_with("diff_")) %>% colnames %>% 
-  str_replace("diff_","")
-
-# Create a character vector of conditions
-conditions <- purrr::map_chr(suffixes, ~ paste0(
-  "(`diff_", .x, "` == TRUE & `passed_ss_", .x, "` == TRUE)"
-  )) %>% paste(collapse = " | ")
-
-# evaluate this condition in a filter argument:
-host_DA.df <- DA_host_order$res_pair %>%
-  dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
-  filter(eval(parse(text = conditions))) %>% 
-  # pivot to a long dataset, with one line per pairwise test per taxa
-  pivot_longer(cols = -taxon, 
-             names_to = c(".value", "Group"), 
-             names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
-             values_drop_na = TRUE) %>% 
-  mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
-                                       TRUE~.x)),
-         textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
-         Group = str_remove(Group, "Host"))
-
-host_DA.df %>% 
-  filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
-ggplot(aes(x = Group, y = taxon, fill = lfc)) +
-  geom_tile() +
-  scale_fill_gradient2(low = "darkred", high = "darkblue", mid = "white", 
-                       midpoint = 0) +
-  geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
-  scale_color_identity(guide = FALSE) + theme_minimal() + 
-  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  labs(Title = "Differential abundance relative to Dicranum undulatum.",
-       x = "",
-       y = "Bacterial Order",
-       fill = "Log-fold change\nin abundance") 
+plot_pairwiseDAA <- function(DAA, taxRank) {
+  # Extract all column suffixes
+  suffixes <- DAA$res_pair %>% 
+    dplyr::select(starts_with("diff_")) %>% colnames %>% 
+    str_replace("diff_","")
+  
+  # Create a character vector of conditions
+  conditions <- purrr::map_chr(suffixes, ~ paste0(
+    "(`diff_", .x, "` == TRUE & `passed_ss_", .x, "` == TRUE)"
+    )) %>% paste(collapse = " | ")
+  
+  # evaluate this condition in a filter argument:
+  host_DA.df <- DAA$res_pair %>%
+    dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
+    filter(eval(parse(text = conditions))) %>% 
+    # pivot to a long dataset, with one line per pairwise test per taxa
+    pivot_longer(cols = -taxon, 
+               names_to = c(".value", "Group"), 
+               names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
+               values_drop_na = TRUE) %>% 
+    mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
+                                         TRUE~.x)),
+           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
+           Group = str_remove(Group, "Host"))
+  
+  host_DA.df %>% 
+    filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
+    group_by(taxon) %>% # remove all orders for which diff is FALSE in every group :
+    filter(!all(diff == FALSE)) %>%
+    # PLOT :
+  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "darkred", high = "green4", mid = "white", 
+                         midpoint = 0) +
+    geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
+    scale_color_identity(guide = FALSE) + theme_minimal() + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+    labs(title = paste0("Differential abundance analysis at the ",taxRank," level."),
+         x = "",
+         y = "Bacterial Order",
+         fill = "Log-fold change\nin abundance\nrelative to\nD. dicranum.") 
+}
+plot_pairwiseDAA(DA_host_order,"order")
+plot_pairwiseDAA(DA_host_family,"family")
+plot_pairwiseDAA(DA_host_genus,"genus")
 
 #####################
 ##### METABOLISM #####
