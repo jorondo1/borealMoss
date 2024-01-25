@@ -75,14 +75,17 @@ blastout_short <- blastout %>%
               sample_data %>% data.frame %>% 
               rownames_to_column('sample') %>% 
               dplyr::select(sample, Host, Location, Compartment),
-            by = 'sample') %>% ungroup
+            by = 'sample') %>% ungroup %>% 
+  mutate(Compartment = factor(Compartment, levels = c("Green","Brown")))
 
 blastout_short %>% 
-  group_by(Host, superkingdom) %>% 
+  group_by(Host, superkingdom, Compartment) %>% 
   summarise(sum = sum(bp)) %>% 
   slice_head(n=10) %>% 
   ggplot(aes(x = Host, y = sum, fill = superkingdom)) +
-  geom_col(position = 'fill')
+  geom_col(position = 'fill') +
+  facet_grid('Compartment', scales = 'free') +
+  theme_light() + labs(title = 'Proportion of sequence hits')
 
 ##################################################
 ### PLOT 2 : ... by eukaryotic Phylum, by Host ####
@@ -114,8 +117,7 @@ blast_euk_sample <- blastout_short %>%
   group_by(sample, phylum, Compartment, Host) %>% 
   summarise(sum = sum(bp)) %>% 
   ungroup %>% group_by(sample) %>% 
-  slice_max(n=4, order_by = sum) %>% 
-  mutate(Compartment = factor(Compartment, levels = c("Green","Brown")))
+  slice_max(n=4, order_by = sum) 
 
 phylaCols2 <- colorRampPalette(
   brewer.pal(8, "Set1"))(blast_euk_sample$phylum %>% 

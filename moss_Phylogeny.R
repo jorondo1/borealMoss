@@ -1,5 +1,5 @@
 library(pacman)
-p_load(ape, phyloseq, tidyverse, magrittr, ggtree,
+p_load(ape, tidyverse, magrittr, ggtree, phyloseq,
        RColorBrewer, ggtreeExtra, ggnewscale)
 source("myFunctions.R")
 
@@ -40,12 +40,13 @@ hm.mx <- read_tsv("data/novel_quality_scores.txt",
   column_to_rownames("MAG")
 
 # Expand a Brewer palette to 12 colours:
-nClass <- moss.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
-classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass+1) # +1 for NAs
+subset.ps <- moss.ps %>% prune_taxa(taxa = MAG_names, .)
+nClass <- subset.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
+classCol <- colorRampPalette(brewer.pal(8, "Set1"))(nClass+1) # +1 for NAs
 
 # Plot the tree
-p <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
-  ggtree(layout="fan", size=0.2) +  # Override the colour mapping shape by creating sham geom_point
+p <- ggtree(subset.ps, layout="fan", 
+            size=0.2) +  # Override the colour mapping shape by creating sham geom_point
   xlim(-0.6, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Class), size = 2.5) +
   scale_colour_manual(values = classCol, na.value = "grey10")
@@ -54,7 +55,7 @@ p <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>%
 ###! !!!!! Check if QS is aligned, there's no anchoring!
 gheatmap(p, data = hm.mx["QS"], 
          offset=0.01, width=.1, colnames = FALSE) +
-  scale_fill_viridis_c(option="A", name="MAG Quality Score") +
+  scale_fill_viridis_c(option="E", name="MAG Quality Score") +
   labs(color = "GTDB-Tk Class Assignment")
 
 ###############################################
@@ -83,7 +84,6 @@ relab_comp.df <- relab %>%
   ungroup %>% arrange(OTU)
   
 # PLOT !
-compColours <- c('darkgoldenrod4', 'darkolivegreen3')
 nOrder <- DA_species.ps@tax_table %>% as.data.frame %$% Order %>% unique %>% length
 orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
 

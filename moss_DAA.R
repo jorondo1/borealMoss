@@ -1,6 +1,6 @@
 library(pacman)
 p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
-       phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize)
+       phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
 source("myFunctions.R")
 psMossMAGs <- readRDS("data/psMossMAGs.RDS")
 
@@ -12,56 +12,57 @@ DA_pairwise_comp <- ancombc2(
   p_adj_method="holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment", 
-#  fix_formula="Host + Compartment + SoilpH + AmbientTemp + SoilTemp", 
+#  fix_formula="Host + Compartment + SoilpH + SoilTemp", 
   group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
   struc_zero = TRUE,
   pairwise = TRUE,
   alpha = 0.05,
   verbose = TRUE,
-  n_cl = 10 # 10 cores for parallel computing
+  n_cl = 10 # cores for parallel computing
 ); DA_pairwise_comp$res %>% colnames
-# write_rds(DA_pairwise_comp,"data/DA_pairwise_comp")
+# write_rds(DA_pairwise_comp2,"data/DA_pairwise_comp_covariates")
 
 # Our waterfall plot function:
-waterfall_plot <- function(sp_name, df, title, caption) {
-  df_fig <<- df$res %>% 
-      dplyr::select(taxon, ends_with(sp_name)) %>% 
-      dplyr::filter(!!sym(paste0("diff_",sp_name)) == 1 &
-                      !!sym(paste0("passed_ss_",sp_name)) == TRUE) %>% 
-      dplyr::arrange(desc(!!sym(paste0("lfc_",sp_name))) ) %>%
-      dplyr::mutate(direct = factor(ifelse(!!sym(paste0("lfc_",sp_name)) > 0, "Positive LFC", "Negative LFC"),
+sfx <- "CompartmentGreen"
+DA_plot.df <- DA_pairwise_comp$res %>% 
+      dplyr::select(taxon, ends_with(sfx)) %>% 
+      dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
+                      !!sym(paste0("passed_ss_",sfx)) == TRUE) %>% 
+      dplyr::arrange(desc(!!sym(paste0("lfc_",sfx))) ) %>%
+      dplyr::mutate(direct = factor(ifelse(!!sym(paste0("lfc_",sfx)) > 0, "Positive LFC", "Negative LFC"),
                                     levels = c("Positive LFC", "Negative LFC")),
-                    taxon = factor(taxon, levels = unique(taxon))) 
-    
-  df_fig %>%
-    ggplot(aes(x = taxon, y = !!sym(paste0("lfc_",sp_name)), fill = direct)) + 
+                    taxon = factor(taxon, levels = unique(taxon)))
+
+waterfall.plot <- function(DA) {
+  ggplot(DA,aes(y = taxon, x = !!sym(paste0("lfc_",sfx)), fill = direct)) + 
     geom_bar(stat = "identity", width = 1, color = "white",
              position = position_dodge(width = 0.4)) +
-    geom_errorbar(aes(ymin = !!sym(paste0("lfc_",sp_name)) - !!sym(paste0("se_",sp_name)), 
-                      ymax = !!sym(paste0("lfc_",sp_name)) + !!sym(paste0("se_",sp_name))), 
+    geom_errorbar(aes(xmin = !!sym(paste0("lfc_",sfx)) - !!sym(paste0("se_",sfx)), 
+                      xmax = !!sym(paste0("lfc_",sfx)) + !!sym(paste0("se_",sfx))), 
                   width = 0.2, position = position_dodge(0.05), color = "black") + 
-    labs(x = NULL, y = "Log fold change", 
-         title = title, caption=caption) + 
-    scale_fill_manual(values = c("Positive LFC" = "springgreen4", "Negative LFC" = "lightsalmon4"))+
+    labs(y = NULL, x = "Log fold change") + 
+    scale_fill_manual(values = c("Positive LFC" = compColours[2], "Negative LFC" = compColours[1]))+
     scale_color_discrete(name = NULL) +
     theme_minimal(base_size = 20) + 
     theme(panel.grid.minor.y = element_blank(),
-          axis.text.x = element_text(angle = 70, hjust = 1,
-                                     color = df_fig$color),
           plot.margin = margin(t = 10, r = 10, b = 10, l = 30, unit = "pt")) +
     guides(fill = FALSE)
 }
 
-waterfall_plot("CompartmentGreen", DA_pairwise_comp, 
-               "", #Differentially abundant species by compartment.
-               "Significantly abundant at p<0.05 (ajdusted).
-               Restricted to species with >10% relative abundance that passed the sensitivity analysis.")
+DA_plot1 <- DA_plot.df %>% 
+  filter(direct=="Positive LFC") %>% 
+  waterfall.plot
 
-waterfall_plot("CompartmentGreen", DA_pairwise_comp, 
-               "",
-               "") 
+DA_plot2 <- DA_plot.df %>% 
+  filter(direct=="Negative LFC") %>%
+  mutate(lfc_CompartmentGreen = abs(lfc_CompartmentGreen)) %>% 
+  waterfall.plot 
+
+DA_plot1 + DA_plot2
+#!!!!! caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'
+
 # Export DA dataframe
-write_rds(df_fig, 'data/DA_results.RDS')
+# write_rds(df_fig, 'data/DA_results.RDS')
 
 #########################################
 ######## PAIRWISE TEST ON HOST ###########
@@ -207,8 +208,8 @@ ht <- Heatmap(mat,
           legend_direction = "horizontal"
         ),
         top_annotation = HeatmapAnnotation(df = data.frame(Compartment = DAspec$Compartment),
-                                           col = list(Compartment = c("Green" = "springgreen3", 
-                                                              "Brown" = "tan4")),
+                                           col = list(Compartment = c("Green" = compColours[2], 
+                                                              "Brown" = compColours[1])),
                                            which = "col",  # 'col' or 'row' based on the orientation
                                            show_legend = FALSE,
                                            show_annotation_name = FALSE
