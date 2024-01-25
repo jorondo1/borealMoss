@@ -1,3 +1,6 @@
+### Moss compartment colours
+compColours <- c('darkgoldenrod4', 'darkolivegreen3')
+
 ### Remove .__ from taxa names
 rename.fun <- function(x) {str_remove(x,".__")}
 
