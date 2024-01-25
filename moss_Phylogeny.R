@@ -55,7 +55,8 @@ p <- ggtree(subset.ps, layout="fan",
 ###! !!!!! Check if QS is aligned, there's no anchoring!
 gheatmap(p, data = hm.mx["QS"], 
          offset=0.01, width=.1, colnames = FALSE) +
-  scale_fill_viridis_c(option="E", name="MAG Quality Score") +
+  scale_fill_gradient(low = 'orange4', high = 'gold') +
+  #scale_fill_viridis_c(option="E", name="MAG Quality Score") +
   labs(color = "GTDB-Tk Class Assignment")
 
 ###############################################
@@ -84,44 +85,37 @@ relab_comp.df <- relab %>%
   ungroup %>% arrange(OTU)
   
 # PLOT !
-nOrder <- DA_species.ps@tax_table %>% as.data.frame %$% Order %>% unique %>% length
-orderCol <- colorRampPalette(brewer.pal(9, "Set1"))(nOrder+1) # +1 for NAs
+tree_taxrank <- function(ps, rank) {
+  n <- ps@tax_table %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
-tree_taxrank <- function(rank) {
-ggtree(DA_species.ps, #layout = "fan", 
-       size = 0.2) +
+  ggtree(DA_species.ps,size = 0.2) +
     # Node tips : 
     geom_tippoint(mapping = aes(color = !!sym(rank)), size = 2) +
-    scale_colour_manual(values = classCol) +
-    #scale_colour_brewer(palette = "Set1") +
-    xlim(-1, NA) + # prevent the high-level branches from clustering in the middle
+    scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(n) ) +
+    xlim(-1, NA) + # horizontal tree aligment
     # Compartment-association tile
     geom_fruit(relab_comp.df,
                geom = geom_tile,
                mapping = aes(y = OTU, x = 0.1, fill = compAss),
                offset = 0, width = 0.1) +
+    # Proportion of reads barplot
     geom_fruit(relab_comp.df, geom = geom_col, 
-                  mapping = aes(y = OTU, x = mean_relAb, fill = Compart),
-                  position = position_dodgex(width = 0.7),
-                  pwidth = 1, offset = 0.1,
-                  # Add a grid behind
-                  axis.params=list(
-                    axis = "x", text.size = 2, nbreak = 4,
-                    text = "Mean relative abundance"
-                  ), grid.params=list()) + 
+               mapping = aes(y = OTU, x = mean_relAb, fill = Compart),
+               position = position_dodgex(width = 0.7),
+               pwidth = 1, offset = 0.1,
+               # add a grid
+               grid.params=list()) + 
     scale_fill_manual(values = compColours) +
-    # geom_fruit(relab_comp.df, geom = geom_errorbar,
-    #            mapping = aes(y = OTU, xmin = mean_relAb - sd_relAb,
-    #                          xmax =  mean_relAb + sd_relAb),
-    #            position = position_dodgex(width = 0.7),
-    #            pwidth = 1, offset = 0.1) +
     labs(fill = "Compartment association",
-          colour = paste("Bacterial", rank)) +
+         colour = paste("Bacterial", rank),
+         x = 'Mean proportion of sample sequences') +
     theme(plot.margin = margin(t=20, r=20, b=20,l = -200),
-          legend.margin = margin(t=30))
+          legend.margin = margin(t=30),
+          axis.title.x = element_text(hjust = 0.95))
 }
-tree_taxrank('Order')
-tree_taxrank('Family')
+tree_taxrank(DA_species.ps, 'Order')
+tree_taxrank(DA_species.ps, 'Family')
+tree_taxrank(DA_species.ps, 'Class')
 
 #########################################################
 #### PLOT 3. Acetobacterales distribution across host ####
