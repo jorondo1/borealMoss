@@ -91,6 +91,7 @@ tree_taxrank <- function(ps, rank) {
   ggtree(DA_species.ps,size = 0.2) +
     # Node tips : 
     geom_tippoint(mapping = aes(color = !!sym(rank)), size = 2) +
+    geom_tiplab(as_ylab = TRUE) + # add labels to the right
     scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(n) ) +
     xlim(-1, NA) + # horizontal tree aligment
     # Compartment-association tile
@@ -105,8 +106,9 @@ tree_taxrank <- function(ps, rank) {
                pwidth = 1, offset = 0.1,
                # add a grid
                grid.params=list()) + 
+    #geom_fruit() +
     scale_fill_manual(values = compColours) +
-    labs(fill = "Compartment association",
+    labs(fill = "Compartment",
          colour = paste("Bacterial", rank),
          x = 'Mean proportion of sample sequences') +
     theme(plot.margin = margin(t=20, r=20, b=20,l = -200),
