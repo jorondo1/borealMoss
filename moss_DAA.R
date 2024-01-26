@@ -12,7 +12,7 @@ DA_pairwise_comp <- ancombc2(
   p_adj_method="holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment", 
-#  fix_formula="Host + Compartment + SoilpH + SoilTemp", 
+# fix_formula="Host + Compartment + SoilpH + SoilTemp", 
   group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
   struc_zero = TRUE,
   pairwise = TRUE,
@@ -84,6 +84,10 @@ DA_host_genus <- moss.ps %>%
   ancombc2(tax_level= "Genus", fix_formula="Host + Compartment", group = "Host", 
            struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
 
+DA_host_species <- moss.ps %>% 
+  ancombc2(tax_level= "Species", fix_formula="Host + Compartment", group = "Host", 
+           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
+
 # write_rds(DA_host_order,"data/DA_host_order")
 # We want to keep only taxa for which at least one differential
 # test is significant AND passed the sensitivity analysis. 
@@ -134,7 +138,7 @@ plot_pairwiseDAA <- function(DAA, taxRank) {
 plot_pairwiseDAA(DA_host_order,"order")
 plot_pairwiseDAA(DA_host_family,"family")
 plot_pairwiseDAA(DA_host_genus,"genus")
-
+plot_pairwiseDAA(DA_host_species,"species")
 #####################
 ##### METABOLISM #####
 #####################
