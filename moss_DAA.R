@@ -2,12 +2,12 @@ library(pacman)
 p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
        phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
 source("myFunctions.R")
-psMossMAGs <- readRDS("data/psMossMAGs.RDS")
+moss.ps <- readRDS("data/psMossMAGs.RDS")
 
 # DA Ancom-BC differential abundance across compartment:
 DA_pairwise_comp <- readRDS("data/DA_pairwise_comp")
 DA_pairwise_comp <- ancombc2(
-  data = psMossMAGs, 
+  data = moss.ps, 
   tax_level= "Species",
   p_adj_method="holm", 
   prv_cut = 0.10, 
@@ -49,14 +49,12 @@ waterfall.plot <- function(DA) {
     guides(fill = FALSE)
 }
 
-DA_plot1 <- DA_plot.df %>% 
-  filter(direct=="Positive LFC") %>% 
-  waterfall.plot
+DA_plot.df %>% waterfall.plot
 
-DA_plot2 <- DA_plot.df %>% 
-  filter(direct=="Negative LFC") %>%
-  mutate(lfc_CompartmentGreen = abs(lfc_CompartmentGreen)) %>% 
-  waterfall.plot 
+# DA_plot2 <- DA_plot.df %>% 
+#   filter(direct=="Negative LFC") %>%
+#   mutate(lfc_CompartmentGreen = abs(lfc_CompartmentGreen)) %>% 
+#   waterfall.plot 
 
 DA_plot1 + DA_plot2
 #!!!!! caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'
@@ -68,21 +66,21 @@ DA_plot1 + DA_plot2
 ######## PAIRWISE TEST ON HOST ###########
 #########################################
 DA_host_order <- readRDS("data/DA_host_order") # saved test, or rerun :
-DA_host_order <- psMossMAGs %>% 
+DA_host_order <- moss.ps %>% 
   ancombc2(tax_level= "Order", p_adj_method="holm", prv_cut = 0.10, 
     fix_formula="Host + Compartment + Location", group = "Host", struc_zero = TRUE, 
     pairwise = TRUE, alpha = 0.05, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_order,"data/DA_host_order")
 
-DA_host_family <- psMossMAGs %>% 
+DA_host_family <- moss.ps %>% 
   ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
            struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
 
-DA_host_family <- psMossMAGs %>% 
+DA_host_family <- moss.ps %>% 
   ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
            struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
 
-DA_host_genus <- psMossMAGs %>% 
+DA_host_genus <- moss.ps %>% 
   ancombc2(tax_level= "Genus", fix_formula="Host + Compartment", group = "Host", 
            struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
 
@@ -159,7 +157,7 @@ pwComp <- read_tsv("data/microbeannotator_out/metabolic_summary__module_complete
 # Some have no .faa on NCBI, needs manual translation...
 
 # taxID to Species conversion table
-taxID_list <- psMossMAGs@tax_table %>% 
+taxID_list <- moss.ps@tax_table %>% 
   data.frame %>% 
   select(Species) %>%
   rownames_to_column("taxID") %>% 
@@ -279,7 +277,7 @@ do.call(rbind, coefficients_list) %>%
 # DA_global <- readRDS("DA_global.RDS")
 
 DA_global <- ancombc2(
-  data = psMossMAGs, 
+  data = moss.ps, 
   tax_level= "Species",
   p_adj_method="holm", 
   prv_cut = 0.05, 
