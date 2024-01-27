@@ -86,13 +86,14 @@ DA_host_genus <- moss.ps %>%
 
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
+           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10, 
+           alpha = 0.01)
 
-# write_rds(DA_host_order,"data/DA_host_order")
+# write_rds(DA_host_species,"data/DA_host_species.RDS")
 # We want to keep only taxa for which at least one differential
 # test is significant AND passed the sensitivity analysis. 
 # Let's dynamically produce a list of conditions: 
-
+DA_host_species <- readRDS("data/DA_host_species.RDS")
 plot_pairwiseDAA <- function(DAA, taxRank) {
   # Extract all column suffixes
   suffixes <- DAA$res_pair %>% 
@@ -105,7 +106,7 @@ plot_pairwiseDAA <- function(DAA, taxRank) {
     )) %>% paste(collapse = " | ")
   
   # evaluate this condition in a filter argument:
-  host_DA.df <- DAA$res_pair %>%
+  DAA$res_pair %>%
     dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
     filter(eval(parse(text = conditions))) %>% 
     # pivot to a long dataset, with one line per pairwise test per taxa
@@ -115,30 +116,59 @@ plot_pairwiseDAA <- function(DAA, taxRank) {
                values_drop_na = TRUE) %>% 
     mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
                                          TRUE~.x)),
-           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
-           Group = str_remove(Group, "Host"))
+           textcolour = case_when(lfc==0 ~ "grey95", TRUE ~ "black"),
+           Group = str_remove(Group, "Host")) %>% 
+    # add taxonomy
+    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,
+              join_by("taxon" == "Species"))
+}
+hostDA_species <- plot_pairwiseDAA(DA_host_species,"species")
   
-  host_DA.df %>% 
-    filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
-    group_by(taxon) %>% # remove all orders for which diff is FALSE in every group :
-    filter(!all(diff == FALSE)) %>%
+# Which tax level are we showing in the legend?
+taxLvl <- "Class"
+
+# order Species by alphabetical taxLvl
+speciesLvl <- hostDA_species %>%
+  # sort descending to have species top-to-bottom on the y axis : 
+  arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% unique
+
+DA_plot.df <- hostDA_species %>% 
+  filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
+  # remove all orders for which diff is FALSE in every group :
+  group_by(taxon) %>% 
+  filter(!all(diff == FALSE)) %>% ungroup() %>% 
+  # reorder taxa by taxLvl
+  mutate(taxon = factor(taxon, levels = speciesLvl))
+
     # PLOT :
+DA.p1 <- DA_plot.df %>% 
   ggplot(aes(x = Group, y = taxon, fill = lfc)) +
     geom_tile() +
-    scale_fill_gradient2(low = "darkred", high = "green4", mid = "white", 
+    scale_fill_gradient2(low = "#ff7f0e", high = "#1f77b4", mid = "grey95", 
                          midpoint = 0) +
     geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
-    scale_color_identity(guide = FALSE) + theme_minimal() + 
-    theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-    labs(title = paste0("Differential abundance analysis at the ",taxRank," level."),
-         x = "",
-         y = "Bacterial Order",
-         fill = "Log-fold change\nin abundance\nrelative to\nD. dicranum.") 
-}
-plot_pairwiseDAA(DA_host_order,"order")
-plot_pairwiseDAA(DA_host_family,"family")
-plot_pairwiseDAA(DA_host_genus,"genus")
-plot_pairwiseDAA(DA_host_species,"species")
+    scale_color_identity(guide = FALSE) + 
+  theme_void() + 
+    theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
+    labs(#title = paste0("Differential abundance analysis at the ",taxRank," level."),
+         x = "", y = "",
+         fill = "Log-fold change\nin abundance\nrelative to\nD. dicranum.")
+
+DA.p2 <- DA_plot.df %>% 
+  ggplot(aes(x = '1', y = taxon, fill = !!sym(taxLvl))) +
+  geom_tile() + theme_void() + 
+  theme(axis.text.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.text.y = element_text(hjust = 1)) +
+  scale_fill_brewer(palette = "Paired")
+
+DA.p2 + DA.p1 + 
+  plot_layout(
+    guides = "collect",
+    design = "ABBBBBBBBBBBB")
+
+
+
 #####################
 ##### METABOLISM #####
 #####################
