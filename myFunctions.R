@@ -32,13 +32,15 @@ simplify_name <- function(name) {
 
 # Make a phyloseq object 
 makePhyloSeq <- function(abund, meta, tax, tree = FALSE) {
-  phyloseq(
+  ps <- phyloseq(
     otu_table(abund, taxa_are_rows = T),
     sample_data(meta),
     tax_table((tax %>% 
                  filter(genome %in% rownames(abund)) %>% 
                  column_to_rownames("genome")) %>% as.matrix)
     )
+  if (tree!=FALSE) {ps <- read.tree(tree) %>% phyloseq %>% merge_phyloseq(ps)}
+  return(ps)
 }
 
 # Prune

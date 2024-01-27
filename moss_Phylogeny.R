@@ -3,65 +3,11 @@ p_load(ape, tidyverse, magrittr, ggtree, phyloseq,
        RColorBrewer, ggtreeExtra, ggnewscale)
 source("myFunctions.R")
 
-# We go through a phyloseq object to easily link trees and MAGs together
-# Import PhyloPhlAn output into a (subset) phyloseq object
-moss.ps <- read.tree("data/RAxML_bestTree.genomes_refined.tre") %>% 
-   phy_tree %>% phyloseq %>% 
-  # merge with our original phyloseq object; this creates a subset
-  merge_phyloseq(readRDS("data/psMossMAGs.RDS")) 
-
-moss.melt <- psmelt(moss.ps)
-
-# Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/DA_results.RDS") %>% 
-  transmute(LFC = lfc_CompartmentGreen, 
-            Species = taxon, 
-            compAss = case_when(lfc_CompartmentGreen>0 ~ "Green",
-                                lfc_CompartmentGreen<0 ~ "Brown")) %>% 
-  right_join(moss.ps %>% # identifier \ species association table
-              tax_table %>% as.data.frame %>% 
-              select(Species) %>% rownames_to_column("MAG"),
-            by = 'Species')
-
-#####################################
-#### PLOT 1. MAGs characteristics ####
-#####################################
-
-# Replace tree labels with Species
-# moss.ps@phy_tree$tip.label <- speciesMAG %$% Species
-
-# DF for MAG quality heatmap 
-MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)]
-hm.mx <- read_tsv("data/novel_quality_scores.txt",
-                  col_names = c("MAG", 'comp', 'cont', 'QS')) %>% 
-  mutate(MAG = str_remove(MAG, ".fa")) %>% 
-  left_join(speciesLFC, by = 'MAG') %>% 
-  filter(MAG %in% MAG_names) %>% 
-  column_to_rownames("MAG")
-
-# Expand a Brewer palette to 12 colours:
-subset.ps <- moss.ps %>% prune_taxa(taxa = MAG_names, .)
-nClass <- subset.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
-classCol <- colorRampPalette(brewer.pal(8, "Set1"))(nClass+1) # +1 for NAs
-
-# Plot the tree
-p <- ggtree(subset.ps, layout="fan", 
-            size=0.2) +  # Override the colour mapping shape by creating sham geom_point
-  xlim(-0.6, NA) + # prevent the high-level branches from clustering in the middle
-  geom_tippoint(mapping = aes(color = Class), size = 2.5) +
-  scale_colour_manual(values = classCol, na.value = "grey10")
-
-# Add a heatmap
-###! !!!!! Check if QS is aligned, there's no anchoring!
-gheatmap(p, data = hm.mx["QS"], 
-         offset=0.01, width=.1, colnames = FALSE) +
-  scale_fill_gradient(low = 'orange4', high = 'gold') +
-  #scale_fill_viridis_c(option="E", name="MAG Quality Score") +
-  labs(color = "GTDB-Tk Class Assignment")
 
 ###############################################
 #### PLOT 2. Compartment-associated Orders ####
 ###############################################
+moss.melt <- readRDS("data/psMossMAGs.RDS") %>% psmelt
 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %>% filter(!is.na(compAss)) %$% Species

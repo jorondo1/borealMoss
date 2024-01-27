@@ -4,7 +4,10 @@ p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestN
 source("myFunctions.R")
 moss.ps <- readRDS("data/psMossMAGs.RDS")
 
-# DA Ancom-BC differential abundance across compartment:
+############################################################
+### Ancom-BC differential abundance across compartment ######
+############################################################
+
 DA_pairwise_comp <- readRDS("data/DA_pairwise_comp")
 DA_pairwise_comp <- ancombc2(
   data = moss.ps, 
@@ -12,19 +15,18 @@ DA_pairwise_comp <- ancombc2(
   p_adj_method="holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment", 
-# fix_formula="Host + Compartment + SoilpH + SoilTemp", 
   group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
   struc_zero = TRUE,
   pairwise = TRUE,
-  alpha = 0.05,
+  alpha = 0.01,
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
-); DA_pairwise_comp$res %>% colnames
-# write_rds(DA_pairwise_comp2,"data/DA_pairwise_comp_covariates")
+)
+# write_rds(DA_pairwise_comp,"data/R_out/DA_pairwise_comp.RDS")
 
-# Our waterfall plot function:
+# Waterfall plot
 sfx <- "CompartmentGreen"
-DA_plot.df <- DA_pairwise_comp$res %>% 
+DA_comp.df <- DA_pairwise_comp$res %>% 
       dplyr::select(taxon, ends_with(sfx)) %>% 
       dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
                       !!sym(paste0("passed_ss_",sfx)) == TRUE) %>% 
@@ -33,80 +35,34 @@ DA_plot.df <- DA_pairwise_comp$res %>%
                                     levels = c("Positive LFC", "Negative LFC")),
                     taxon = factor(taxon, levels = unique(taxon)))
 
-waterfall.plot <- function(DA) {
-  ggplot(DA,aes(y = taxon, x = !!sym(paste0("lfc_",sfx)), fill = direct)) + 
-    geom_bar(stat = "identity", width = 1, color = "white",
-             position = position_dodge(width = 0.4)) +
-    geom_errorbar(aes(xmin = !!sym(paste0("lfc_",sfx)) - !!sym(paste0("se_",sfx)), 
-                      xmax = !!sym(paste0("lfc_",sfx)) + !!sym(paste0("se_",sfx))), 
-                  width = 0.2, position = position_dodge(0.05), color = "black") + 
-    labs(y = NULL, x = "Log fold change") + 
-    scale_fill_manual(values = c("Positive LFC" = compColours[2], "Negative LFC" = compColours[1]))+
-    scale_color_discrete(name = NULL) +
-    theme_minimal(base_size = 20) + 
-    theme(panel.grid.minor.y = element_blank(),
-          plot.margin = margin(t = 10, r = 10, b = 10, l = 30, unit = "pt")) +
-    guides(fill = FALSE)
-}
-
-DA_plot.df %>% waterfall.plot
-
-# DA_plot2 <- DA_plot.df %>% 
-#   filter(direct=="Negative LFC") %>%
-#   mutate(lfc_CompartmentGreen = abs(lfc_CompartmentGreen)) %>% 
-#   waterfall.plot 
-
-DA_plot1 + DA_plot2
-#!!!!! caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'
-
 # Export DA dataframe
-# write_rds(df_fig, 'data/DA_results.RDS')
+write_rds(DA_comp.df, 'data/DA_results.RDS')
 
-#########################################
-######## PAIRWISE TEST ON HOST ###########
-#########################################
-DA_host_order <- readRDS("data/DA_host_order") # saved test, or rerun :
-DA_host_order <- moss.ps %>% 
-  ancombc2(tax_level= "Order", p_adj_method="holm", prv_cut = 0.10, 
-    fix_formula="Host + Compartment + Location", group = "Host", struc_zero = TRUE, 
-    pairwise = TRUE, alpha = 0.05, verbose = TRUE, n_cl = 10)
-# write_rds(DA_host_order,"data/DA_host_order")
-
-DA_host_family <- moss.ps %>% 
-  ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
-
-DA_host_family <- moss.ps %>% 
-  ancombc2(tax_level= "Family", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
-
-DA_host_genus <- moss.ps %>% 
-  ancombc2(tax_level= "Genus", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10)
-
+################################################
+######## PAIRWISE DUNN'S TEST ON HOST ###########
+################################################
+DA_host_species <- readRDS("data/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, pairwise = TRUE, verbose = TRUE, n_cl = 10, 
-           alpha = 0.01)
-
+           struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10, 
+           alpha = 0.01, )
 # write_rds(DA_host_species,"data/DA_host_species.RDS")
-# We want to keep only taxa for which at least one differential
-# test is significant AND passed the sensitivity analysis. 
-# Let's dynamically produce a list of conditions: 
-DA_host_species <- readRDS("data/DA_host_species.RDS")
-plot_pairwiseDAA <- function(DAA, taxRank) {
+
+# Keep only taxa for which at least one differential test is significant AND 
+# passed the sensitivity analysis. Dynamically produce a list of conditions: 
+parse_DAA_results <- function(DAA) {
   # Extract all column suffixes
-  suffixes <- DAA$res_pair %>% 
+  suffixes <- DAA$res_dunn %>% 
     dplyr::select(starts_with("diff_")) %>% colnames %>% 
-    str_replace("diff_","")
+    str_replace("diff_Host","")
   
   # Create a character vector of conditions
   conditions <- purrr::map_chr(suffixes, ~ paste0(
-    "(`diff_", .x, "` == TRUE & `passed_ss_", .x, "` == TRUE)"
+    "(`diff_Host", .x, "` == TRUE & `passed_ss_Host", .x, "` == TRUE)"
     )) %>% paste(collapse = " | ")
   
   # evaluate this condition in a filter argument:
-  DAA$res_pair %>%
+  DAA$res_dunn %>%
     dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
     filter(eval(parse(text = conditions))) %>% 
     # pivot to a long dataset, with one line per pairwise test per taxa
@@ -122,52 +78,8 @@ plot_pairwiseDAA <- function(DAA, taxRank) {
     left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,
               join_by("taxon" == "Species"))
 }
-hostDA_species <- plot_pairwiseDAA(DA_host_species,"species")
-  
-# Which tax level are we showing in the legend?
-taxLvl <- "Class"
-
-# order Species by alphabetical taxLvl
-speciesLvl <- hostDA_species %>%
-  # sort descending to have species top-to-bottom on the y axis : 
-  arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% unique
-
-DA_plot.df <- hostDA_species %>% 
-  filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
-  # remove all orders for which diff is FALSE in every group :
-  group_by(taxon) %>% 
-  filter(!all(diff == FALSE)) %>% ungroup() %>% 
-  # reorder taxa by taxLvl
-  mutate(taxon = factor(taxon, levels = speciesLvl))
-
-    # PLOT :
-DA.p1 <- DA_plot.df %>% 
-  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
-    geom_tile() +
-    scale_fill_gradient2(low = "#ff7f0e", high = "#1f77b4", mid = "grey95", 
-                         midpoint = 0) +
-    geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
-    scale_color_identity(guide = FALSE) + 
-  theme_void() + 
-    theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
-    labs(#title = paste0("Differential abundance analysis at the ",taxRank," level."),
-         x = "", y = "",
-         fill = "Log-fold change\nin abundance\nrelative to\nD. dicranum.")
-
-DA.p2 <- DA_plot.df %>% 
-  ggplot(aes(x = '1', y = taxon, fill = !!sym(taxLvl))) +
-  geom_tile() + theme_void() + 
-  theme(axis.text.x = element_blank(), 
-        axis.title.x = element_blank(),
-        axis.text.y = element_text(hjust = 1)) +
-  scale_fill_brewer(palette = "Paired")
-
-DA.p2 + DA.p1 + 
-  plot_layout(
-    guides = "collect",
-    design = "ABBBBBBBBBBBB")
-
-
+hostDA <- parse_DAA_results(DA_host_species)
+write_rds(hostDA, 'data/R_out/DA_host.RDS')
 
 #####################
 ##### METABOLISM #####
@@ -306,28 +218,6 @@ do.call(rbind, coefficients_list) %>%
 
 
 #########################################################################
-
-# Global test for host
-# DA_global <- readRDS("DA_global.RDS")
-
-DA_global <- ancombc2(
-  data = moss.ps, 
-  tax_level= "Species",
-  p_adj_method="holm", 
-  prv_cut = 0.05, 
-  fix_formula="Host + Compartment", 
-  group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
-  struc_zero = TRUE,
-  neg_lb = TRUE,
-  pseudo_sens = TRUE,
-  global = TRUE,
-  pairwise = TRUE,
-  alpha = 0.01,
-  n_cl = 10,
-#  dunnet = TRUE, 
-  verbose = TRUE
-)
-
 # write_rds(DA_global, 'DA_global.RDS')
 
 df_fig_global <- 
