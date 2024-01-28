@@ -1,41 +1,51 @@
 library(pacman)
-p_load(tidyverse, magrittr, RColorBrewer, phyloseq, colorRamp2, patchwork,
-       ggtree, ggtreeExtra)
+p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
+       ggtree, ggtreeExtra, treeio)
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/psMossMAGs.RDS")
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
 #####################################
+MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)]
+
+classLabel <- moss.ps@tax_table %>% as.data.frame %>% 
+  rownames_to_column("label") %>% 
+  select(label, Class) %>% 
+  filter(label %in% MAG_names) %>% tibble
+
+tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
+sub.tree <- tree %>% 
+  drop.tip(setdiff(tree$tip.label, MAG_names)) %>% 
+  as_tibble %>% 
+  full_join(classLabel, by = 'label') %>% 
+  as.treedata
 
 # DF for MAG quality heatmap 
-MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)]
 hm.mx <- read_tsv("data/novel_quality_scores.txt",
                   col_names = c("MAG", 'comp', 'cont', 'QS')) %>% 
   mutate(MAG = str_remove(MAG, ".fa")) %>% 
-  left_join(speciesLFC, by = 'MAG') %>% 
   filter(MAG %in% MAG_names) %>% 
   column_to_rownames("MAG")
 
 # Expand a Brewer palette to 12 colours:
 subset.ps <- moss.ps %>% prune_taxa(taxa = MAG_names, .)
 nClass <- subset.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
-classCol <- colorRampPalette(brewer.pal(8, "Set1"))(nClass+1) # +1 for NAs
+classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass+1) # +1 for NAs
 
 # Plot the tree
-p <- ggtree(subset.ps, layout="fan", 
-            size=0.2) +  # Override the colour mapping shape by creating sham geom_point
-  xlim(-0.6, NA) + # prevent the high-level branches from clustering in the middle
+p <- ggtree(sub.tree,# layout="fan", 
+            size=0.2) +
+# Override the colour mapping shape by creating sham geom_point
+#  xlim(-0.5, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Class), size = 2.5) +
-  scale_colour_manual(values = classCol, na.value = "grey10")
-
+  scale_colour_manual(values = classCol, na.value = "grey10") 
 # Add a heatmap
 ###! !!!!! Check if QS is aligned, there's no anchoring!
 gheatmap(p, data = hm.mx["QS"], 
-         offset=0.01, width=.1, colnames = FALSE) +
-  scale_fill_gradient(low = 'blue4', high = 'gold') +
-  #scale_fill_viridis_c(option="E", name="MAG Quality Score") +
-  labs(color = "GTDB-Tk Class Assignment")
+         offset=0.02, width=.15, colnames = FALSE) +
+  scale_fill_gradient(low = 'blue4', high = 'gold', name="MAG Quality Score") +
+  labs(color = "Bacterial Class")
 
 #########################################
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
