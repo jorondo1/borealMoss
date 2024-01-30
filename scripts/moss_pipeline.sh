@@ -247,7 +247,7 @@ singularity exec --writable-tmpfs -e -B /home:/home -B /fast:/fast -B $tmp:$tmp 
 done
 
 fix_gtdb # GTDB taxonomy has commas in it, this messes up the column recognition we need below. Fixing it:
-eval_cont # Compare containment before and after adding MAGs
+eval_cont SM_abund # Compare containment before and after adding MAGs
 
 # Assign taxonomy
 cat /fast/def-ilafores/sourmash_db/gtdb-rs214.lineages.csv \
@@ -272,14 +272,14 @@ bash /nfs3_ib/nfs-ip34$ILL_PIPELINES/generateslurm_functionnal_profile.humann.sh
 
 #### We need all genomes found (not just the MAGs) to be annotated
 ### We download them, then we'll annotate them all together
-readarray -t ids < <(cat SM_abund/*gtdb_gather.csv | awk -F\" '{print $2}' | awk -F' ' '{print $1}' | sort -u)
+readarray -t ids < <(cat SM_abund/*custom_gather.csv | awk -F\" '{print $2}' | awk -F' ' '{print $1}' | sort -u)
 mkdir -p Annotations/translated_genomes && cd $_
 
 # Download CDS of all genomes found by Sourmash in GTDB (via Genbank)
 for id in "${ids[@]}"; do
 	curl -OJX GET "https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/accession/${id}/download?include_annotation_type=PROT_FASTA&filename=${id}.zip" -H "Accept: application/zip"
     unzip -o ${id}.zip
-	mv ncbi_dataset/data/${id}/protein.faa ./${id}.faa
+	mv ncbi_dataset/data/${id}/*protein.faa ./${id}.faa
 	rm ${id}.zip
 done
 rm -r README.md ncbi_dataset
@@ -289,6 +289,30 @@ cd ../..
 cp Annotations/metawrap_out/bin_translated_genes/*faa Annotations/translated_genomes/
 
 find $PWD/Annotations/translated_genomes -type f -name '*.faa' -exec realpath {} \; > Annotations/translated_genomes_list.txt
+
+###### MISSING ANNOTATIONS
+# Not all genomes will have coding sequences in ncbi. Use prodigal to predict them
+# List missing:
+readarray -t ids_missing < <(cat SM_abund/*custom_gather.csv | awk -F\" '{print $2}' | awk -F' ' '{print $1}' | sort -u | \
+    grep -vf <(head -n 1 Annotations/microbeannotator_out/metabolic_summary__module_completeness.tab | sed 's/\.faa\.ko//g' | tr '\t' '\n'))
+mkdir -p Annotations/missing_cds && cd $_
+
+for id in "${ids_missing[@]}"; do
+	curl -OJX GET "https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/accession/${id}/download?include_annotation_type=GENOME_FASTA&filename=${id}.zip" -H "Accept: application/zip"
+    unzip -o ${id}.zip
+	mv ncbi_dataset/data/${id}/*genomic.fna ./${id}.fna
+	rm ${id}.zip
+done
+rm -r README.md ncbi_dataset
+cd ../..
+
+# Predict coding sequence using Prodigal
+module load prodigal/2.6.3
+for fna in $(find . -type f -name '*.fna' -print0 | xargs -0 -I {} basename {}); do
+	prodigal -q -i ${fna} -a ${fna%.fna}.faa
+done
+
+find $PWD/Annotations/missing_cds -type f -name '*.faa' -exec realpath {} \; >> Annotations/translated_genomes_list.txt
 
 # Run MicrobeAnnotator
 ## Make sure /fast/def-ilafores/MicrobeAnnotator_DB is there (otherwise it's in /home/def-ilafores/ref_dbs/MicrobeAnnotator_DB)

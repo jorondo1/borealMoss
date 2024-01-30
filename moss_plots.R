@@ -9,16 +9,16 @@ moss.ps <- readRDS("data/R_out/psMossMAGs.RDS")
 #####################################
 MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)]
 
-classLabel <- moss.ps@tax_table %>% as.data.frame %>% 
+taxLabels <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("label") %>% 
-  select(label, Class) %>% 
+  select(label, Domain:Species) %>% 
   filter(label %in% MAG_names) %>% tibble
 
 tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 sub.tree <- tree %>% 
   drop.tip(setdiff(tree$tip.label, MAG_names)) %>% 
   as_tibble %>% 
-  full_join(classLabel, by = 'label') %>% 
+  full_join(taxLabels, by = 'label') %>% 
   as.treedata
 
 # DF for MAG quality heatmap 
@@ -34,10 +34,10 @@ nClass <- subset.ps@tax_table %>% as.data.frame %$% Class %>% unique %>% length
 classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass+1) # +1 for NAs
 
 # Plot the tree
-p <- ggtree(sub.tree,# layout="fan", 
+p <- ggtree(sub.tree, layout="fan", 
             size=0.2) +
 # Override the colour mapping shape by creating sham geom_point
-#  xlim(-0.5, NA) + # prevent the high-level branches from clustering in the middle
+  xlim(-0.5, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Class), size = 2.5) +
   scale_colour_manual(values = classCol, na.value = "grey10") 
 # Add a heatmap
