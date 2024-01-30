@@ -11,6 +11,7 @@ sarah.ps<- readRDS("data/ps_comptype.RDS")
 
 abund_GTDB <- parse_SM("data/SM_abund/*gtdb_gather.csv")
 abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv")
+abund_GENB <- parse_SM("data/SM_abund/*genbank_gather.csv")
 
 ##################
 #### Taxonomy #####
