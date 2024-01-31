@@ -112,6 +112,9 @@ beta_MAGs_all.plot <- ord.fun(mossMAGs.ps, "Beta diversity with Dicranum undulat
 beta_MAGs_Polytrichum.plot <- mossMAGs.ps %>% 
   # remove D_undulatum samples:
   prune_samples(sample_data(.)$Host != "D_undulatum",.) %>%
+#  prune_samples(sample_data(.)$Host != "P_commune",.) %>% 
+#  prune_samples(sample_data(.)$Location != "Nemaska community intersection",.) %>% 
+#  prune_samples(sample_data(.)$Location != "Chemin PK",.) %>% 
   # remove Taxa absent from all samples 
   prune_taxa(taxa_sums(.) > 0,.) %>% 
   # ordinate & plot
@@ -131,8 +134,6 @@ div_plots %>% ##<<<<!!! this df is redefined every time ord.fun is executed!
         legend.title = element_text(colour="black", size=16, face="bold"),
         legend.text = element_text(colour="black", size = 14)) + 
   guides(fill="none") + 
-#  scale_fill_manual(values = c("tan4", "springgreen3")) + 
-#  scale_color_manual(values = c("lightsalmon4", "springgreen4")) +  
   coord_fixed()
 
 ##########################
