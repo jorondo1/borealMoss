@@ -335,12 +335,12 @@ singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast 
 	$SOURMASH gather genome_sketches/moss_samples/S-18-POLJUN-G.sig /fast/def-ilafores/sourmash_db/genbank-2022.03-fungi-k31.zip
 
 ##############################
-### PHYLOGENY ################
+### FULL PHYLOGENY ################
 ##############################
 
 # Download relevant genomes
 readarray -t ids < <(cut -d',' -f1 SM_abund/gtdb_taxonomy_subset.csv | grep GC)
-mkdir -p Phylogeny/genomes && cd $_
+mkdir -p Phylogeny_fast/genomes && cd $_
 
 # Download all genomes found by Sourmash in GTDB (via Genbank)
 for id in "${ids[@]}"; do
@@ -356,31 +356,44 @@ for file in *.fa; do
 done
 cd ../..
 
+ml gcc/9.3.0 python/3.11.5 muscle/3.8.1551 mafft/7.471 blast+/2.13.0 mugqic/usearch/10.0.240 diamond/2.0.9 trimal/1.4
+source /home/def-ilafores/programs/phylophlan/venv/bin/activate
+
 # Create Config file
 phylophlan_write_config_file \
--o Phylogeny/config_aa.cfg \
+-o Phylogeny_fast/config_aa.cfg \
 --force_nucleotides -d a --db_aa diamond --map_dna diamond \
 --msa mafft --trim trimal \
 --tree1 fasttree --tree2 raxml --overwrite
 
-phylophlan --nproc 48 \
-	--verbose --genome_extension .fna \
-	-t a -i $PARENT_DIR/Phylogeny/genomes \
-	-o /fast/def-ilafores/temp/phylophlan_jrl \
-	--diversity high --fast \
-	--databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
-	-f /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/novel_species_config_aa.jfl.cfg
-
 # Run Phylophlan
+# Directories might be wrong, needs REVISION !!!!!
 phylophlan --nproc 48 \
 --verbose --genome_extension .fna \
--t a -i /home/def-ilafores/analysis/boreal_moss/Phylogeny/genomes \
+-t a -i /home/def-ilafores/analysis/boreal_moss/Phylogeny_fast/genomes \
 -o /fast/def-ilafores/temp/phylophlan_jrl \
 --diversity high --fast \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
--f /home/def-ilafores/analysis/boreal_moss/MAG_analysis/novel_species/novel_species_config_aa.jfl.cfg
+-f /home/def-ilafores/analysis/boreal_moss/Phylogeny_fast/novel_species_config_aa.jfl.cfg
 
 # To rerun if crashed: find Phylogeny/Phylophlan -type f -name "*.bkp" -size 0 -exec rm {} \;
+
+##############################
+### MAGs FULL PHYLOGENY ################
+##############################
+mkdir -p Phylogeny_accurate/genomes
+# for file in $(find MAG_analysis/novel_species/genomes -name '*.fa'); do
+# 	name=$(basename "$file")
+# 	cp "$file" Phylogeny_accurate/genomes/${name%.fa}.fna
+# done
+
+phylophlan --nproc 48 \
+--verbose --genome_extension .fna \
+-t a -i Phylogeny_accurate/genomes/ \
+-o /fast/def-ilafores/temp/phylophlan_accurate \
+--diversity high --accurate \
+--databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
+-f /home/def-ilafores/analysis/boreal_moss/Phylogeny_fast/novel_species_config_aa.jfl.cfg
 
 ###################################
 ## What the fuck is in our reads ##
