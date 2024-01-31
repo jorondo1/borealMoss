@@ -7,7 +7,7 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 #####################################
 #### PLOT 2. MAGs characteristics ####
 #####################################
-MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)]
+MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)] %>% setdiff("Green_N.bin.3")
 
 taxLabels <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("label") %>% 
