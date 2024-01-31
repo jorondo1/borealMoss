@@ -11,7 +11,7 @@ sarah.ps<- readRDS("data/ps_comptype.RDS")
 
 abund_GTDB <- parse_SM("data/SM_abund/*gtdb_gather.csv")
 abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv")
-abund_GENB <- parse_SM("data/SM_abund/*genbank_gather.csv")
+#abund_GENB <- parse_SM("data/SM_abund/*genbank_gather.csv")
 
 ##################
 #### Taxonomy #####
@@ -98,11 +98,13 @@ sampleData <- sarah.ps %>% sample_data %>% as("data.frame") %>%
   ), .keep = 'unused')
 
 # Generate PS objects
-psMossGTDB <- makePhyloSeq(abund_GTDB, sampleData, taxonomy)
-psMossMAGs <- makePhyloSeq(abund_MAGs, sampleData, taxonomy) %>% 
+mossGTDB.ps <- makePhyloSeq(abund_GTDB, sampleData, taxonomy) %>% 
+  prune_taxa(taxa_sums(.) > 0,.) # remove taxa abseent from all samples 
+mossMAGs.ps <- makePhyloSeq(abund_MAGs, sampleData, taxonomy) %>% 
   # TEMPORARY : REMOVE MAG identified as contaminated by GUNC
-  prune_taxa(taxa_names(.) !="Green_AO.bin.6",.)
+  prune_taxa(taxa_names(.) !="Green_AO.bin.6",.) %>% 
+  prune_taxa(taxa_sums(.) > 0,.) 
 
-write_rds(psMossGTDB,"data/R_out/psMossGTDB.RDS")
-write_rds(psMossMAGs,"data/R_out/psMossMAGs.RDS")
+write_rds(mossGTDB.ps,"data/R_out/mossGTDB.RDS")
+write_rds(mossMAGs.ps,"data/R_out/mossMAGs.RDS")
 
