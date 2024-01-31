@@ -184,6 +184,10 @@ cd $MAG_DIR/mash_dist
 novel_genomes #from custom functions in /home/ronj2303/functions.sh
 cd ../..
 
+# Compute additionnal MAG statistics
+module load bbmap/38.86
+statswrapper.sh MAG_analysis/novel_species/genomes/*.fa > MAG_analysis/novel_species/genomes/genome.stats
+
 #############
 ## SOURMASH #
 #############
