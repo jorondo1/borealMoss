@@ -2,7 +2,7 @@ library(pacman)
 p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
        phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
 source("myFunctions.R")
-moss.ps <- readRDS("data/psMossMAGs.RDS")
+moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
 ############################################################
 ### Ancom-BC differential abundance across compartment ######
@@ -36,7 +36,7 @@ DA_comp.df <- DA_pairwise_comp$res %>%
                     taxon = factor(taxon, levels = unique(taxon)))
 
 # Export DA dataframe
-write_rds(DA_comp.df, 'data/DA_results.RDS')
+write_rds(DA_comp.df, 'data/R_out/DA_comp.RDS')
 
 ################################################
 ######## PAIRWISE DUNN'S TEST ON HOST ###########
