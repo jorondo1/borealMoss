@@ -313,6 +313,7 @@ for fna in $(find . -type f -name '*.fna' -print0 | xargs -0 -I {} basename {});
 done
 
 find $PWD/Annotations/missing_cds -type f -name '*.faa' -exec realpath {} \; >> Annotations/translated_genomes_list.txt
+# find $PWD/Annotations/missing_cds -type f -name '*.faa' -exec realpath {} \; > Annotations/translated_genomes_list_missing.txt
 
 # Run MicrobeAnnotator
 ## Make sure /fast/def-ilafores/MicrobeAnnotator_DB is there (otherwise it's in /home/def-ilafores/ref_dbs/MicrobeAnnotator_DB)
@@ -320,10 +321,10 @@ singularity exec --writable-tmpfs -e \
 --env MPLCONFIGDIR=$tmp \
 -B /home:/home -B /cvmfs:/cvmfs \
 $ILL_PIPELINES/containers/microbeannotator.2.0.5.sif \
-microbeannotator --method diamond --processes 36 --threads 2 --refine \
--l $PWD/Annotations/translated_genomes_list.txt \
+microbeannotator --method diamond --processes 12 --threads 4 --refine \
+-l $PWD/Annotations/translated_genomes_list_missing.txt \
 -d /home/def-ilafores/ref_dbs/MicrobeAnnotator_DB \
--o $PWD/Annotations/microbeannotator_out
+-o $PWD/Annotations/microbeannotator_out_missing
 
 #Some didn't work, here's how I listed them:
 grep -vf <(find Annotations/microbeannotator_out/annotation_results/ -type f -name '*.ko' -print0 | xargs -0 -I {} basename {} | sed 's/\.faa\.ko//' | grep -v ".bin.") <(find Annotations/found_genomes/ -type f -exec realpath {} \;) | grep -v "fa" > Annotations/try_again.tsv

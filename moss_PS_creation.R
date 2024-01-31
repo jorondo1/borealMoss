@@ -99,8 +99,7 @@ sampleData <- sarah.ps %>% sample_data %>% as("data.frame") %>%
 
 # Generate PS objects
 psMossGTDB <- makePhyloSeq(abund_GTDB, sampleData, taxonomy)
-psMossMAGs <- makePhyloSeq(abund_MAGs, sampleData, taxonomy, 
-                           tree = "data/RAxML_bestTree.genomes_refined.tre") %>% 
+psMossMAGs <- makePhyloSeq(abund_MAGs, sampleData, taxonomy) %>% 
   # TEMPORARY : REMOVE MAG identified as contaminated by GUNC
   prune_taxa(taxa_names(.) !="Green_AO.bin.6",.)
 
