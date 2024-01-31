@@ -137,15 +137,28 @@ speciesLFC <- readRDS("data/R_out/DA_comp.RDS") %>%
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
 DA_sub.tree <- tree %>% 
-  drop.tip(setdiff(tree$tip.label, DA_species)) %>% as_tibble %>%
+  drop.tip(setdiff(tree$tip.label, DA_species)) %>% 
+  as_tibble %>% 
   # add taxonomy :
-  left_join(taxLabels, by = 'label') %>% as.treedata # because.
+  full_join(taxLabels %>% filter(label %in% DA_species), by = 'label') %>% 
+  as.treedata # because.
 
 rank <- "Order"
 n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
-tree.p <- ggtree(DA_sub.tree,size = 0.2) +
+tree.p <- ggtree(DA_sub.tree,size = 0.2) 
+orderedRank <- tree.p$data %>% filter(!is.na(label)) %>% 
+  arrange(y) %>% select(!!sym(rank)) %>% 
+  # dplyr way of collapsing a tibble into a vector is pull() :
+  pull %>% unique
+
+
+tree.p$data %<>% mutate(!!sym(rank) := # dynamic management of variable name
+                         factor(!!sym(rank), 
+                                levels = orderedRank))
+
+tree.p <- tree.p +
   geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +
   #geom_tiplab(align=TRUE, aes(label = Species)) +
   scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(n) ) +
