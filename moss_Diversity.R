@@ -2,10 +2,10 @@ library(pacman)
 p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize, patchwork)
 source("myFunctions.R")
 
-psMossGTDB <- readRDS("data/psMossGTDB.RDS")
-psMossMAGs <- readRDS("data/psMossMAGs.RDS")
+mossGTDB.ps <- readRDS("data/R_out/mossGTDB.RDS")
+mossMAGs.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
-MAGs_melt <- psMossMAGs %>% psmelt %>% 
+MAGs_melt <- mossMAGs.ps %>% psmelt %>% 
   select(OTU, Sample, Abundance, Compartment, Microsite, Host, Domain:Species)
 
 ######################
@@ -49,8 +49,8 @@ div.boxplot <- function(ps, title) {
       guides(fill="none") + coord_fixed(2)
 }
 
-alpha_MAGs.plot <- div.boxplot(psMossMAGs, "Alpha diversity with nMAGs.")
-alpha_GTDB.plot <- div.boxplot(psMossGTDB, "Alpha diversity without nMAGs.")
+alpha_MAGs.plot <- div.boxplot(mossMAGs.ps, "Alpha diversity with nMAGs.")
+alpha_GTDB.plot <- div.boxplot(mossGTDB.ps, "Alpha diversity without nMAGs.")
 
 alpha_MAGs.plot + alpha_GTDB.plot
   
@@ -65,7 +65,7 @@ ord.fun <- function(ps, title) {
       counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
     DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
     SummarizedExperiment::assay(.) %>% t %>% 
-    { .[. < 0] <- 0; . }
+    { .[. < 0] <- 0; . } # replace negatives by zeros
   
   dist.mx <- vegan::vegdist(vst.mx, distance = "jaccard")
   PCoA <- capscale(dist.mx~1, distance = "jaccard")
@@ -81,7 +81,7 @@ ord.fun <- function(ps, title) {
   div_plots <- data.frame(sample_data(ps))
   div_plots$MDS1<-scores(PCoA)$sites[,1]
   div_plots$MDS2<-scores(PCoA)$sites[,2]
-  
+  div_plots <<- div_plots 
   # Ordination plot between compartments
   div_plots %>% 
     ggplot(aes(x = MDS1, y = MDS2, colour = Compartment)) + 
@@ -101,18 +101,31 @@ ord.fun <- function(ps, title) {
     scale_color_manual(values = c("lightsalmon4", "springgreen4")) 
 }
 
-beta_MAGs.plot <- ord.fun(psMossMAGs, "Beta diversity with nMAGs.")
-beta_GTDB.plot <- ord.fun(psMossGTDB, "Beta diversity without nMAGs.")
+beta_MAGs.plot <- ord.fun(mossMAGs.ps, "Beta diversity with nMAGs.")
+beta_GTDB.plot <- ord.fun(mossGTDB.ps, "Beta diversity without nMAGs.")
 
 beta_MAGs.plot + beta_GTDB.plot +
   plot_layout(guides = 'collect')
 
+### Compare with or without D. undulatum:
+beta_MAGs_all.plot <- ord.fun(mossMAGs.ps, "Beta diversity with Dicranum undulatum")
+beta_MAGs_Polytrichum.plot <- mossMAGs.ps %>% 
+  # remove D_undulatum samples:
+  prune_samples(sample_data(.)$Host != "D_undulatum",.) %>%
+  # remove Taxa absent from all samples 
+  prune_taxa(taxa_sums(.) > 0,.) %>% 
+  # ordinate & plot
+  ord.fun("Beta diversity without Dicranum undulatum") 
+beta_MAGs_all.plot + beta_MAGs_Polytrichum.plot +
+  guides(shape = FALSE) +
+  plot_layout(guides = 'collect')
+
 # Ordination plot between HOST SPECIES
-div_plots %>% 
+div_plots %>% ##<<<<!!! this df is redefined every time ord.fun is executed!
   ggplot(aes(MDS1, MDS2, colour = Host)) + 
   stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = Host)) +   
   geom_point(size = 5, aes(shape = Compartment)) + 
-  ggtitle("TAXONOMIC BETA-DIVERSITY BETWEEN SITE TYPES") +
+  ggtitle("Beta-diversity across host moss species") +
   theme_bw() +
   theme(plot.title = element_text(size = 18),
         legend.title = element_text(colour="black", size=16, face="bold"),
@@ -218,7 +231,7 @@ topSpecies <- MAGs_melt %>%
   ungroup() %$% OTU %>% unique # Use OTU because two OTUs may have the 
             # same Species field if they are unknown species of the same genus
 
-RCLR <- trans.fun(psMossMAGs,'rclr',topSpecies)
+RCLR <- trans.fun(mossMAGs.ps,'rclr',topSpecies)
 
 heatmap_list <- list(); for (host in unique(RCLR@sam_data$Host)) {
   for (comp in unique(RCLR@sam_data$Compartment)) {
