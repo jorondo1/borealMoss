@@ -4,7 +4,7 @@ source("myFunctions.R")
 
 # Merging two MicrobeAnnotator outputs
 pw <- full_join(
-  read_delim("data/metabolic_summary__module_completeness_1.tab"),
+  read_delim("data/metabolic_summary__module_completeness_missing.tab"),
   read_delim("data/metabolic_summary__module_completeness.tab"),
   by = c('module', 'name', 'pathway group')
   ) %>% 
@@ -12,7 +12,7 @@ pw <- full_join(
   rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
   rename_with(~simplify_name(.x)) # shortens MAG names
 
-# transpose 
+# transpose to get MAG name as rows, modules as columns :
 pw_t <- pw %>% dplyr::select(-module) %>% t %>% 
   data.frame %>% setNames(pw$module)
 

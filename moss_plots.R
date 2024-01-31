@@ -7,28 +7,29 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 #####################################
 #### PLOT 2. MAGs characteristics ####
 #####################################
-MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)] %>% setdiff("Green_N.bin.3")
+MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)] 
 
 taxLabels <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("label") %>% 
   select(label, Domain:Species) %>% 
-  filter(label %in% MAG_names) %>% tibble
+  tibble
 
 tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 sub.tree <- tree %>% 
   drop.tip(setdiff(tree$tip.label, MAG_names)) %>% 
   as_tibble %>% 
-  full_join(taxLabels, by = 'label') %>% 
+  full_join(taxLabels %>% filter(label %in% MAG_names), by = 'label') %>% 
   as.treedata
 
 # DF for MAG quality heatmap 
 hm.mx <- read_tsv("data/genome.stats") %>% 
-  transmute(N50 = ctg_N50, GC = gc_avg, BP = contig_bp, 
+  transmute(L50 = ctg_L50/1000, GC = gc_avg, MBP = contig_bp/1000000, 
             MAG = str_extract(filename, "[^/]+$")) %>% 
   left_join(read_tsv("data/novel_quality_scores.txt",
                      col_names = c('MAG', 'comp', 'cont', 'QS')),
                      by = 'MAG') %>% 
-  mutate(MAG = str_remove(MAG, ".fa")) %>% 
+  mutate(MAG = str_remove(MAG, ".fa"),
+         QS = QS/100) %>% 
   filter(MAG %in% MAG_names)
 
 # Expand a Brewer palette to 12 colours:
@@ -44,25 +45,29 @@ p <- ggtree(sub.tree, layout="fan", size=0.1) +
   guides(color = guide_legend(position = "left")) 
 
 # Add a heatmap
-p + geom_fruit(data = hm.mx, geom = geom_tile,
-               mapping=aes(y=MAG, fill = QS),
-               offset = 0.1,width = 0.1) +
-  scale_fill_gradient(low = 'darkgreen', high = 'gold', name="MAG Quality Score") +
+p +   geom_fruit(data = hm.mx, geom = geom_tile,
+                 mapping = aes(y = MAG, fill = MBP),
+                 offset = 0.1, width = 0.1) +
+  scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
   new_scale_fill() + 
   geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = GC),
+               mapping=aes(y=MAG, fill = GC),
+               offset = 0.1,width = 0.1) +
+  scale_fill_gradient(low = 'darkgreen', high = 'gold', name="%GC Content") +
+  new_scale_fill() +
+  geom_fruit(data = hm.mx, geom = geom_tile,
+             mapping = aes(y = MAG, fill = L50),
+             offset = 0.1, width = 0.1) +
+  scale_fill_gradient(low = 'lightblue', high = 'darkblue', name="L50 (Kbp)") +
+  new_scale_fill() +
+  geom_fruit(data = hm.mx, geom = geom_tile,
+             mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
-  scale_fill_gradient(low = "turquoise", high = "violetred3") +
-  new_scale_fill() +
-  geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = N50),
-             offset = 0.1, width = 0.1) +
-  scale_fill_gradient(low = 'lightblue', high = 'darkblue') +
-  new_scale_fill() +
-  geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = BP),
-             offset = 0.1, width = 0.1) +
-  scale_fill_gradient(low = "wheat", high = 'red1')
+  scale_fill_gradient(low = "darkred", high = "salmon1", name="Quality Score")
+
+
+# theme(legend.position = 'bottom',
+#       legend.direction = 'vertical')
 
 
 #########################################
@@ -117,28 +122,32 @@ DA.p2 + DA.p1 +
 ################################################
 
 # Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/DA_results.RDS") %>% 
+speciesLFC <- readRDS("data/R_out/DA_comp.RDS") %>% 
   transmute(LFC = lfc_CompartmentGreen, 
             Species = taxon, 
             compAss = case_when(lfc_CompartmentGreen>0 ~ "Green",
-                                lfc_CompartmentGreen<0 ~ "Brown")) %>% 
+                                lfc_CompartmentGreen<0 ~ "Brown"),
+            SD = se_CompartmentGreen) %>% 
   right_join(moss.ps %>% # identifier \ species association table
                tax_table %>% as.data.frame %>% 
                select(Species) %>% rownames_to_column("MAG"),
-             by = 'Species')
+             by = 'Species') %>% 
+  filter(!is.na(compAss))
 
 # Subset taxa for tree layer
-DA_species <- speciesLFC %>% filter(!is.na(compAss)) %$% Species
-DA_species.ps <- subset_taxa(moss.ps, 
-                             Species %in% DA_species)
+DA_species <- speciesLFC %$% MAG
+DA_sub.tree <- tree %>% 
+  drop.tip(setdiff(tree$tip.label, DA_species)) %>% as_tibble %>%
+  # add taxonomy :
+  left_join(taxLabels, by = 'label') %>% as.treedata # because.
 
 rank <- "Order"
-n <- DA_species.ps@tax_table %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
+n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
-tree.p <- ggtree(DA_species.ps,size = 0.2) +
+tree.p <- ggtree(DA_sub.tree,size = 0.2) +
   geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +
-  #geom_tiplab(align=TRUE) +
+  #geom_tiplab(align=TRUE, aes(label = Species)) +
   scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(n) ) +
   scale_fill_manual(values = compColours) +
   labs(fill = "Compartment",
@@ -154,34 +163,25 @@ orderedSpecies <- tree.p$data %>% select(y, label, Species) %>%
   filter(!is.na(label)) %$% Species# NAs at non-integer positions?!
 
 ### Waterfall plot :
-
-DA_comp.df <- read_rds("data/R_out/DA_comp.RDS") %>% 
-  mutate(Species = factor(taxon, levels = orderedSpecies), .keep = 'unused')
+speciesLFC %<>% mutate(Species = factor(Species, levels = orderedSpecies))
   
-# Subset the ~80% largest effect:
-# subset <- DA_comp.df %>% 
-#   transmute(Species = Species, 
-#             lfc = abs(lfc_CompartmentGreen)) %>%
-#   arrange(desc(lfc)) %>% 
-#   head(round((DA_comp.df %>% dim %>% .[1])*0.7)) %$% Species
-
-sfx <- "CompartmentGreen"
-waterfall.p <- DA_comp.df %>% 
+waterfall.p <- speciesLFC %>% 
   #filter(Species %in% subset) %>% 
-  ggplot(aes(y = Species, x = !!sym(paste0("lfc_",sfx)), fill = direct)) + 
+  ggplot(aes(y = Species, x = LFC, fill = compAss)) + 
   geom_bar(stat = "identity", width = 1, color = "white",
            position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(xmin = !!sym(paste0("lfc_",sfx)) - !!sym(paste0("se_",sfx)), 
-                    xmax = !!sym(paste0("lfc_",sfx)) + !!sym(paste0("se_",sfx))), 
+  geom_errorbar(aes(xmin = LFC - SD, 
+                    xmax = LFC + SD), 
                 width = 0.2, position = position_dodge(0.05), color = "black") + 
-  labs(y = NULL, x = "Log fold change") + 
-  scale_fill_manual(values = c("Positive LFC" = compColours[2], "Negative LFC" = compColours[1]))+
+  labs(y = NULL, x = "Log fold change", fill = 'Compartment\nassociation') + 
+  scale_fill_manual(values = c("Green" = compColours[2], "Brown" = compColours[1]))+
   scale_color_discrete(name = NULL) +
-  #scale_y_discrete(position = 'right') +
   theme_minimal() + 
   theme(panel.grid.minor.y = element_blank(),
-        plot.margin = margin(t = 10, r = 10, b = 10, l = -5, unit = "pt")) +
-  guides(fill = FALSE)
+        plot.margin = margin(t = 10, r = 10, b = 10, l = -5, unit = "pt"),
+        legend.position = c(.8,.95),
+        legend.background = element_rect(colour='black', fill='white', linewidth=0.2),
+        legend.title = element_text(size = rel(.8)))
 
 tree.p + waterfall.p +
   plot_layout(#guides = "collect",
