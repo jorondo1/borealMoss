@@ -122,17 +122,7 @@ DA.p2 + DA.p1 +
 ################################################
 
 # Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/R_out/DA_comp.RDS") %>% 
-  transmute(LFC = lfc_CompartmentGreen, 
-            Species = taxon, 
-            compAss = case_when(lfc_CompartmentGreen>0 ~ "Green",
-                                lfc_CompartmentGreen<0 ~ "Brown"),
-            SD = se_CompartmentGreen) %>% 
-  right_join(moss.ps %>% # identifier \ species association table
-               tax_table %>% as.data.frame %>% 
-               select(Species) %>% rownames_to_column("MAG"),
-             by = 'Species') %>% 
-  filter(!is.na(compAss))
+speciesLFC <- readRDS("data/R_out/species_LFC_comp.RDS")
 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
@@ -148,11 +138,11 @@ n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
 tree.p <- ggtree(DA_sub.tree,size = 0.2) 
+
 orderedRank <- tree.p$data %>% filter(!is.na(label)) %>% 
-  arrange(y) %>% select(!!sym(rank)) %>% 
+  arrange(desc(y)) %>% select(!!sym(rank)) %>% 
   # dplyr way of collapsing a tibble into a vector is pull() :
   pull %>% unique
-
 
 tree.p$data %<>% mutate(!!sym(rank) := # dynamic management of variable name
                          factor(!!sym(rank), 
