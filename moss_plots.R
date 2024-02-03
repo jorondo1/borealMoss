@@ -7,30 +7,23 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 #####################################
 #### PLOT 2. MAGs characteristics ####
 #####################################
+tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
+
+# extract MAG names
 MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)] 
 
+# Extract taxonomy
 taxLabels <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("label") %>% 
   select(label, Domain:Species) %>% 
   tibble
 
-tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
+# Subset tree to MAGs only and add taxonomy
 sub.tree <- tree %>% 
   drop.tip(setdiff(tree$tip.label, MAG_names)) %>% 
   as_tibble %>% 
   full_join(taxLabels %>% filter(label %in% MAG_names), by = 'label') %>% 
   as.treedata
-
-# DF for MAG quality heatmap 
-hm.mx <- read_tsv("data/genome.stats") %>% 
-  transmute(L50 = ctg_L50/1000, GC = gc_avg, MBP = contig_bp/1000000, 
-            MAG = str_extract(filename, "[^/]+$")) %>% 
-  left_join(read_tsv("data/novel_quality_scores.txt",
-                     col_names = c('MAG', 'comp', 'cont', 'QS')),
-                     by = 'MAG') %>% 
-  mutate(MAG = str_remove(MAG, ".fa"),
-         QS = QS/100) %>% 
-  filter(MAG %in% MAG_names)
 
 # Expand a Brewer palette to 12 colours:
 nClass <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
@@ -44,21 +37,29 @@ p <- ggtree(sub.tree, layout="fan", size=0.1) +
   scale_colour_manual(values = classCol) +
   guides(color = guide_legend(position = "left")) 
 
+# add MAG data:
+hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
+  # only keep MAGs that are in our original dataset
+  filter(MAG %in% MAG_names) 
+
 # Add a heatmap
 p +   geom_fruit(data = hm.mx, geom = geom_tile,
                  mapping = aes(y = MAG, fill = MBP),
                  offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
+  
   new_scale_fill() + 
   geom_fruit(data = hm.mx, geom = geom_tile,
                mapping=aes(y=MAG, fill = GC),
                offset = 0.1,width = 0.1) +
   scale_fill_gradient(low = 'darkgreen', high = 'gold', name="%GC Content") +
+  
   new_scale_fill() +
   geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = L50),
+             mapping = aes(y = MAG, fill = `L50 (kb)`),
              offset = 0.1, width = 0.1) +
-  scale_fill_gradient(low = 'lightblue', high = 'darkblue', name="L50 (Kbp)") +
+  scale_fill_gradient(low = 'lightblue', high = 'darkblue') +
+  
   new_scale_fill() +
   geom_fruit(data = hm.mx, geom = geom_tile,
              mapping = aes(y = MAG, fill = QS),
