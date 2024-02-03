@@ -1,16 +1,18 @@
-library(pacman)
-p_load(phyloseq, tidyverse, magrittr, kable, kableExtra)
-source("myFunctions.R")
+library(tidyverse)
 
-MAG_summary <- inner_join(
-  # Final set of novel taxa found in at least one sample:
-  psMossMAGs@tax_table %>% data.frame %>% 
-    rownames_to_column("MAG"),
-  # MAG metrics
-  read_delim("data/novel_quality_scores.txt",
-             col_names = c('MAG', 'Completeness', 'Contamination', 'QualityScore')) %>% 
-            mutate(MAG = str_remove(MAG, '.fa')),
-          by = "MAG") %>% selecet(-Species)
-
-MAG_summary %>% write_tsv("out/MAG_summary.txt")
+# Import MAG statistics
+read_tsv("data/genome.stats") %>% 
+  # fix variables of interest
+  transmute(`L50 (kb)` = ctg_L50/1000, 
+            `N50 (kb)` = ctg_N50/1000,
+            n_contigs = n_contigs,
+            GC = gc_avg, 
+            MBP = contig_bp/1000000, 
+            MAG = str_extract(filename, "[^/]+$")) %>% 
+  left_join(read_tsv("data/novel_quality_scores.txt",
+                     col_names = c('MAG', 'comp', 'cont', 'QS')),
+            by = 'MAG') %>% 
+  mutate(MAG = str_remove(MAG, ".fa"),
+         QS = QS/100) %>% 
+  write_tsv("data/R_out/MAG_summary.tsv")
 

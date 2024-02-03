@@ -1,5 +1,6 @@
 library(pacman)
-p_load(phyloseq, tidyverse, magrittr)
+p_load(phyloseq, tidyverse, magrittr, ComplexHeatmap, colorRamp2, circlize,
+       purrr, patchwork)
 source("myFunctions.R")
 
 #####################
@@ -10,10 +11,11 @@ source("myFunctions.R")
 pwGroups_interest <- c("Aromatics degradation", "Carbon fixation", 
                        "LPS metabolism", "Methane metabolism",
                        "Nitrogen metabolism", "Photosynthesis",
-                       "Plant pathogenicity", "Sulfur metabolism",
+                       "Sulfur metabolism",
                        "Symbiosis")
 
-pwGroups_interest <- c("Carbon fixation", "Methane metabolism")
+pwGroups_interest <- c("Carbon fixation", "Nitrogen metabolism",
+                       "Photosynthesis")
 
 # Parse Module Completeness table
 pwComp <- full_join(
@@ -24,7 +26,8 @@ pwComp <- full_join(
   filter(pwGroup %in% pwGroups_interest) %>% 
   rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
   rename_with(~simplify_name(.x)) %>% 
-  mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name))
+  mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
+         across(where(is.numeric), ~./100))
 # Some have no .faa on NCBI, needs manual translation...
 
 # taxID to Species conversion table
@@ -47,7 +50,7 @@ pattern_regex <- gsub(" ", "_", pwGroups_interest) %>%
 prep_mat <- pwComp %>% 
   dplyr::select(pwName, any_of(DAspec$taxID)) %>% 
   # Filter out rows where the max of all values (except pwName) is 30% or less
-  filter(apply(select(., -pwName), 1, max) > 30) %>% 
+  filter(apply(select(., -pwName), 1, max) > 0.30) %>% 
   # Remove rows full of zeros
   filter(rowSums(select(., -pwName)) != 0)
 
@@ -64,7 +67,7 @@ mat <- prep_mat %>%
 ht <- Heatmap(
   mat,
   name = "Pathway Completeness across Compartments",
-  col = colorRamp2(c(0, 50, 100), c("beige", "red", "darkorchid4")),
+  col = colorRamp2(c(0, 0.5, 1), c("beige", "red", "darkorchid4")),
   column_split = DAspec$compAss,
   row_split = groupIndex,
   heatmap_legend_param = list(
@@ -91,9 +94,9 @@ draw(ht, heatmap_legend_side = "bot",
      # column_title_gp=grid::gpar(fontsize=16)
 )
 
-#####################################################
-### BETA REGRESSION between PW% and compartment #####
-#####################################################
+#################################################
+### Relationship between PW% and compartment #####
+#################################################
 
 # create a transposed data set that will be used for hypothesis testing
 pwComp_t <- pwComp %>% 
@@ -105,19 +108,36 @@ pwComp_t <- pwComp %>%
               values_from = value, id_cols = taxID) %>% 
   # add genome data we're interested in ...
   inner_join(DAspec, ., by = 'taxID') %>%
+  left_join(read_tsv("data/R_out/MAG_summary.tsv") %>% 
+              select(MAG, comp), by = 'MAG') %>% 
+  mutate(comp = case_when(is.na(comp) ~ 100, TRUE ~ comp)) %>% 
   # First, remove any row that's only zeros
-  filter(rowSums(select_if(., is.numeric)) != 0) %>% tibble %>% 
-  # LFC needs to be absolute value for stat test:
-  mutate(LFC = abs(LFC))
+  filter(rowSums(select_if(., is.numeric)) != 0) %>% 
+  # LFC needs to be absolute value for stat test : 
+  ##### UNLESS we use either compAss OR LFC ?!
+#  mutate(LFC = abs(LFC)) ; ncol(pwComp_t) %>% 
+  tibble
 
-# Linear
+# remove columns where more than 90% of values are lower than 0.20
+removeCols <- sapply( # apply to columns matching pattern name:
+  pwComp_t[pwComp_t %>% names %>% grep("^M.{5}$", ., value = TRUE)], 
+  # extract column names: 
+  function(x) {sum(x <= 0.50) / length(x) >= 0.90}) %>% names(.)[.]
+
+# Step 3: Remove identified columns from the dataframe
+pwComp_t %<>%  select(-all_of(removeCols))
+print(paste(ncol(pwComp_t), "columns left"))
+
+# Regress !
 coefficients_list <- list()
-for (i in colnames(pwComp_t[,7:dim(pwComp_t)[2]])) {
+for (i in pwComp_t %>% names %>% grep("^M.{5}$", ., value = TRUE)) {
   #print(i)
-  model_call <- list(formula = as.formula(paste0(i,' ~ compAss*LFC')), 
-                     data = pwComp_t#, link = 'logit'
+  model_call <- list(formula = as.formula(paste0(i,' ~ compAss + comp')), 
+                     data = pwComp_t, 
+                     # use a quasi-binomial, rationale here 
+                     family = quasibinomial(link = "logit")
   )
-  coefficients_list[[i]] <- do.call("lm", model_call) %>% 
+  coefficients_list[[i]] <- do.call("glm", model_call) %>% 
     summary %$% coefficients %>% 
     as.data.frame %>% 
     rownames_to_column("variable") %>% 
@@ -126,7 +146,6 @@ for (i in colnames(pwComp_t[,7:dim(pwComp_t)[2]])) {
     dplyr::rename(p = `Pr(>|t|)`)
 }
 results <- do.call(rbind, coefficients_list) %>% 
-#  filter(variable == "compAssGreen") %>% 
   mutate(p_adj = p.adjust(p, method = "BH"),
          sig = case_when(p_adj < 0.001 ~ '***',
                          p_adj < 0.01 ~ '**',
@@ -142,6 +161,10 @@ results %>% filter(p_adj<0.05) %>% select(-p, -sig) %>%  View
 # pw_t <- pw %>% dplyr::select(-module) %>% t %>% 
 #   data.frame %>% setNames(pw$module)
 
+
+glm(formula = as.formula('M00374 ~ comp'), 
+    data = pwComp_t,
+    family = quasibinomial(link = "logit")) %>% summary
 
 
 
