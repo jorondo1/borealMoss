@@ -179,16 +179,24 @@ comm_barplot <- function(melt, comp, taxLvl, topN) {
     
   mycolors1 <- colorRampPalette(brewer.pal(8, "Set2"))(topN+1)
   
-  topTaxa <- melt %>%  
+  # Subset compartment, convert to relab
+  melt %<>% filter(Compartment == comp) %>% 
+    group_by(Sample) %>% 
+    mutate(Abundance = Abundance/sum(Abundance)) %>% ungroup
+  
+  # Compute top taxa, aggregate residual in others
+  topTaxa <- melt %>% 
     group_by(!!sym(taxLvl)) %>% # melt the table and group by tax level
-    summarise(Abundance = sum(Abundance)) %>% # find most overall abundant taxa
+    summarise(Abundance = mean(Abundance)) %>% # find most overall abundant taxa
     arrange(desc(Abundance)) %>%  # Species them 
     mutate(aggTaxo = as.factor(case_when( # aggTaxo will become the plot legend
       row_number()<=topN ~ !!sym(taxLvl), #+++ We'll need to manually order the species!
       row_number()>topN~'Others'))) %>%  # +1 to include the Others section!
     select(-Abundance)
   
-  topTaxaLvls <- topTaxa$aggTaxo %>% head(topN) %>% as.character %>% sort %>% c("Others")
+  # Extract unique list 
+  topTaxaLvls <- topTaxa$aggTaxo %>% 
+    head(topN) %>% as.character %>% sort %>% c("Others")
   
   ### We create an object that will be fed into ggplot
   df_comm <- melt %>% 
@@ -221,16 +229,14 @@ comm_barplot <- function(melt, comp, taxLvl, topN) {
     guides(fill = guide_legend(byrow = TRUE))
 }
 
-comm_barplot(MAGs_melt, 'Brown', 'Family', 14)
+comm_barplot(MAGs_melt, 'Brown', 'Family', 20)
 comm_barplot(MAGs_melt, 'Green', 'Family', 14)
-comm_barplot(MAGs_melt, 'Brown', 'Order', 10)
-comm_barplot(MAGs_melt, 'Green', 'Order', 10)
+comm_barplot(MAGs_melt, 'Brown', 'Order', 12)
+comm_barplot(MAGs_melt, 'Green', 'Order', 12)
 
 # Which MAGs are cyanobacteria? 
 MAGs_melt %>% filter(Phylum == 'Cyanobacteria') %>% 
   select(OTU, Family, Genus, Species, Compartment) %>% unique
-
-
 
 # Top species per host and compartment 
 MAGs_melt %>% 
@@ -245,44 +251,3 @@ MAGs_melt %>%
   mutate(PercentageOfTotal = (Abundance / TotalAbundance) * 100) %>% 
   select(-Abundance, -TotalAbundance) %>% 
   arrange(Host, Compartment) %>% View
-
-###########################
-#### HEATMAP ##############
-###########################
-
-# Top secies per sample ###
-topSpecies <- MAGs_melt %>% 
-  group_by(Sample) %>%
-  arrange(desc(Abundance)) %>%
-  slice_head(n = 1) %>% 
-  ungroup() %$% OTU %>% unique # Use OTU because two OTUs may have the 
-            # same Species field if they are unknown species of the same genus
-
-RCLR <- trans.fun(mossMAGs.ps,'rclr',topSpecies)
-
-heatmap_list <- list(); for (host in unique(RCLR@sam_data$Host)) {
-  for (comp in unique(RCLR@sam_data$Compartment)) {
-    
-    subset_data <- subset_samples(RCLR, Compartment == comp & Host == host)
-    
-    # Create a name for the heatmap combining host and compartment info
-    heatmap_name <- paste("Host:", host, "- Compartment:", comp)
-    
-    hm <- subset_data %>% 
-      comp_heatmap(show_row_dend = F,
-                   show_column_dend = F,
-                   name = heatmap_name,
-                   show_heatmap_legend = FALSE) # Add the name parameter here
-    
-    # Store each heatmap in the list
-    heatmap_list[[paste0(host, comp, "_HMap")]] <- hm
-  }
-}
-
-# Combine all heatmaps into a single plot
-if (length(heatmap_list) > 0) {
-  # Concatenate heatmaps using the + operator
-  combined_heatmap <- Reduce(`+`, heatmap_list)
-  # Draw the combined heatmap
-  draw(combined_heatmap, heatmap_legend_side = "bot")
-}
