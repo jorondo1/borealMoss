@@ -92,7 +92,7 @@ parse_DAA_results <- function(DAA) {
               join_by("taxon" == "Species"))
 }
 hostDA <- parse_DAA_results(DA_host_species)
-write_rds(hostDA, 'data/R_out/DA_host.RDS')
+write_rds(hostDA, 'data/R_out/DA_host_results.RDS')
 
 
 #########################################################################

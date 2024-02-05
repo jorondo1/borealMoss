@@ -54,3 +54,32 @@ trans.fun <- function(ps, method, keep) {
                 ~ microbiome::transform(.,transform=method)) %>% # that function we defined above
     prunePS(.,keep)
 }
+
+# Variance-stabilizing transformation
+vst.fun <- function(ps, var) {
+  phyloseq_to_deseq2(
+    ps, as.formula(paste0('~', var))) %>% # DESeq2 object
+    estimateSizeFactors(., geoMeans = apply(
+      counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
+    DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
+    SummarizedExperiment::assay(.) %>% t %>% 
+    { .[. < 0] <- 0; . } # replace negatives by zeros
+}
+
+# PCOA
+pcoa.fun <- function(ps, var, vst.mx, dist) {
+  # compute distance matrix
+  dist.mx <- vegan::vegdist(vst.mx, distance = dist)
+  # compute PCoA
+  PCoA <- capscale(dist.mx~1, distance = dist)
+  # Print first 3 coordinates
+  eig <- round(PCoA$CA$eig[1:3]/sum(PCoA$CA$eig),2)
+  message("First 3 principal coordinates :")
+  message(paste(eig[1], ',', eig[2], ',', eig[3]))
+  # create output list
+  out <- data.frame(sample_data(ps))
+  out$PCoA1 <- scores(PCoA)$sites[,1]
+  out$PCoA2 <- scores(PCoA)$sites[,2]
+  list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
+}
+

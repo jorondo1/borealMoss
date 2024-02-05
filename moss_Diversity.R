@@ -1,5 +1,6 @@
 library(pacman)
-p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize, patchwork)
+p_load(tidyverse, magrittr, DESeq2, vegan, RColorBrewer, microbiome,
+       bestNormalize, patchwork)
 source("myFunctions.R")
 
 mossGTDB.ps <- readRDS("data/R_out/mossGTDB.RDS")
@@ -58,34 +59,14 @@ alpha_MAGs.plot + alpha_GTDB.plot
 ### BETA DIVERSITY ###
 #####################
 
-ord.fun <- function(ps, title) {
-  vst.mx <- ps %>% 
-    phyloseq_to_deseq2(~Compartment) %>% # DESeq2 object
-    estimateSizeFactors(., geoMeans = apply(
-      counts(.), 1, function(x) exp(sum(log(x[x>0]))/length(x)))) %>% 
-    DESeq2::varianceStabilizingTransformation(blind=T) %>% # VST
-    SummarizedExperiment::assay(.) %>% t %>% 
-    { .[. < 0] <- 0; . } # replace negatives by zeros
+plotOrd.fun <- function(ps, title, var, dist) {
+    # PCoA custom function :
+  df <- pcoa.fun(ps, var, vst.fun(ps, 'Compartment'), dist) 
   
-  dist.mx <- vegan::vegdist(vst.mx, distance = "jaccard")
-  PCoA <- capscale(dist.mx~1, distance = "jaccard")
-  
-  # Plot data
-  plot.df <- data.frame(PCOA1 = PCoA %>% scores %$% sites %>% .[,1], 
-                        PCOA2 = PCoA %>% scores %$% sites %>% .[,2]) %>%
-    cbind(ps %>% sample_data %>% data.frame)
-  
-  PCoA$CA$eig[1:3]/sum(PCoA$CA$eig)
-  eig.test <- PCoA$CA$eig
-  
-  div_plots <- data.frame(sample_data(ps))
-  div_plots$MDS1<-scores(PCoA)$sites[,1]
-  div_plots$MDS2<-scores(PCoA)$sites[,2]
-  div_plots <<- div_plots 
-  # Ordination plot between compartments
-  div_plots %>% 
-    ggplot(aes(x = MDS1, y = MDS2, colour = Compartment)) + 
-    stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = Compartment)) +   
+  # Ordination plot between compartments :
+  df$metadata %>% 
+    ggplot(aes(x = PCoA1, y = PCoA2, colour = !!sym(var))) + 
+    stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = !!sym(var))) +   
     geom_point(size = 5, aes(shape = Host)) + 
     ggtitle(title) +
     theme_bw() +
@@ -94,38 +75,42 @@ ord.fun <- function(ps, title) {
           legend.text = element_text(colour="black", size = 14)) + 
     guides(fill="none") + 
     labs(
-      x = paste0("PCoA 1 [",round(100*eig.test[1]/sum(abs(eig.test)),1),"% ]"),
-      y = paste0("PCoA 2 [",round(100*eig.test[2]/sum(abs(eig.test)),1),"% ]"),
-    ) +
-    scale_fill_manual(values = c("tan4", "springgreen3")) + 
-    scale_color_manual(values = c("lightsalmon4", "springgreen4")) 
+      x = paste0(
+      "PCoA 1 [", round(100*df[['eig']][1]/sum(abs(df[['eig']])),1), "% ]"),
+      y = paste0(
+        "PCoA 2 [",round(100*df[['eig']][2]/sum(abs(df[['eig']])),1),"% ]")) +
+    scale_fill_manual(values = compColours) + 
+    scale_color_manual(values = compColours) 
 }
+# Variance-stabilizing transformation custom function :
 
-beta_MAGs.plot <- ord.fun(mossMAGs.ps, "Beta diversity with nMAGs.")
-beta_GTDB.plot <- ord.fun(mossGTDB.ps, "Beta diversity without nMAGs.")
+beta_MAGs.plot <- plotOrd.fun(mossMAGs.ps, "Beta diversity with nMAGs.", 'Compartment', 'bray')
+beta_GTDB.plot <- plotOrd.fun(mossGTDB.ps, "Beta diversity without nMAGs.", 'Compartment', 'bray')
 
-beta_MAGs.plot + beta_GTDB.plot +
-  plot_layout(guides = 'collect')
+beta_MAGs.plot + beta_GTDB.plot + plot_layout(guides = 'collect')
 
 ### Compare with or without D. undulatum:
 beta_MAGs_all.plot <- ord.fun(mossMAGs.ps, "Beta diversity with Dicranum undulatum")
-beta_MAGs_Polytrichum.plot <- mossMAGs.ps %>% 
+mossMAGs_poly.ps <-  mossMAGs.ps %>% 
   # remove D_undulatum samples:
   prune_samples(sample_data(.)$Host != "D_undulatum",.) %>%
+  # remove Taxa absent from all samples 
+  prune_taxa(taxa_sums(.) > 0,.) 
+
+beta_MAGs_Polytrichum.plot <- mossMAGs_poly.ps %>% 
 #  prune_samples(sample_data(.)$Host != "P_commune",.) %>% 
 #  prune_samples(sample_data(.)$Location != "Nemaska community intersection",.) %>% 
 #  prune_samples(sample_data(.)$Location != "Chemin PK",.) %>% 
-  # remove Taxa absent from all samples 
-  prune_taxa(taxa_sums(.) > 0,.) %>% 
   # ordinate & plot
-  ord.fun("Beta diversity without Dicranum undulatum") 
+  ord.fun("Beta diversity without Dicranum undulatum")
+
 beta_MAGs_all.plot + beta_MAGs_Polytrichum.plot +
   guides(shape = FALSE) +
   plot_layout(guides = 'collect')
 
 # Ordination plot between HOST SPECIES
-div_plots %>% ##<<<<!!! this df is redefined every time ord.fun is executed!
-  ggplot(aes(MDS1, MDS2, colour = Host)) + 
+df$metadata %>% ##<<<<!!! this df is redefined every time ord.fun is executed!
+  ggplot(aes(PCoA1, PCoA2, colour = Host)) + 
   stat_ellipse(level=0.9, geom = "polygon", alpha = 0.18, aes(fill = Host)) +   
   geom_point(size = 5, aes(shape = Compartment)) + 
   ggtitle("Beta-diversity across host moss species") +
@@ -135,6 +120,47 @@ div_plots %>% ##<<<<!!! this df is redefined every time ord.fun is executed!
         legend.text = element_text(colour="black", size = 14)) + 
   guides(fill="none") + 
   coord_fixed()
+
+# Ordination vs temp gradients
+df <- vst.fun(mossMAGs_poly.ps, 'Compartment') %>% 
+  pcoa.fun(mossMAGs_poly.ps, 'Compartment', ., 'bray')
+
+df$metadata %>% 
+  ggplot(aes(PCoA1, PCoA2, colour = Canopy)) + 
+  geom_point(size = 5, aes(shape = Compartment)) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 18),
+        legend.title = element_text(colour="black", size=16, face="bold"),
+        legend.text = element_text(colour="black", size = 14)) + 
+  guides(fill="none") + 
+  coord_fixed()
+
+# PERMANOVA
+h1 <- with(df$metadata, how(nperm=9999, blocks = Location)) 
+adonis2(df$dissMx ~ SoilpH + SoilTemp + Canopy + Compartment*Host, 
+        data = df$metadata,
+        permutations=h1, method="bray")
+
+# Aitchison way
+aitchison.df <- mossMAGs_poly.ps %>% 
+  otu_table %>% t %>% # transpose otherwise it computes distance between species
+  pcoa.fun(mossMAGs_poly.ps, 'Compartment', ., 'robust.aitchison')
+
+aitchison.df$metadata %>% 
+  ggplot(aes(PCoA1, PCoA2, colour = Canopy)) + 
+  geom_point(size = 5, aes(shape = Compartment)) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 18),
+        legend.title = element_text(colour="black", size=16, face="bold"),
+        legend.text = element_text(colour="black", size = 14)) + 
+  guides(fill="none") + 
+  coord_fixed()
+
+h1 <- with(aitchison.df$metadata, how(nperm=9999, blocks = Location)) 
+adonis2(aitchison.df$dissMx ~ SoilpH + SoilTemp + Canopy + Compartment*Host, 
+        data = aitchison.df$metadata,
+        permutations=h1, method="robust.aitchison")
+
 
 ##########################
 ### COMMUNITY OVERVIEW ###
