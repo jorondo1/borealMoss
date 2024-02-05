@@ -37,7 +37,7 @@ for (idx in NA_index) {
   if (ncbi_tax[[idx]][1] %>% is.na) {
     ncbi_tax[[idx]] <- NULL
   } # Save that cause it takes time :
-} # write_rds(ncbi_tax, "data/taxid_results_full")
+} # write_rds(ncbi_tax, "data/R_out/taxid_results_full.RDS")
 
 ### Parsing the ncbi query output
 taxLvls <- c("staxids","superkingdom", "phylum","class",
@@ -71,7 +71,7 @@ blastout_short <- blastout %>%
             by = 'staxids') %>%
   filter(superkingdom %in% c('Bacteria', 'Eukaryota')) %>% 
   # add Sample metadata
-  left_join(readRDS('data/psMossMAGs.RDS') %>% 
+  left_join(readRDS('data/R_out/mossMAGs.RDS') %>% 
               sample_data %>% data.frame %>% 
               rownames_to_column('sample') %>% 
               dplyr::select(sample, Host, Location, Compartment),

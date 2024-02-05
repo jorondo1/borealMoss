@@ -34,16 +34,14 @@ classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass)
 p <- ggtree(sub.tree, layout="fan", size=0.1) +
   xlim(-0.2, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Class), size = 2.5) +
-  scale_colour_manual(values = classCol) +
-  guides(color = guide_legend(position = "left")) 
-
+  scale_colour_manual(values = classCol) 
 # add MAG data:
 hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
   # only keep MAGs that are in our original dataset
   filter(MAG %in% MAG_names) 
 
 # Add a heatmap
-p +   geom_fruit(data = hm.mx, geom = geom_tile,
+p + geom_fruit(data = hm.mx, geom = geom_tile,
                  mapping = aes(y = MAG, fill = MBP),
                  offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
@@ -65,11 +63,9 @@ p +   geom_fruit(data = hm.mx, geom = geom_tile,
              mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "darkred", high = "salmon1", name="Quality Score")
-
-
+  
 # theme(legend.position = 'bottom',
 #       legend.direction = 'vertical')
-
 
 #########################################
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
@@ -164,7 +160,7 @@ tree.p <- tree.p +
 # Extract species levels for alignment of next plots :
 orderedSpecies <- tree.p$data %>% select(y, label, Species) %>% 
   unique %>% arrange(y) %>% # sort by plot position
-  filter(!is.na(label)) %$% Species# NAs at non-integer positions?!
+  filter(!is.na(label)) %$% Species # NAs at non-integer positions?!
 
 ### Waterfall plot :
 speciesLFC %<>% mutate(Species = factor(Species, levels = orderedSpecies))
