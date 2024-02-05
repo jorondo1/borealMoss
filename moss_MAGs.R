@@ -15,4 +15,3 @@ read_tsv("data/genome.stats") %>%
   mutate(MAG = str_remove(MAG, ".fa"),
          QS = QS/100) %>% 
   write_tsv("data/R_out/MAG_summary.tsv")
-
