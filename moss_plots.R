@@ -7,7 +7,6 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 #####################################
 #### PLOT 2. MAGs characteristics ####
 #####################################
-tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 
 # extract MAG names
 MAG_names <- moss.ps@tax_table %>% rownames %>% .[grep(".bin.", .)] 
@@ -18,9 +17,10 @@ taxLabels <- moss.ps@tax_table %>% as.data.frame %>%
   select(label, Domain:Species) %>% 
   tibble
 
+MAG.tree <- read.tree("data/RAxML_bestTree.MAGs_refined.tre")
 # Subset tree to MAGs only and add taxonomy
-sub.tree <- tree %>% 
-  drop.tip(setdiff(tree$tip.label, MAG_names)) %>% 
+sub.tree <- MAG.tree %>% 
+  drop.tip(setdiff(MAG.tree$tip.label, MAG_names)) %>% 
   as_tibble %>% 
   full_join(taxLabels %>% filter(label %in% MAG_names), by = 'label') %>% 
   as.treedata
@@ -32,7 +32,7 @@ classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass)
 
 # Plot the tree
 p <- ggtree(sub.tree, layout="fan", size=0.1) +
-  xlim(-0.4, NA) + # prevent the high-level branches from clustering in the middle
+  xlim(-0.2, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Class), size = 2.5) +
   scale_colour_manual(values = classCol) +
   guides(color = guide_legend(position = "left")) 
@@ -74,7 +74,7 @@ p +   geom_fruit(data = hm.mx, geom = geom_tile,
 #########################################
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
 #########################################
-hostDA <- read_rds('data/R_out/DA_host.RDS')
+hostDA <- read_rds('data/R_out/DA_host_results.RDS')
 
 # Which tax level are we showing in the legend?
 taxLvl <- "Class"
@@ -123,8 +123,8 @@ DA.p2 + DA.p1 +
 ################################################
 
 # Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/R_out/species_LFC_comp.RDS")
-
+speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
+tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
 DA_sub.tree <- tree %>% 

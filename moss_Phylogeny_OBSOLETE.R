@@ -3,11 +3,11 @@ p_load(ape, tidyverse, magrittr, ggtree, phyloseq,
        RColorBrewer, ggtreeExtra, ggnewscale)
 source("myFunctions.R")
 
-
 ###############################################
 #### PLOT 2. Compartment-associated Orders ####
 ###############################################
-moss.melt <- readRDS("data/psMossMAGs.RDS") %>% psmelt
+moss.melt <- readRDS("data/R_out/mossMAGs.RDS") %>% psmelt
+speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %>% filter(!is.na(compAss)) %$% Species
@@ -52,7 +52,6 @@ tree_taxrank <- function(ps, rank) {
                pwidth = 1, offset = 0.1,
                # add a grid
                grid.params=list()) + 
-    #geom_fruit() +
     scale_fill_manual(values = compColours) +
     labs(fill = "Compartment",
          colour = paste("Bacterial", rank),
