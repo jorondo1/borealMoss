@@ -119,7 +119,7 @@ DA.p2 + DA.p1 +
 ################################################
 
 # Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
+speciesLFC <- readRDS("data/R_out/speciesLFC_comp_rand.RDS")
 tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
