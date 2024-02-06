@@ -15,7 +15,7 @@ pwGroups_interest <- c("Aromatics degradation", "Carbon fixation",
                        "Symbiosis")
 
 pwGroups_interest <- c("Carbon fixation", "Nitrogen metabolism",
-                       "Photosynthesis")
+                       "Sulfur metabolism", "Photosynthesis")
 
 # Parse Module Completeness table
 pwComp <- full_join(
@@ -118,11 +118,11 @@ pwComp_t <- pwComp %>%
 #  mutate(LFC = abs(LFC)) ; ncol(pwComp_t) %>% 
   tibble
 
-# remove columns where more than 90% of values are lower than 0.20
+# remove columns where more than 80% of values are lower than 0.20
 removeCols <- sapply( # apply to columns matching pattern name:
   pwComp_t[pwComp_t %>% names %>% grep("^M.{5}$", ., value = TRUE)], 
   # extract column names: 
-  function(x) {sum(x <= 0.50) / length(x) >= 0.90}) %>% names(.)[.]
+  function(x) {sum(x <= 0.20) / length(x) >= 0.90}) %>% names(.)[.]
 
 # Step 3: Remove identified columns from the dataframe
 pwComp_t %<>%  select(-all_of(removeCols))
@@ -160,7 +160,6 @@ results %>% filter(p_adj<0.05) %>% select(-p, -sig) %>%  View
 # transpose to get MAG name as rows, modules as columns :
 # pw_t <- pw %>% dplyr::select(-module) %>% t %>% 
 #   data.frame %>% setNames(pw$module)
-
 
 glm(formula = as.formula('M00374 ~ comp'), 
     data = pwComp_t,

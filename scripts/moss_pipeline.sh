@@ -155,7 +155,7 @@ assembly_stats
 ##############
 # Annotation
 ##############
-# gtdb_db=/cvmfs/datahub.genap.ca/vhost34/def-ilafores/GTDB/release207_v2
+# mash_db=/cvmfs/datahub.genap.ca/vhost34/def-ilafores/GTDB/release207_v2
 # mkdir -p coassembly/gtdb_tmp; tmp=$(realpath gtdb_tmp)
 # singularity exec --writable-tmpfs -e \
 # --env GTDBTK_DATA_PATH=$gtdb_db \
@@ -170,19 +170,32 @@ bash $ILL_PIPELINES/scripts/annotate_bins.sh \
 	-o MAG_analysis/Annotation \
 	-t 72 -drep $DREP_OUT/dereplicated_genomes
 
-##############
-# mash_dist ####
-##############
+###################################
+# Novelty : mash distance + ANI ####
+#####################################
 mkdir -p $MAG_DIR/mash_dist
 
 # Build sketch
-cd $ILAFORES/EnsemblBacteria57 #HAS MOVED!!!!
+cd $ILAFORES/EnsemblBacteria57
 cp $PARENT_DIR/Hannah_MAGs/*.gz .
 find -type f -name '*.fa.gz' | sed 's/\.\///' > $MAG_DIR/mash_dist/genomes_list.txt
 cd $MAG_DIR/mash_dist
 
+module load StdEnv/2020  gcc/9.3.0 mash/2.3
 novel_genomes #from custom functions in /home/ronj2303/functions.sh
 cd ../..
+
+## Adding a layer : skani validation of genome demarcation
+# Setup : https://github.com/bluenote-1577/skani/wiki/Tutorial:-setting-up-the-GTDB-genome-database-to-search-against
+skani=/home/def-ilafores/programs/skani/skani
+cd /fast/def-ilafores/GTDB
+find gtdb_genomes_reps_r214/ -name '*.fna.gz' > gtdb_file_names.txt
+"$skani" sketch -l gtdb_file_names.txt -o gtdb_skani_database_ani -t 72
+
+# Compute ANI
+cd $MAG_DIR/novel_species
+find $PWD/genomes/ -type f -name '*.fa' > novel_species_mash.txt
+"$skani" search -d /fast/def-ilafores/GTDB/gtdb_skani_database_ani -o ANI_results.txt -t 72 --ql novel_species_mash.txt 
 
 # Compute additionnal MAG statistics
 module load bbmap/38.86

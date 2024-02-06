@@ -9,24 +9,25 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 ############################################################
 
 DA_pairwise_comp <- readRDS("data/R_out/DA_pairwise_comp.RDS")
-DA_pairwise_comp <- ancombc2(
+DA_pairwise_comp2 <- ancombc2(
   data = moss.ps, 
   tax_level= "Species",
   p_adj_method="holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment", 
+  rand_formula = '(1|Location)',
   group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
   struc_zero = TRUE,
   pairwise = TRUE,
-  alpha = 0.01,
+  alpha = 0.05,
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
 )
-# write_rds(DA_pairwise_comp,"data/R_out/DA_pairwise_comp.RDS")
+# write_rds(DA_pairwise_comp2,"data/R_out/DA_pairwise_comp_rand.RDS")
 
 # Process DAA output ; could potentially be merged/simplified with next command
 sfx <- "CompartmentGreen"
-speciesLFC <- DA_pairwise_comp$res %>% 
+speciesLFC <- DA_pairwise_comp2$res %>% 
   dplyr::select(taxon, ends_with(sfx)) %>% 
   dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
                 !!sym(paste0("passed_ss_",sfx)) == TRUE) %>% 
