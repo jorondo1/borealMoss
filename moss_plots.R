@@ -130,7 +130,7 @@ DA_sub.tree <- tree %>%
   full_join(taxLabels %>% filter(label %in% DA_species), by = 'label') %>% 
   as.treedata # because.
 
-rank <- "Order"
+rank <- "Class"
 n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
@@ -186,4 +186,4 @@ waterfall.p <- speciesLFC %>%
 tree.p + waterfall.p +
   plot_layout(#guides = "collect",
               design = "AAAABBB") +
-  plot_annotation(caption = 'Significantly abundant at p<0.01 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
+  plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')

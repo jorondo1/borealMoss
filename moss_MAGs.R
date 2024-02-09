@@ -1,5 +1,5 @@
 library(pacman)
-p_load(tidyverse, rstatix)
+p_load(tidyverse, rstatix, knitr, kableExtra)
 
 # Import MAG statistics
 read_tsv("data/genome.stats") %>% 
@@ -16,6 +16,19 @@ read_tsv("data/genome.stats") %>%
   mutate(MAG = str_remove(MAG, ".fa"),
          QS = QS/100) %>% 
   write_tsv("data/R_out/MAG_summary.tsv")
+
+MAG_summary <- moss.ps@tax_table %>% as.data.frame %>% 
+  rownames_to_column("MAG") %>% as_tibble %>% 
+  right_join(read_tsv("data/R_out/MAG_summary.tsv"),
+             by = 'MAG')
+
+eremio <- MAG_summary %>% 
+  filter(Phylum == 'Eremiobacterota') %>% 
+  select(MAG, Genus, comp, cont, QS) %>% 
+  
+kbl(eremio) %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
+  save_kable('test.html')
 
 # Improvement in sample containment 
 dbNames <- c("GTDB r207", "GTDB + MAGs", "Genbank + MAGs")
@@ -36,3 +49,22 @@ cntm.df %>% filter(db == dbNames[3]) %$% cntm %T>% hist %>% shapiro.test
 
 raw_wide <- raw %>% pivot_wider(names_from = db, values_from = cntm) 
 wilcox.test(raw_wide$custom, raw_wide$genbank) #NS
+
+
+### Metabolism of Eremiobacterota for dall-e prompt:
+full_join(
+  read_delim("data/metabolic_summary__module_completeness_missing.tab"),
+  read_delim("data/metabolic_summary__module_completeness.tab"),
+  by = c('module', 'name', 'pathway group')) %>% 
+  dplyr::rename(pwGroup = `pathway group`) %>% 
+  rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
+  mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
+         across(where(is.numeric), ~./100)) %>% 
+  select(module, name, pwGroup, eremio$MAG) %>% 
+  filter(rowSums(select(., where(is.numeric))) != 0) %$%
+  pwGroup %>% unique %>% intersect(c("Aromatics degradation", "Carbon fixation", 
+                                     "LPS metabolism", "Methane metabolism",
+                                     "Nitrogen metabolism", "Photosynthesis",
+                                     "Sulfur metabolism",
+                                     "Symbiosis"))
+

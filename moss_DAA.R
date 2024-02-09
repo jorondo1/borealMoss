@@ -13,12 +13,12 @@ DA_pairwise_comp2 <- ancombc2(
   data = moss.ps, 
   tax_level= "Species",
   p_adj_method="holm", 
-  prv_cut = 0.10, 
+  prv_cut = 0.05, 
   fix_formula="Host + Compartment", 
-  rand_formula = '(1|Location)',
+  # rand_formula = '(1|Location)',
   group = "Host", # specify group if >=3 groups exist, allows structural zero detection 
   struc_zero = TRUE,
-  pairwise = TRUE,
+  pairwise = FALSE,
   alpha = 0.05,
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
@@ -27,7 +27,7 @@ DA_pairwise_comp2 <- ancombc2(
 
 # Process DAA output ; could potentially be merged/simplified with next command
 sfx <- "CompartmentGreen"
-speciesLFC <- DA_pairwise_comp2$res %>% 
+speciesLFC <- DA_pairwise_comp$res %>% 
   dplyr::select(taxon, ends_with(sfx)) %>% 
   dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
                 !!sym(paste0("passed_ss_",sfx)) == TRUE) %>% 
@@ -155,3 +155,37 @@ df_fig_global %>%
 #             lfc = lfc_CompartmentGreen)
 
 
+
+waterfall_plot <- function(sp_name, df, title, caption) {
+  df_fig <<- df$res %>% 
+    dplyr::select(taxon, ends_with(sp_name)) %>% 
+    dplyr::filter(!!sym(paste0("diff_",sp_name)) == 1 &
+                    !!sym(paste0("passed_ss_",sp_name)) == TRUE) %>% 
+    dplyr::arrange(desc(!!sym(paste0("lfc_",sp_name))) ) %>%
+    dplyr::mutate(direct = factor(ifelse(!!sym(paste0("lfc_",sp_name)) > 0, "Positive LFC", "Negative LFC"),
+                                  levels = c("Positive LFC", "Negative LFC")),
+                  taxon = factor(taxon, levels = unique(taxon))) 
+  
+  df_fig %>%
+    ggplot(aes(x = taxon, y = !!sym(paste0("lfc_",sp_name)), fill = direct)) + 
+    geom_bar(stat = "identity", width = 1, color = "white",
+             position = position_dodge(width = 0.4)) +
+    geom_errorbar(aes(ymin = !!sym(paste0("lfc_",sp_name)) - !!sym(paste0("se_",sp_name)), 
+                      ymax = !!sym(paste0("lfc_",sp_name)) + !!sym(paste0("se_",sp_name))), 
+                  width = 0.2, position = position_dodge(0.05), color = "black") + 
+    labs(x = NULL, y = "Log fold change", 
+         title = title, caption=caption) + 
+    scale_fill_manual(values = c("Positive LFC" = "springgreen4", "Negative LFC" = "lightsalmon4"))+
+    scale_color_discrete(name = NULL) +
+    theme_minimal(base_size = 20) + 
+    theme(panel.grid.minor.y = element_blank(),
+          axis.text.x = element_text(angle = 70, hjust = 1,
+                                     color = df_fig$color),
+          plot.margin = margin(t = 10, r = 10, b = 10, l = 30, unit = "pt")) +
+    guides(fill = FALSE)
+}
+
+waterfall_plot("CompartmentGreen", DA_pairwise_comp, 
+               "", #Differentially abundant species by compartment.
+               "Significantly abundant at p<0.05 (ajdusted).
+               Restricted to species with >10% relative abundance that passed the sensitivity analysis.")
