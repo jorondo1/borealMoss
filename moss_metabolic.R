@@ -23,7 +23,7 @@ pwComp <- full_join(
   read_delim("data/metabolic_summary__module_completeness.tab"),
   by = c('module', 'name', 'pathway group')) %>% 
   dplyr::rename(pwGroup = `pathway group`) %>% 
-  filter(pwGroup %in% pwGroups_interest) %>% 
+#  filter(pwGroup %in% pwGroups_interest) %>% 
   rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
   rename_with(~simplify_name(.x)) %>% 
   mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
