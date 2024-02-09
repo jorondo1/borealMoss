@@ -173,7 +173,7 @@ waterfall.p <- speciesLFC %>%
   geom_errorbar(aes(xmin = LFC - SD, 
                     xmax = LFC + SD), 
                 width = 0.2, position = position_dodge(0.05), color = "black") + 
-  labs(y = NULL, x = "Log fold change", fill = 'Compartment\nassociation') + 
+  labs(y = NULL, x = "Log fold change", fill = 'Moss section\nassociation') + 
   scale_fill_manual(values = c("Green" = compColours[2], "Brown" = compColours[1]))+
   scale_color_discrete(name = NULL) +
   theme_minimal() + 
