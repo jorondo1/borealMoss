@@ -119,7 +119,7 @@ DA.p2 + DA.p1 +
 ################################################
 
 # Add LFC (from DAA) to significant species
-speciesLFC <- readRDS("data/R_out/speciesLFC_comp_rand.RDS")
+speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
 tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
@@ -187,3 +187,4 @@ tree.p + waterfall.p +
   plot_layout(#guides = "collect",
               design = "AAAABBB") +
   plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
+
