@@ -29,19 +29,22 @@ df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
                             levels = topTaxaLvls)) 
 }
 
+# Desired taxonomic aggregation level :
+taxLvl <- 'Class'
+
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
   select(Sample, Abundance, Compartment, Host, Domain:Species) %>% 
-  group_by(Sample, Class) %>% 
-  aggregate(Abundance ~ Sample + Compartment + Host + Class, 
-            data = ., FUN = sum) %>% ungroup %>%
-  group_by(Sample) %>% 
+  # Compute Class level abundance :
+  group_by(Sample, across(all_of(taxLvl))) %>%
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), 
+            .groups = 'drop') %>% 
+  group_by(Sample) %>% # Convert to relative abundance
   mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
 
 topN=9
-topTaxa_Brown <- topTaxa(MAGs_melt, 'Brown', 'Class', topN)
-topTaxa_Green <- topTaxa(MAGs_melt, 'Green', 'Class', topN)
-mycolors1 <- colorRampPalette(brewer.pal(6, "Set3"))(topN+1)
+topTaxa_Brown <- topTaxa(MAGs_melt, 'Brown', taxLvl, topN)
+topTaxa_Green <- topTaxa(MAGs_melt, 'Green', taxLvl, topN)
 
 # Create ordered list of taxa
 topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>% 
@@ -49,10 +52,11 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
   aggregate(relAb ~ aggTaxo, data = ., FUN = sum) %>% 
   arrange(relAb) %$% aggTaxo %>% as.character 
 
-df_Brown <- df_comm(MAGs_melt, 'Brown', 'Class', topTaxa_Brown)
-df_Green <- df_comm(MAGs_melt, 'Green', 'Class', topTaxa_Green)
+df_Brown <- df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown)
+df_Green <- df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green)
 
 # Plot !
+mycolors1 <- colorRampPalette(brewer.pal(6, "Set3"))(topN+1)
 ggplot(df_Green) +
   labs(title = 'Green section') +
 ggplot(df_Brown) +
@@ -73,8 +77,6 @@ patchwork::plot_layout(guides = 'collect',
                                expression(italic("P. piliferum"))))) &
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
-
-
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
