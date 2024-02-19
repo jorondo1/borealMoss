@@ -25,8 +25,9 @@ div.boxplot <- function(ps, title) {
     estimate_richness(measure = c("Shannon")) 
   shapiro.test(rare_MAGs$Shannon)
   
-  shannon.norm <- bestNormalize(rare_MAGs$Shannon) #orderNorm
+  #shannon.norm <- bestNormalize(rare_MAGs$Shannon) #orderNorm
   shapiro.test(shannon.norm$x.t)
+  shannon.norm$x.t <- rare_MAGs$Shannon
   
   div_plots <- data.frame(sample_data(ps),
              Shannon=shannon.norm$x.t)
@@ -177,7 +178,7 @@ MAGs_melt %>%
 ### We find the top taxa and assign the rest to "Others"
 comm_barplot <- function(melt, comp, taxLvl, topN) {
     
-  mycolors1 <- colorRampPalette(brewer.pal(8, "Set2"))(topN+1)
+  mycolors1 <- colorRampPalette(brewer.pal(8, "Set3"))(topN+1)
   
   # Subset compartment, convert to relab
   melt %<>% filter(Compartment == comp) %>% 
@@ -212,27 +213,15 @@ comm_barplot <- function(melt, comp, taxLvl, topN) {
          fill=taxLvl, 
          x="Moss Species", 
          y="Proportion of k-mer counts") +
-    # facet_grid(rows = vars(Compartment),# RHS of the tilde is columns
-    #            scales="free", # hide samples without counts
-    #            space="free_x",
-    #            switch="both") + # constant bar width despite different # samples per group
     # some formatting...
     scale_fill_manual(values = mycolors1,
                       breaks = topTaxaLvls) +
-    theme_light(base_family="Baskerville", base_size = 20)+
-    theme(axis.line = element_blank(), 
-          axis.ticks = element_blank(),
-          plot.margin = unit(c(1,0.5,1,2), "cm"), 
-          plot.caption.position="plot",
-          axis.title.y.left = element_text(vjust = 3), 
-          legend.spacing.y = unit(0.7, 'cm')) +
+    theme_minimal() +
     guides(fill = guide_legend(byrow = TRUE))
 }
 
-comm_barplot(MAGs_melt, 'Brown', 'Family', 20)
-comm_barplot(MAGs_melt, 'Green', 'Family', 14)
-comm_barplot(MAGs_melt, 'Brown', 'Order', 12)
-comm_barplot(MAGs_melt, 'Green', 'Order', 12)
+comm_barplot(MAGs_melt, 'Brown', 'Class', 11)
+comm_barplot(MAGs_melt, 'Green', 'Class', 11)
 
 # Which MAGs are cyanobacteria? 
 MAGs_melt %>% filter(Phylum == 'Cyanobacteria') %>% 
