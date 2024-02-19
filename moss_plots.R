@@ -4,12 +4,17 @@ p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
+
+labelsItal <- c(expression(italic("D. undulatum")),
+  expression(italic("P. commune")),
+  expression(italic("P. juniperinum")),
+  expression(italic("P. piliferum")))
 ###################################
 #### PLOT 1. Community Overview ####
 ###################################
 
-topTaxa <- function(psmelt, comp, taxLvl, topN) {
 # Compute top taxa, aggregate residual in others
+topTaxa <- function(psmelt, comp, taxLvl, topN) {
   psmelt %>% 
     filter(Compartment == comp) %>% # subset compartment
     group_by(!!sym(taxLvl)) %>% # group by tax level
@@ -20,17 +25,20 @@ topTaxa <- function(psmelt, comp, taxLvl, topN) {
       row_number() > topN ~ 'Others'))) # +1 to include the Others section!
 }
 
+# Abundance summary dataset by compartment using top taxa
 df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
-    left_join(psmelt, topTaxa, by=taxLvl) %>% # use topTaxa to join aggTaxo variable
-    filter(Compartment == comp) %>% 
+  # use topTaxa to join aggTaxo variable
+  left_join(psmelt, topTaxa, by=taxLvl) %>% 
+    filter(Compartment == comp) %>% # subset
     aggregate(Abundance~aggTaxo+Host+Compartment, # Abundance is aggregated...
               data=., FUN = sum) %>% # ...sums "Others" taxa by specified variables
     mutate(aggTaxo = factor(aggTaxo,# reorder 
                             levels = topTaxaLvls)) 
 }
 
-# Desired taxonomic aggregation level :
+# Desired taxonomic aggregation level and top taxa to display
 taxLvl <- 'Class'
+topN=9
 
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
@@ -42,7 +50,7 @@ MAGs_melt <- moss.ps %>% psmelt %>%
   group_by(Sample) %>% # Convert to relative abundance
   mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
 
-topN=9
+# Find top taxa:
 topTaxa_Brown <- topTaxa(MAGs_melt, 'Brown', taxLvl, topN)
 topTaxa_Green <- topTaxa(MAGs_melt, 'Green', taxLvl, topN)
 
@@ -52,11 +60,13 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
   aggregate(relAb ~ aggTaxo, data = ., FUN = sum) %>% 
   arrange(relAb) %$% aggTaxo %>% as.character 
 
+# Build plots dataframes :
 df_Brown <- df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown)
 df_Green <- df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green)
 
 # Plot !
-mycolors1 <- colorRampPalette(brewer.pal(6, "Set3"))(topN+1)
+mycolors1 <- colorRampPalette(brewer.pal(9, "Set1"))(topN+1)
+
 ggplot(df_Green) +
   labs(title = 'Green section') +
 ggplot(df_Brown) +
@@ -68,13 +78,11 @@ patchwork::plot_layout(guides = 'collect',
            position = "fill", 
            aes(x = Host, y = Abundance, fill = aggTaxo)) &
   labs(fill = taxLvl, 
-       y = "Proportion of k-mer counts", 
+       y = paste("Proportion of sample k-mers attributed to", taxLvl), 
        x = 'Host moss species')  &
   scale_fill_manual(values = mycolors1, breaks = topTaxaLvls) &
-  scale_x_discrete(labels = (c(expression(italic("D. undulatum")),
-                               expression(italic("P. commune")),
-                               expression(italic("P. juniperinum")),
-                               expression(italic("P. piliferum"))))) &
+  # italicize specieshost species names :
+  scale_x_discrete(labels = labelsItal) &
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -102,6 +110,7 @@ sub.tree <- MAG.tree %>%
 # Expand a Brewer palette to 12 colours:
 nClass <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
   tax_table %>% as.data.frame %$% Class %>% unique %>% length
+
 classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass)
 
 # Plot the tree
@@ -138,9 +147,6 @@ p + geom_fruit(data = hm.mx, geom = geom_tile,
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "darkred", high = "salmon1", name="Quality Score")
   
-# theme(legend.position = 'bottom',
-#       legend.direction = 'vertical')
-
 #########################################
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
 #########################################
@@ -186,7 +192,8 @@ DA.p2 <- DA_host.df %>%
 DA.p2 + DA.p1 + 
   plot_layout(
     guides = "collect",
-    design = "ABBBBBBBBBBBB")
+    design = "ABBBBBBBBBBBB") &
+  scale_x_discrete(labels = labelsItal[2:4])
 
 ################################################
 ### 4. DIFFERENTIAL ABUNDANCE by COMPARTMENT ####
