@@ -19,16 +19,25 @@ read_tsv("data/genome.stats") %>%
 
 MAG_summary <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("MAG") %>% as_tibble %>% 
-  right_join(read_tsv("data/R_out/MAG_summary.tsv"),
+  inner_join(read_tsv("data/R_out/MAG_summary.tsv"),
              by = 'MAG')
 
+# MAG summary table
+MAG_summary %>% 
+  select(MAG, Class, Genus, `L50 (kb)`, n_contigs, GC, MBP, comp, cont, QS) %>% 
+  arrange(Class, Genus) %>% 
+  kbl %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
+  save_kable('out/MAG_statistics.html')
+
+# Eremio table
 eremio <- MAG_summary %>% 
   filter(Phylum == 'Eremiobacterota') %>% 
-  select(MAG, Genus, comp, cont, QS) %>% 
+  select(MAG, Genus, comp, cont, QS)
   
 kbl(eremio) %>% 
   kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
-  save_kable('test.html')
+  save_kable('out/test.html')
 
 # Improvement in sample containment 
 dbNames <- c("GTDB r207", "GTDB + MAGs", "Genbank + MAGs")
