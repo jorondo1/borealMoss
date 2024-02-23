@@ -4,9 +4,9 @@
 #SBATCH -D /nfs3_ib/nfs-ip34/home/def-ilafores/analysis/boreal_moss/SM_abund
 #SBATCH -o /nfs3_ib/nfs-ip34/home/def-ilafores/analysis/boreal_moss/SM_abund/logs/sourmash-%A_%a.slurm.out
 #SBATCH --time=24:00:00
-#SBATCH --mem=25G
+#SBATCH --mem=50G
 #SBATCH -N 1
-#SBATCH -n 2
+#SBATCH -n 8
 #SBATCH -A def-ilafores
 #SBATCH -J sourmash
 
@@ -40,6 +40,12 @@ if [[ ! -f $PARENT_DIR/SM_abund/${sample}_custom_gather.csv ]]; then
 $sourmash gather $signature \
 	$PARENT_DIR/genome_sketches/index_custom_k31.sbt.zip \
 	-o $PARENT_DIR/SM_abund/${sample}_custom_gather.csv
+fi
+
+if [[ ! -f $PARENT_DIR/SM_abund/${sample}_genbank_default_gather.csv ]]; then
+$sourmash gather $signature \
+	/nfs3_ib/nfs-ip34/fast/def-ilafores/sourmash_db/genbank-2022.03*k31.zip \
+	-o $PARENT_DIR/SM_abund/${sample}_genbank_default_gather.csv
 fi
 
 if [[ ! -f $PARENT_DIR/SM_abund/${sample}_gtdb_gather.csv ]]; then

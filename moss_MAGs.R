@@ -33,7 +33,8 @@ MAG_summary %>%
 # Eremio table
 eremio <- MAG_summary %>% 
   filter(Phylum == 'Eremiobacterota') %>% 
-  select(MAG, Genus, comp, cont, QS)
+  select(MAG, Genus, comp, cont, QS) %>% 
+  arrange(desc(QS))
   
 kbl(eremio) %>% 
   kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
