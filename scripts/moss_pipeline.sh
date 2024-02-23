@@ -221,6 +221,11 @@ singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
 	--name-from-first --from-file moss_MAGs.txt \
 		--output-dir moss_MAGs
 
+ml apptainer; tmp=$PWD
+singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast \
+	$SOURMASH index /fast/def-ilafores/sourmash_db/genbank-2022.03-index-k31 \
+	/fast/def-ilafores/sourmash_db/genbank-2022.03*k31.zip
+
 #check signature names
 # singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
 # 	$SOURMASH sketch dna -p scaled=1000,k=31,abund \
@@ -282,10 +287,10 @@ cat SM_abund/*.csv | cut -d',' -f10 | sed 's/\ .*//' | sed 's/\"//' | sort -u | 
 #######################################
 
 # Run HUMANN on clean reads to get community functional potential profile
-bash /nfs3_ib/nfs-ip34$ILL_PIPELINES/generateslurm_functionnal_profile.humann.sh \
-	--sample_tsv /nfs3_ib/nfs-ip34$PWD/preproc/preprocessed_reads.sample.tsv \
-	--slurm_threads 24 --slurm_mem 30G --slurm_walltime 72:00:00 \
-	--out /nfs3_ib/nfs-ip34$PWD/HUMANN
+# bash /nfs3_ib/nfs-ip34$ILL_PIPELINES/generateslurm_functionnal_profile.humann.sh \
+# 	--sample_tsv /nfs3_ib/nfs-ip34$PWD/preproc/preprocessed_reads.sample.tsv \
+# 	--slurm_threads 24 --slurm_mem 30G --slurm_walltime 72:00:00 \
+# 	--out /nfs3_ib/nfs-ip34$PWD/HUMANN
 
 #### We need all genomes found (not just the MAGs) to be annotated
 ### We download them, then we'll annotate them all together
