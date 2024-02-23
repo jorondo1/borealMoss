@@ -1,6 +1,6 @@
 library(pacman)
 p_load(phyloseq, tidyverse, magrittr, ComplexHeatmap, colorRamp2, circlize,
-       purrr, patchwork)
+       purrr, patchwork, kableExtra)
 source("myFunctions.R")
 
 #####################
@@ -14,8 +14,10 @@ pwGroups_interest <- c("Aromatics degradation", "Carbon fixation",
                        "Sulfur metabolism",
                        "Symbiosis")
 
-pwGroups_interest <- c("Carbon fixation", "Nitrogen metabolism",
-                       "Sulfur metabolism", "Photosynthesis")
+pwGroups_interest <- c("Carbon fixation", "Nitrogen metabolism", 
+                       #"Aromatics degradation",
+                       "Sulfur metabolism", "Photosynthesis", 
+                       "Methane metabolism")
 
 # Parse Module Completeness table
 pwComp <- full_join(
@@ -23,7 +25,7 @@ pwComp <- full_join(
   read_delim("data/metabolic_summary__module_completeness.tab"),
   by = c('module', 'name', 'pathway group')) %>% 
   dplyr::rename(pwGroup = `pathway group`) %>% 
-#  filter(pwGroup %in% pwGroups_interest) %>% 
+  filter(pwGroup %in% pwGroups_interest) %>% 
   rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
   rename_with(~simplify_name(.x)) %>% 
   mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
@@ -134,7 +136,7 @@ for (i in pwComp_t %>% names %>% grep("^M.{5}$", ., value = TRUE)) {
   #print(i)
   model_call <- list(formula = as.formula(paste0(i,' ~ compAss + comp')), 
                      data = pwComp_t, 
-                     # use a quasi-binomial, rationale here 
+                     # use a quasi-binomial
                      family = quasibinomial(link = "logit")
   )
   coefficients_list[[i]] <- do.call("glm", model_call) %>% 
@@ -155,7 +157,9 @@ results <- do.call(rbind, coefficients_list) %>%
   left_join(pwComp %>% select(module,name,pwGroup), 
             by = join_by(pathway == module))
 
-results %>% filter(p_adj<0.05) %>% select(-p, -sig) %>%  View
+results %>% filter(p_adj < 0.05 & variable == 'compAssGreen') %>% 
+  select(-sig) %>% 
+  write_csv("out/metabolic_test.csv")
 
 # transpose to get MAG name as rows, modules as columns :
 # pw_t <- pw %>% dplyr::select(-module) %>% t %>% 
