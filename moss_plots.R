@@ -1,6 +1,6 @@
 library(pacman)
 p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
-       ggtree, ggtreeExtra, treeio, ggnewscale, cowplot)
+       ggtree, ggtreeExtra, treeio, ggnewscale, cowplot, MetBrewer)
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
@@ -37,8 +37,8 @@ df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
 }
 
 # Desired taxonomic aggregation level and top taxa to display
-taxLvl <- 'Class'
-topN=9
+taxLvl <- 'Order'
+topN=10
 
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
@@ -153,7 +153,7 @@ p + geom_fruit(data = hm.mx, geom = geom_tile,
 hostDA <- read_rds('data/R_out/DA_host_results.RDS')
 
 # Which tax level are we showing in the legend?
-taxLvl <- "Class"
+taxLvl <- "Order"
 
 # sort Species by taxLvl (descending so species are top-to-bottom on y axis)
 speciesLvl <- hostDA %>% arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% unique
@@ -178,7 +178,7 @@ DA.p1 <- DA_host.df %>%
   theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
   labs(#title = paste0("Differential abundance analysis at the ",taxRank," level."),
     x = "", y = "",
-    fill = "Log-fold change\nin abundance\nrelative to\nD. dicranum.")
+    fill = "Log-fold change\nin abundance\nrelative to\nD. undulatum")
 
 # taxLvl -coloured tile:
 DA.p2 <- DA_host.df %>% 
@@ -211,7 +211,7 @@ DA_sub.tree <- tree %>%
   full_join(taxLabels %>% filter(label %in% DA_species), by = 'label') %>% 
   as.treedata # because.
 
-rank <- "Class"
+rank <- "Order"
 n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
