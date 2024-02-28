@@ -26,6 +26,10 @@ bash $ILL_PIPELINES/generateslurm_preprocess.kneaddata.sh \
 --trimmomatic_options "SLIDINGWINDOW:4:30 MINLEN:50" \
 --slurm_walltime "12:00:00"
 
+find preproc/S-* -name '*paired_1*.fastq' | parallel -j 72 'echo -n {}" "; grep -c "^@" {}' > sequence_counts.txt
+find ../20220825_boreal_moss/data -name '*.S-*R1.fastq.gz' | parallel -j 72 "echo -n {} ' '; zcat {} | grep -c '^@'" > raw_sequence_counts.txt
+
+
 #######################
 ### REGULAR ASSEMBLY ###
 #######################
@@ -259,6 +263,10 @@ cd ..
 export gather=$PWD/SM_abund
 mkdir -p genome_sketches/moss_samples $gather/logs
 sbatch --array=1-140 $PWD/scripts/sourmash_compare_custom.sh
+
+# If some didn,t work, find the missing array numbers you need to rerun :
+redo=$(grep -vnf <(ls SM_abund/*genbank_default* | sed 's/.genbank_default_gather.csv//' | sed 's/SM_abund\///') preproc/clean_samples.tsv | cut -d':' -f1 |  paste -sd,)
+sbatch --array="$redo" $PWD/scripts/sourmash_compare_custom.sh
 
 # HOST CONTAMINATION
 for file in $(find genome_sketches/moss_samples -type f -name '*sig' | grep POLCOM); do

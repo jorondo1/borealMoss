@@ -41,24 +41,33 @@ kbl(eremio) %>%
   save_kable('out/test.html')
 
 # Improvement in sample containment 
-dbNames <- c("GTDB r207", "GTDB + MAGs", "Genbank + MAGs")
-raw <- read_delim("data/cntm_sum.txt", col_names = c("Sample", "db", "cntm"))
+dbNames <- c("GTDB", "GTDB + MAGs", "Genbank", "Genbank + MAGs")
+raw <- read_delim("data/cntm_sum.txt", col_names = c("Sample", "db", "cntm")) %>% 
+  filter(Sample %in% (moss.ps@sam_data %>% rownames))
 cntm.df <- raw %>% 
-  mutate(db = case_when(db == "custom" ~ dbNames[2],
-                        db == "genbank" ~ dbNames[3],
-                        db == "gtdb" ~ dbNames[1]),
+  mutate(db = case_when(db == "gtdb" ~ dbNames[1],
+                        db == "custom" ~ dbNames[2],
+                        db == "genbank_default" ~ dbNames[3],
+                        db == "genbank" ~ dbNames[4]
+                        ),
          db = factor(db, levels = dbNames))
 
+cntm.df %>% group_by(db) %>% 
+  summarise(mean_cntm = mean(cntm),
+            sd_cntm = sd(cntm),
+            n_sam = n())
+
 ggplot(cntm.df, aes(x = db, y = cntm, fill=db)) +
-  geom_violin() + theme_minimal() + guides(fill = 'none') +
+  geom_violin() + geom_jitter(alpha = 0.2) + theme_minimal() + guides(fill = 'none') +
   labs(y = 'Sample k-mer containment', x = 'Database')
 
 cntm.df %>% filter(db == dbNames[1]) %$% cntm %T>% hist %>% shapiro.test
 cntm.df %>% filter(db == dbNames[2]) %$% cntm %T>% hist %>% shapiro.test
 cntm.df %>% filter(db == dbNames[3]) %$% cntm %T>% hist %>% shapiro.test
 
+
 raw_wide <- raw %>% pivot_wider(names_from = db, values_from = cntm) 
-wilcox.test(raw_wide$custom, raw_wide$genbank) #NS
+wilcox.test(raw_wide$genbank, raw_wide$custom) #NS
 
 
 ### Metabolism of Eremiobacterota for dall-e prompt:
