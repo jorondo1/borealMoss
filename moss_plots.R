@@ -82,7 +82,7 @@ ggplot(df_compart) +
   # italicize specieshost species names :
   scale_x_discrete(labels = labelsItal) +
   theme_light() +
-  theme(plot.title = element_text(hjust = 0.5)) %>% saveRDS('data/R_out/community_plot.RDS')
+  theme(plot.title = element_text(hjust = 0.5))
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
