@@ -38,7 +38,7 @@ df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
 
 # Desired taxonomic aggregation level and top taxa to display
 taxLvl <- 'Order'
-topN=11
+topN=10
 
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
@@ -57,7 +57,7 @@ topTaxa_Green <- topTaxa(MAGs_melt, 'Green', taxLvl, topN)
 # Create ordered list of taxa
 topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>% 
   group_by(aggTaxo) %>% 
-  aggregate(relAb ~ aggTaxo, data = ., FUN = mean) %>% 
+  aggregate(relAb ~ aggTaxo, data = ., FUN = sum) %>% 
   # order taxa by mean relative abundance
   arrange(relAb) %$% aggTaxo %>% as.character 
 
@@ -65,12 +65,11 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
 df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
       df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green))
 
-# Plot !
+# Colour scheme :
 mycolors1 <- colorRampPalette(brewer.pal(9, "Set1"))(df_compart$aggTaxo %>% unique %>% length)
-# set.seed(13); mycolors1 <- met.brewer('Redon', 
-#                         n = df_compart$aggTaxo %>% unique %>% length) %>% 
-#   sample
+# set.seed(13); mycolors1 <- met.brewer('Redon', n = df_compart$aggTaxo %>% unique %>% length) %>% sample
   
+# Plot !
 ggplot(df_compart) +
   geom_bar(stat = "identity", 
            position = "fill", 
