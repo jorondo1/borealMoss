@@ -4,11 +4,11 @@ p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
-
 labelsItal <- c(expression(italic("D. undulatum")),
   expression(italic("P. commune")),
   expression(italic("P. juniperinum")),
   expression(italic("P. piliferum")))
+
 ###################################
 #### PLOT 1. Community Overview ####
 ###################################
@@ -29,7 +29,7 @@ topTaxa <- function(psmelt, comp, taxLvl, topN) {
 df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
   # use topTaxa to join aggTaxo variable
   left_join(psmelt, topTaxa, by=taxLvl) %>% 
-    filter(Compartment == comp) %>% # subset
+    dplyr::filter(Compartment == comp) %>% # subset
     aggregate(Abundance~aggTaxo+Host+Compartment, # Abundance is aggregated...
               data=., FUN = sum) %>% # ...sums "Others" taxa by specified variables
     mutate(aggTaxo = factor(aggTaxo,# reorder 
@@ -38,13 +38,13 @@ df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
 
 # Desired taxonomic aggregation level and top taxa to display
 taxLvl <- 'Order'
-topN=10
+topN=11
 
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
-  select(Sample, Abundance, Compartment, Host, Domain:Species) %>% 
+  dplyr::select(Sample, Abundance, Compartment, Host, Domain:Species) %>% 
   # Compute Class level abundance :
-  group_by(Sample, across(all_of(taxLvl))) %>%
+  group_by(Sample, across(all_of(taxLvl)), Compartment, Host) %>%
   summarise(Abundance = sum(Abundance, na.rm = TRUE), 
             .groups = 'drop') %>% 
   group_by(Sample) %>% # Convert to relative abundance
@@ -57,33 +57,32 @@ topTaxa_Green <- topTaxa(MAGs_melt, 'Green', taxLvl, topN)
 # Create ordered list of taxa
 topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>% 
   group_by(aggTaxo) %>% 
-  aggregate(relAb ~ aggTaxo, data = ., FUN = sum) %>% 
+  aggregate(relAb ~ aggTaxo, data = ., FUN = mean) %>% 
+  # order taxa by mean relative abundance
   arrange(relAb) %$% aggTaxo %>% as.character 
 
-# Build plots dataframes :
-df_Brown <- df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown)
-df_Green <- df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green)
+# Build plots dataframe :
+df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
+      df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green))
 
 # Plot !
-mycolors1 <- colorRampPalette(brewer.pal(9, "Set1"))(topN+1)
-
-ggplot(df_Green) +
-  labs(title = 'Green section') +
-ggplot(df_Brown) +
-  labs(title = 'Brown section') +
-patchwork::plot_layout(guides = 'collect', 
-                       axes = 'collect',
-                       ncol = 1) &
+mycolors1 <- colorRampPalette(brewer.pal(9, "Set1"))(df_compart$aggTaxo %>% unique %>% length)
+# set.seed(13); mycolors1 <- met.brewer('Redon', 
+#                         n = df_compart$aggTaxo %>% unique %>% length) %>% 
+#   sample
+  
+ggplot(df_compart) +
   geom_bar(stat = "identity", 
            position = "fill", 
-           aes(x = Host, y = Abundance, fill = aggTaxo)) &
+           aes(x = Host, y = Abundance, fill = aggTaxo)) +
+  facet_wrap('Compartment', ncol = 1) +
   labs(fill = taxLvl, 
-       y = paste("Proportion of sample k-mers attributed to", taxLvl), 
-       x = 'Host moss species')  &
-  scale_fill_manual(values = mycolors1, breaks = topTaxaLvls) &
+       y = paste("Mean sample relative k-mer abundance"), 
+       x = 'Host moss species') +
+  scale_fill_manual(values = mycolors1, breaks = topTaxaLvls) +
   # italicize specieshost species names :
-  scale_x_discrete(labels = labelsItal) &
-  theme_minimal() +
+  scale_x_discrete(labels = labelsItal) +
+  theme_light() +
   theme(plot.title = element_text(hjust = 0.5))
 
 #####################################
