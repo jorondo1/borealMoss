@@ -33,18 +33,18 @@ tax_GTDB <- read_delim("data/gtdbtk_summary.tsv") %>%
     read_delim("data/gtdb_taxonomy_subset.csv", delim=',', col_names = F) %>% 
       select(-X2) %>% 
       set_names(c('genome',taxLvls))
-    ) %>% 
+  ) %>% 
   mutate_at(taxLvls, rename.fun) %>% 
   
   # If the species is unknown, we'll fill the Species field with the nearest known
   # taxonomic rank, and add a unique MAG identifier
   mutate(across(everything(), ~na_if(.x, "")),
-    Species = ifelse(
-      is.na(Species),
-      paste0(coalesce(Genus, Family, Order, Class, Phylum, Domain), 
-             " ", unique_MAGs),
-      Species
-    )) %>% 
+         Species = ifelse(
+           is.na(Species),
+           paste0(coalesce(Genus, Family, Order, Class, Phylum, Domain), 
+                  " ", unique_MAGs),
+           Species
+         )) %>% 
   select(-unique_MAGs)
 
 # Some taxonomic levels have redundancies because higher levels use alternative names,
@@ -56,8 +56,8 @@ listDupl(tax_GTDB, "Genus")
 
 # Correct the different level duplicates, where "New_name" = "Old_name"
 corrPhylum <- c("Proteobacteria" = "Pseudomonadota",
-               "Actinomycetota" = "Actinobacteriota",
-               "Cyanobacteriota" = "Cyanobacteria")
+                "Actinomycetota" = "Actinobacteriota",
+                "Cyanobacteriota" = "Cyanobacteria")
 corrClass <- c("Terriglobia" = "Acidobacteriae")
 corrOrder <- c("Terriglobales" = "Acidobacteriales",
                "Enterobacterales" = "Enterobacterales_A")
@@ -66,9 +66,9 @@ corrFamily <- c("Enterobacteriaceae" = "Enterobacteriaceae_A",
                 "Burkholderiaceae" = "Burkholderiaceae_B")
 # correct, but check family too...
 tax_GTDB %<>% mutate(Phylum = recode(Phylum, !!!corrPhylum),
-                    Class = recode(Class, !!!corrClass),
-                    Order = recode(Order, !!!corrOrder),
-                    Family = recode(Family, !!!corrFamily))
+                     Class = recode(Class, !!!corrClass),
+                     Order = recode(Order, !!!corrOrder),
+                     Family = recode(Family, !!!corrFamily))
 
 ##########################
 #### Genbank Taxonomy #####
@@ -83,7 +83,7 @@ tax_GBNK <- Sys.glob("data/SM_abund/genbank_lineages/*.csv") %>%
           mutate(Strain = NA) %>% # rbind needs same # of columns
           filter(str_detect(genome, # take MAG tax only from GTDB tax
                             paste0("^(", paste(c("Brown", "Green"), collapse="|"), ")"))
-                 )) %>% # then filter to keep only taxa found by sourmash
+          )) %>% # then filter to keep only taxa found by sourmash
   right_join(abund_GBNK %>% rownames_to_column("genome") %>% select(genome))
 
 ##################
