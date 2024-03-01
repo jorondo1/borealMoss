@@ -23,7 +23,7 @@ DA_pairwise_comp <- ancombc2(
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
 )
-# write_rds(DA_pairwise_comp,"data/R_out/DA_pairwise_comy.RDS")
+# write_rds(DA_pairwise_comp,"data/R_out/DA_pairwise_comp.RDS")
 
 # Process DAA output ; could potentially be merged/simplified with next command
 sfx <- "CompartmentGreen"

@@ -7,4 +7,4 @@
 *.bak*
 *.gz
 archive/
-
+data/SM_abund/genbank_lineages/

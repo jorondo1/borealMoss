@@ -11,6 +11,22 @@ read_delim("data/sequence_counts.txt", col_names = F) %>%
   summarise(mean_seq = mean(X2),
             sd_seq = sd(X2))
 
+# Check eukaryota proportion using Genbank data
+GBNK_melt <- mossGBNK.ps %>% psmelt
+
+GBNK_melt %>% group_by(Sample, Domain, Compartment, Host) %>% 
+  relab.fun %>% 
+  group_by(Host, Compartment, Domain) %>% 
+  summarise(meanRelativeAbund = mean(relAb))
+
+# Ok they are not negligible. who are they ?
+GBNK_melt %>% group_by(Sample, Domain, Phylum, Host) %>% 
+  relab.fun %>% 
+  group_by(Host, Domain, Phylum) %>% 
+  summarise(meanRelativeAbund = mean(relAb),
+            SD = sd(relAb)) %>% 
+  filter(meanRelativeAbund > 0.01 & Domain == 'Eukaryota')
+
 # Which species are present in every ....
 find_core <- function(ps) {
   IDs <- otu_table(ps) %>%
@@ -24,7 +40,6 @@ subset_samples(moss.ps, Compartment == 'Green') %>% find_core(.)
 subset_samples(moss.ps, Compartment == 'Brown') %>% find_core(.)
 
 subset_samples(moss.ps, Host == 'P_commune') %>% find_core(.)
-
 
 
 # Lichenibacterium?

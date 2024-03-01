@@ -83,3 +83,30 @@ pcoa.fun <- function(ps, var, vst.mx, dist) {
   list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
 }
 
+# Some taxonomic levels have redundancies because higher levels use alternative names,
+# herego there can be a duplicate Order whose Class or Phylum is different. Some 
+# can be heterotypic synonyms, others outdated taxonomic names.
+
+listDupl <- function(tax, level) {
+  level_sym <- rlang::sym(level)
+  
+  subset <- tax %>% dplyr::select(Domain:!!level_sym) %>% 
+    dplyr::group_by(!!level_sym) %>%
+    unique
+  
+  dupList <- subset %>% 
+    dplyr::summarise(n = n()) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::pull(!!level_sym)
+  
+  # Relative abundance from melted ps object 
+  relab.fun <- function(df) {
+    summarise(df, Abundance = sum(Abundance, na.rm = TRUE), 
+              .groups = 'drop') %>% ungroup %>% 
+      group_by(Sample) %>% 
+      mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
+  }
+  
+  subset %>% arrange(!!level_sym) %>% 
+    filter(!!level_sym %in% dupList) %>% print(n = 1000)
+}
