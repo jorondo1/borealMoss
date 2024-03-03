@@ -4,6 +4,16 @@ compColours <- c('darkgoldenrod4', 'darkolivegreen3')
 ### Remove .__ from taxa names
 rename.fun <- function(x) {str_remove(x,".__")}
 
+col_order = list(
+  Order = c("Acetobacterales" = "#4E79A7", "Acidobacteriales" = "#A0CBE8",
+            "Baltobacterales" = "#F28E2B", "Bryobacterales" = "#FFBE7D",
+            "Burkholderiales" = "#9D7660", "Chthoniobacterales" = "#D7B5A6",
+            "Cyanobacteriales" = "#59A14F",  "Mycobacteriales" = "#B6992D",
+            "Pseudomonadales" = "#F1CE63", "Reyranellales" = "#86BCB6",
+            "Rhizobiales" = "#499894", "Solirubrobacterales" = "#E15759",
+            "Sphingomonadales" = "#FF9D9A", "Steroidobacterales" = "#D37295",
+            "Streptosporangiales" = "#FABFD2", "Xanthomonadales" = "#B07AA1"))
+
 ### Parse Sourmash output
 parse_SM <- function(gather_files) {
   Sys.glob(gather_files) %>% 

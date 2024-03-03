@@ -3,7 +3,7 @@ p_load(tidyverse, magrittr, RColorBrewer, phyloseq, ape)
 source("myFunctions.R")
 
 # Sarah's PS object (based on Kraken taxonomic assignment)
-sarah.ps<- readRDS("data/ps_comptype.RDS")
+sarah.ps <- readRDS("data/ps_comptype.RDS")
 
 ###################
 #### Abundance #####

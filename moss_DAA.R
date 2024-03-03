@@ -42,7 +42,7 @@ speciesLFC_comp <- speciesLFC %>%
             Species = taxon, 
             compAss = case_when(!!sym(paste0("lfc_",sfx))>0 ~ "Green",
                                 !!sym(paste0("lfc_",sfx))<0 ~ "Brown"),
-            SD = se_CompartmentGreen) %>% 
+            SE = se_CompartmentGreen) %>% 
   right_join(moss.ps %>% # identifier \ species association table
                tax_table %>% as.data.frame %>% 
                select(Species) %>% rownames_to_column("MAG"),
@@ -55,11 +55,12 @@ write_rds(speciesLFC_comp, 'data/R_out/speciesLFC_comp.RDS')
 ################################################
 ######## PAIRWISE DUNN'S TEST ON HOST ###########
 ################################################
+
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", fix_formula="Host + Compartment", group = "Host", 
            struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10, 
-           alpha = 0.01, )
+           alpha = 0.05, )
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
 # Keep only taxa for which at least one differential test is significant AND 
@@ -86,7 +87,7 @@ parse_DAA_results <- function(DAA) {
                values_drop_na = TRUE) %>% 
     mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
                                          TRUE~.x)),
-           textcolour = case_when(lfc==0 ~ "grey95", TRUE ~ "black"),
+           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
            Group = str_remove(Group, "Host")) %>% 
     # add taxonomy
     left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,

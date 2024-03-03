@@ -168,15 +168,15 @@ DA_host.df <- hostDA %>%
 DA.p1 <- DA_host.df %>% 
   ggplot(aes(x = Group, y = taxon, fill = lfc)) +
   geom_tile() +
-  scale_fill_gradient2(low = "#ff7f0e", high = "#1f77b4", mid = "grey95", 
+  scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
+                       mid = "white", 
+                       high = met.brewer("Cassatt1")[8], 
                        midpoint = 0) +
-  geom_text(aes(Group, taxon, label = round(lfc,2), color=textcolour)) +
+  geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
   scale_color_identity(guide = FALSE) + 
   theme_void() + 
   theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
-  labs(#title = paste0("Differential abundance analysis at the ",taxRank," level."),
-    x = "", y = "",
-    fill = "Log-fold change\nin abundance\nrelative to\nD. undulatum")
+  labs(x = '', y = '', fill = "Abundance LFC\nrelative to\nD. undulatum")
 
 # taxLvl -coloured tile:
 DA.p2 <- DA_host.df %>% 
@@ -185,13 +185,16 @@ DA.p2 <- DA_host.df %>%
   theme(axis.text.x = element_blank(), 
         axis.title.x = element_blank(),
         axis.text.y = element_text(hjust = 1)) +
-  scale_fill_brewer(palette = "Paired")
+  scale_fill_manual(values = col_order$Order) 
 
-DA.p2 + DA.p1 + 
-  plot_layout(
+(DA_host_order_05 <- 
+  DA.p2 + DA.p1 + plot_layout(
     guides = "collect",
     design = "ABBBBBBBBBBBB") &
-  scale_x_discrete(labels = labelsItal[2:4])
+  scale_x_discrete(labels = labelsItal[2:4]))
+
+ggplot2::ggsave("out/DA_host_order_05.png", 
+                width = 900, height = 1200, units = 'px', dpi = 120)
 
 ################################################
 ### 4. DIFFERENTIAL ABUNDANCE by COMPARTMENT ####
