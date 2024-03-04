@@ -120,7 +120,7 @@ p2 <- p + guides(colour = "none") +
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
 
-# p2 + geom_hilight(node = 121, fill = 'orange', alpha= 0.4, to.bottom = TRUE)
+#p2 + geom_hilight(node = 121, fill = "NA",size= 5)
 
 # Extract legends as grobs
 order_legend <- get_legend(p)
@@ -252,3 +252,31 @@ waterfall.p <- speciesLFC %>%
 ggplot2::ggsave("out/DA_comp_tree.png", 
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
+###############################################
+### S-X. CONTAINMENT IMPROVEMENT USING MAGS ####
+###############################################
+
+dbNames <- c("GTDB", "GTDB + MAGs", "Genbank", "Genbank + MAGs")
+
+raw <- read_delim("data/cntm_sum.txt", col_names = c("Sample", "db", "cntm")) %>% 
+  filter(Sample %in% (moss.ps@sam_data %>% rownames))
+cntm.df <- raw %>% 
+  mutate(db = case_when(db == "gtdb" ~ dbNames[1],
+                        db == "custom" ~ dbNames[2],
+                        db == "genbank_default" ~ dbNames[3],
+                        db == "genbank" ~ dbNames[4]
+  ),
+  db = factor(db, levels = dbNames))
+
+cntm.df %>% group_by(db) %>% 
+  summarise(mean_cntm = mean(cntm),
+            sd_cntm = sd(cntm),
+            n_sam = n())
+
+(ggplot(cntm.df, aes(x = db, y = cntm, fill=db)) +
+    geom_violin() + geom_jitter(alpha = 0.2) + 
+    theme_minimal() + guides(fill = 'none') +
+    labs(y = 'Sample k-mer containment', x = 'Reference database'))
+
+ggplot2::ggsave("out/cntm_comparison.png", bg = 'white',
+                width = 2700, height = 2400, units = 'px', dpi = 300)

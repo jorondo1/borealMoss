@@ -55,15 +55,16 @@ tax_GTDB <- read_delim("data/gtdbtk_summary.tsv") %>%
 listDupl(tax_GTDB, "Genus")
 
 # Correct the different level duplicates, where "New_name" = "Old_name"
-corrPhylum <- c("Proteobacteria" = "Pseudomonadota",
-                "Actinomycetota" = "Actinobacteriota",
-                "Cyanobacteriota" = "Cyanobacteria")
-corrClass <- c("Terriglobia" = "Acidobacteriae")
-corrOrder <- c("Terriglobales" = "Acidobacteriales",
-               "Enterobacterales" = "Enterobacterales_A")
-corrFamily <- c("Enterobacteriaceae" = "Enterobacteriaceae_A",
-                "SZAS-18" = "UBA10450",
-                "Burkholderiaceae" = "Burkholderiaceae_B")
+corrPhylum <- c("Pseudomonadota" = "Proteobacteria",
+                "Actinobacteriota" = "Actinomycetota",
+                "Cyanobacteria" = "Cyanobacteriota")
+corrClass <- c("Acidobacteriae" = "Terriglobia")
+corrOrder <- c("Acidobacteriales" = "Terriglobales",
+               "Enterobacterales_A" = "Enterobacterales")
+corrFamily <- c("Enterobacteriaceae_A" = "Enterobacteriaceae",
+                "UBA10450" = "SZAS-18",
+                "Burkholderiaceae_B" = "Burkholderiaceae")
+
 # correct, but check family too...
 tax_GTDB %<>% mutate(Phylum = recode(Phylum, !!!corrPhylum),
                      Class = recode(Class, !!!corrClass),
