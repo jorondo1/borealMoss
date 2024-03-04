@@ -11,8 +11,7 @@ taxLvl <- 'Order'
 #### PLOT 1. Community Overview ####
 ###################################
 
-# Desired # top taxa to display
-topN=10
+topN=10 # Desired # top taxa to display
 
 # Preliminary dataset with variables of interest
 MAGs_melt <- moss.ps %>% psmelt %>%
@@ -43,8 +42,7 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
 # Plot !
 (community.plot <- 
     ggplot(df_compart) +
-    geom_bar(stat = "identity", 
-             position = "fill", 
+    geom_bar(stat = "identity", position = "fill", 
              aes(x = Host, y = Abundance, fill = aggTaxo)) +
     facet_wrap('Compartment', ncol = 1) +
     labs(fill = taxLvl, 
@@ -92,6 +90,10 @@ p <- ggtree(sub.tree, layout="fan", size=0.1) +
   scale_colour_manual(values = col_order) +
   guides(color = guide_legend(ncol = 1))
 
+p$data %<>% 
+  mutate(!!sym(rank) := # dynamic management of variable name
+           factor(!!sym(rank), levels = pullTreeLabels(p, rank)))
+
 # add MAG data:
 hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
   # only keep MAGs that are in our original dataset
@@ -117,6 +119,8 @@ p2 <- p + guides(colour = "none") +
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
+
+p2 + geom_hilight(node = 121, fill = 'orange', alpha= 0.4, to.bottom = TRUE)
 
 # Extract legends as grobs
 order_legend <- get_legend(p)
@@ -202,14 +206,10 @@ n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
 ### Taxonomic tree (generated first to establish species factor levels)
 tree.p <- ggtree(DA_sub.tree,size = 0.2) 
 
-orderedRank <- tree.p$data %>% filter(!is.na(label)) %>% 
-  arrange(desc(y)) %>% select(!!sym(rank)) %>% 
-  # dplyr way of collapsing a tibble into a vector is pull() :
-  pull %>% unique
-
-tree.p$data %<>% mutate(!!sym(rank) := # dynamic management of variable name
-                         factor(!!sym(rank), 
-                                levels = orderedRank))
+# Reorder factor levels 
+tree.p$data %<>% 
+  mutate(!!sym(rank) := # dynamic management of variable name
+           factor(!!sym(rank), levels = pullTreeLabels(tree.p, rank) %>% rev))
 
 tree.p <- tree.p +
   geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +

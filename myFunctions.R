@@ -165,3 +165,11 @@ df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
     mutate(aggTaxo = factor(aggTaxo,# reorder 
                             levels = topTaxaLvls)) 
 }
+
+# Extract tree labels in the order they appear :
+pullTreeLabels <- function(plot, rank) {
+  plot$data %>% filter(!is.na(label)) %>% 
+    arrange(y) %>% select(!!sym(rank)) %>% 
+    # dplyr way of collapsing a tibble into a vector is pull() :
+    pull %>% unique
+}
