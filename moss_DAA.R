@@ -3,6 +3,7 @@ p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestN
        phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
+threshold = 0.01 # global significance threshold
 
 ############################################################
 ### Ancom-BC differential abundance across compartment ######
@@ -30,7 +31,8 @@ sfx <- "CompartmentGreen"
 speciesLFC <- DA_pairwise_comp$res %>% 
   dplyr::select(taxon, ends_with(sfx)) %>% 
   dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
-                !!sym(paste0("passed_ss_",sfx)) == TRUE) %>% 
+                !!sym(paste0("passed_ss_",sfx)) == TRUE &
+                !!sym(paste0("q_",sfx)) < threshold) %>% 
   dplyr::arrange(desc(!!sym(paste0("lfc_",sfx))) ) %>%
   dplyr::mutate(direct = factor(ifelse(!!sym(paste0("lfc_",sfx)) > 0, "Positive LFC", "Negative LFC"),
                                 levels = c("Positive LFC", "Negative LFC")),
@@ -74,7 +76,9 @@ parse_DAA_results <- function(DAA) {
   
   # Create a character vector of conditions
   conditions <- purrr::map_chr(suffixes, ~ paste0(
-    "(`diff_Host", .x, "` == TRUE & `passed_ss_Host", .x, "` == TRUE)"
+    "(`diff_Host", .x, 
+    "` == TRUE & `passed_ss_Host", .x, 
+    "` == TRUE & `q_Host", .x, "` < ", threshold, ")"
     )) %>% paste(collapse = " | ")
   
   # evaluate this condition in a filter argument:

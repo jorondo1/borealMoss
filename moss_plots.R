@@ -113,7 +113,8 @@ nTax <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>%
 p <- ggtree(sub.tree, layout="fan", size=0.1) +
   xlim(-0.2, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Order), size = 2.5) +
-  scale_colour_manual(values = col_order$Order) 
+  scale_colour_manual(values = col_order) +
+  guides(color = guide_legend(ncol = 1))
 
 # add MAG data:
 hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
@@ -143,7 +144,7 @@ p2 <- p + guides(colour = "none") +
   geom_fruit(data = hm.mx, geom = geom_tile,
              mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
-  scale_fill_gradient(low = "salmon", high = "darkred", name="Quality Score")
+  scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
 
 # Extract legends as grobs
 order_legend <- get_legend(p)
@@ -196,7 +197,7 @@ DA.p2 <- DA_host.df %>%
   theme(axis.text.x = element_blank(), 
         axis.title.x = element_blank(),
         axis.text.y = element_text(hjust = 1)) +
-  scale_fill_manual(values = col_order$Order) 
+  scale_fill_manual(values = col_order) 
 
 (DA_host_order_05 <- 
   DA.p2 + DA.p1 + plot_layout(
@@ -204,8 +205,8 @@ DA.p2 <- DA_host.df %>%
     design = "ABBBBBBBBBBBB") &
   scale_x_discrete(labels = labelsItal[2:4]))
 
-ggplot2::ggsave("out/DA_host_order_05.png", 
-                width = 900, height = 1200, units = 'px', dpi = 120)
+ggplot2::ggsave("out/DA_host_order_01.png", 
+                width = 2700, height = 3600, units = 'px', dpi = 300)
 
 ################################################
 ### 4. DIFFERENTIAL ABUNDANCE by COMPARTMENT ####

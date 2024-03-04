@@ -4,15 +4,21 @@ compColours <- c('darkgoldenrod4', 'darkolivegreen3')
 ### Remove .__ from taxa names
 rename.fun <- function(x) {str_remove(x,".__")}
 
-col_order = list(
-  Order = c("Acetobacterales" = "#4E79A7", "Acidobacteriales" = "#A0CBE8",
-            "Baltobacterales" = "#F28E2B", "Bryobacterales" = "#FFBE7D",
-            "Burkholderiales" = "#9D7660", "Chthoniobacterales" = "#D7B5A6",
-            "Cyanobacteriales" = "#59A14F",  "Mycobacteriales" = "#B6992D",
-            "Pseudomonadales" = "#F1CE63", "Reyranellales" = "#86BCB6",
-            "Rhizobiales" = "#499894", "Solirubrobacterales" = "#E15759",
-            "Sphingomonadales" = "#FF9D9A", "Steroidobacterales" = "#D37295",
-            "Streptosporangiales" = "#FABFD2", "Xanthomonadales" = "#B07AA1"))
+col_order = c(
+  "Acetobacterales" = "#4E79A7", "Acidobacteriales" = "#A0CBE8FF",
+  "Actinomycetales" = "#F28E2BFF", "Armatimonadales" = "#FFBE7DFF",
+  "Baltobacterales" = "#86BCB6FF", "Bryobacterales" = "#F1CE63FF",
+  "Burkholderiales" = "#9D7660FF", "Caulobacterales" = "#34B6C6",
+  "Chitinophagales" = "#E15749FF", "Chthoniobacterales" = "#D7B5A6FF",
+  "Cyanobacteriales" = "#59A14FFF", "Cytophagales" = "#8CD17DFF",
+  "Enterobacterales_A" = "#79706EFF", "Ktedonobacterales" = "#BAB0ACFF",
+  "Methylacidiphilales" = "#D37295FF", "Mycobacteriales" = "#FABFD2FF",
+  "Rhizobiales" = "#499894FF", "Solirubrobacterales" = "#59386C",
+  "Sphingobacteriales" = "#B07AA1FF", "Sphingomonadales" = "#D4A6C8FF",
+  "Steroidobacterales" = "#132B69", "Streptosporangiales" = "#FF9D9AFF",
+  "Xanthomonadales" = "#961F1F",
+  "Pseudomonadales" = "hotpink", "Reyranellales" = "#B6992DFF"
+)
 
 ### Parse Sourmash output
 parse_SM <- function(gather_files) {
