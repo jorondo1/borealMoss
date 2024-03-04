@@ -4,40 +4,14 @@ p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
-labelsItal <- c(expression(italic("D. undulatum")),
-  expression(italic("P. commune")),
-  expression(italic("P. juniperinum")),
-  expression(italic("P. piliferum")))
+# Taxonomic level for trees and groupings
+taxLvl <- 'Order'
 
 ###################################
 #### PLOT 1. Community Overview ####
 ###################################
 
-# Compute top taxa, aggregate residual in others
-topTaxa <- function(psmelt, comp, taxLvl, topN) {
-  psmelt %>% 
-    filter(Compartment == comp) %>% # subset compartment
-    group_by(!!sym(taxLvl)) %>% # group by tax level
-    summarise(relAb = mean(relAb)) %>% # find top abundant taxa
-    arrange(desc(relAb)) %>% 
-    mutate(aggTaxo = as.factor(case_when( # aggTaxo will become the plot legend
-      row_number() <= topN ~ !!sym(taxLvl), #+++ We'll need to manually order the species!
-      row_number() > topN ~ 'Others'))) # +1 to include the Others section!
-}
-
-# Abundance summary dataset by compartment using top taxa
-df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
-  # use topTaxa to join aggTaxo variable
-  left_join(psmelt, topTaxa, by=taxLvl) %>% 
-    dplyr::filter(Compartment == comp) %>% # subset
-    aggregate(Abundance~aggTaxo+Host+Compartment, # Abundance is aggregated...
-              data=., FUN = sum) %>% # ...sums "Others" taxa by specified variables
-    mutate(aggTaxo = factor(aggTaxo,# reorder 
-                            levels = topTaxaLvls)) 
-}
-
-# Desired taxonomic aggregation level and top taxa to display
-taxLvl <- 'Order'
+# Desired # top taxa to display
 topN=10
 
 # Preliminary dataset with variables of interest
@@ -63,26 +37,28 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
 
 # Build plots dataframe :
 df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
-      df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green))
+      df_comm(MAGs_melt, 'Green', taxLvl, topTaxa_Green)) %>% 
+  mutate(Compartment = factor(Compartment, levels = c('Green', 'Brown')))
 
-# Colour scheme :
-mycolors1 <- colorRampPalette(brewer.pal(9, "Set1"))(df_compart$aggTaxo %>% unique %>% length)
-# set.seed(13); mycolors1 <- met.brewer('Redon', n = df_compart$aggTaxo %>% unique %>% length) %>% sample
-  
 # Plot !
-ggplot(df_compart) +
-  geom_bar(stat = "identity", 
-           position = "fill", 
-           aes(x = Host, y = Abundance, fill = aggTaxo)) +
-  facet_wrap('Compartment', ncol = 1) +
-  labs(fill = taxLvl, 
-       y = paste("Mean sample relative k-mer abundance"), 
-       x = 'Host moss species') +
-  scale_fill_manual(values = mycolors1, breaks = topTaxaLvls) +
-  # italicize specieshost species names :
-  scale_x_discrete(labels = labelsItal) +
-  theme_light() +
-  theme(plot.title = element_text(hjust = 0.5))
+(community.plot <- 
+    ggplot(df_compart) +
+    geom_bar(stat = "identity", 
+             position = "fill", 
+             aes(x = Host, y = Abundance, fill = aggTaxo)) +
+    facet_wrap('Compartment', ncol = 1) +
+    labs(fill = taxLvl, 
+         y = paste("Mean sample relative k-mer abundance"), 
+         x = 'Host moss species') +
+    scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
+    # italicize specieshost species names :
+    scale_x_discrete(labels = labelsItal) +
+    theme_light() +
+    theme(plot.title = element_text(hjust = 0.5),
+          panel.grid = element_blank()))
+
+ggplot2::ggsave("out/community.png", bg = 'white',
+                width = 2200, height = 2400, units = 'px', dpi = 300)
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
@@ -121,28 +97,24 @@ hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>%
   # only keep MAGs that are in our original dataset
   filter(MAG %in% MAG_names) 
 
-# Add a heatmap
+# Add a heatmap of genome length :
 p2 <- p + guides(colour = "none") +
-  geom_fruit(data = hm.mx, geom = geom_tile,
-                 mapping = aes(y = MAG, fill = MBP),
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = MBP),
                  offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
-  
+  # and GC content 
   new_scale_fill() + 
-  geom_fruit(data = hm.mx, geom = geom_tile,
-               mapping=aes(y=MAG, fill = GC),
+  geom_fruit(hm.mx, geom_tile, mapping=aes(y=MAG, fill = GC),
                offset = 0.1,width = 0.1) +
-  scale_fill_gradient(low = 'darkgreen', high = 'gold', name="%GC Content") +
-  
+  scale_fill_gradient(low = 'darkgreen', high = 'gold', name="% GC Content") +
+  # and L50
   new_scale_fill() +
-  geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = `L50 (kb)`),
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = `L50 (kb)`),
              offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = 'lightblue', high = 'darkblue') +
-  
+  # and Quality score
   new_scale_fill() +
-  geom_fruit(data = hm.mx, geom = geom_tile,
-             mapping = aes(y = MAG, fill = QS),
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
 
@@ -203,7 +175,7 @@ DA.p2 <- DA_host.df %>%
   DA.p2 + DA.p1 + plot_layout(
     guides = "collect",
     design = "ABBBBBBBBBBBB") &
-  scale_x_discrete(labels = labelsItal[2:4]))
+  scale_x_discrete(labels = labelsItal[2:4], position = 'top'))
 
 ggplot2::ggsave("out/DA_host_order_01.png", 
                 width = 2700, height = 3600, units = 'px', dpi = 300)
@@ -242,10 +214,10 @@ tree.p$data %<>% mutate(!!sym(rank) := # dynamic management of variable name
 tree.p <- tree.p +
   geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +
   #geom_tiplab(align=TRUE, aes(label = Species)) +
-  scale_colour_manual(values = col_order$Order) +
+  scale_colour_manual(values = col_order) +
   scale_fill_manual(values = compColours) +
   labs(fill = "Compartment",
-       colour = paste("Bacterial", rank)) +
+       colour = rank) +
   theme(plot.margin = margin(t=20, r=0, b=20,l = 20),
         legend.margin = margin(t=30),
         axis.title.x = element_text(hjust = 0.95)) +
@@ -282,5 +254,5 @@ waterfall.p <- speciesLFC %>%
     plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'))
 
 ggplot2::ggsave("out/DA_comp_tree.png", 
-                width = 900, height = 1200, units = 'px', dpi = 120)
+                width = 2700, height = 3600, units = 'px', dpi = 300)
 

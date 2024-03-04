@@ -41,7 +41,6 @@ subset_samples(moss.ps, Compartment == 'Brown') %>% find_core(.)
 
 subset_samples(moss.ps, Host == 'P_commune') %>% find_core(.)
 
-
 # Lichenibacterium?
 moss.ps@tax_table %>% as.data.frame %>% 
   filter(Family == 'Lichenibacterium') #nope

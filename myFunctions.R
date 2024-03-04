@@ -1,9 +1,10 @@
-### Moss compartment colours
-compColours <- c('darkgoldenrod4', 'darkolivegreen3')
+### Italicize species names
+labelsItal <- c(expression(italic("D. undulatum")),
+                expression(italic("P. commune")),
+                expression(italic("P. juniperinum")),
+                expression(italic("P. piliferum")))
 
-### Remove .__ from taxa names
-rename.fun <- function(x) {str_remove(x,".__")}
-
+### Order colours
 col_order = c(
   "Acetobacterales" = "#4E79A7", "Acidobacteriales" = "#A0CBE8FF",
   "Actinomycetales" = "#F28E2BFF", "Armatimonadales" = "#FFBE7DFF",
@@ -19,6 +20,13 @@ col_order = c(
   "Xanthomonadales" = "#961F1F",
   "Pseudomonadales" = "hotpink", "Reyranellales" = "#B6992DFF"
 )
+
+#####################
+### Preprocessing ####
+#####################
+
+### Remove .__ from taxa names
+rename.fun <- function(x) {str_remove(x,".__")}
 
 ### Parse Sourmash output
 parse_SM <- function(gather_files) {
@@ -71,6 +79,38 @@ trans.fun <- function(ps, method, keep) {
     prunePS(.,keep)
 }
 
+# Some taxonomic levels have redundancies because higher levels use alternative names,
+# herego there can be a duplicate Order whose Class or Phylum is different. Some 
+# can be heterotypic synonyms, others outdated taxonomic names.
+
+listDupl <- function(tax, level) {
+  level_sym <- rlang::sym(level)
+  
+  subset <- tax %>% dplyr::select(Domain:!!level_sym) %>% 
+    dplyr::group_by(!!level_sym) %>%
+    unique
+  
+  dupList <- subset %>% 
+    dplyr::summarise(n = n()) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::pull(!!level_sym)
+  
+  # Relative abundance from melted ps object 
+  relab.fun <- function(df) {
+    summarise(df, Abundance = sum(Abundance, na.rm = TRUE), 
+              .groups = 'drop') %>% ungroup %>% 
+      group_by(Sample) %>% 
+      mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
+  }
+  
+  subset %>% arrange(!!level_sym) %>% 
+    filter(!!level_sym %in% dupList) %>% print(n = 1000)
+}
+
+##################
+### DIVERRSITY ####
+##################
+
 # Variance-stabilizing transformation
 vst.fun <- function(ps, var) {
   phyloseq_to_deseq2(
@@ -99,30 +139,29 @@ pcoa.fun <- function(ps, var, vst.mx, dist) {
   list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
 }
 
-# Some taxonomic levels have redundancies because higher levels use alternative names,
-# herego there can be a duplicate Order whose Class or Phylum is different. Some 
-# can be heterotypic synonyms, others outdated taxonomic names.
+################
+### PLOTTING ####
+################
 
-listDupl <- function(tax, level) {
-  level_sym <- rlang::sym(level)
-  
-  subset <- tax %>% dplyr::select(Domain:!!level_sym) %>% 
-    dplyr::group_by(!!level_sym) %>%
-    unique
-  
-  dupList <- subset %>% 
-    dplyr::summarise(n = n()) %>%
-    dplyr::filter(n > 1) %>%
-    dplyr::pull(!!level_sym)
-  
-  # Relative abundance from melted ps object 
-  relab.fun <- function(df) {
-    summarise(df, Abundance = sum(Abundance, na.rm = TRUE), 
-              .groups = 'drop') %>% ungroup %>% 
-      group_by(Sample) %>% 
-      mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
-  }
-  
-  subset %>% arrange(!!level_sym) %>% 
-    filter(!!level_sym %in% dupList) %>% print(n = 1000)
+# Compute top taxa, aggregate residual in others
+topTaxa <- function(psmelt, comp, taxLvl, topN) {
+  psmelt %>% 
+    filter(Compartment == comp) %>% # subset compartment
+    group_by(!!sym(taxLvl)) %>% # group by tax level
+    summarise(relAb = mean(relAb)) %>% # find top abundant taxa
+    arrange(desc(relAb)) %>% 
+    mutate(aggTaxo = as.factor(case_when( # aggTaxo will become the plot legend
+      row_number() <= topN ~ !!sym(taxLvl), #+++ We'll need to manually order the species!
+      row_number() > topN ~ 'Others'))) # +1 to include the Others section!
+}
+
+# Abundance summary dataset by compartment using top taxa
+df_comm <- function(psmelt, comp, taxLvl, topTaxa) {
+  # use topTaxa to join aggTaxo variable
+  left_join(psmelt, topTaxa, by=taxLvl) %>% 
+    dplyr::filter(Compartment == comp) %>% # subset
+    aggregate(Abundance~aggTaxo+Host+Compartment, # Abundance is aggregated...
+              data=., FUN = sum) %>% # ...sums "Others" taxa by specified variables
+    mutate(aggTaxo = factor(aggTaxo,# reorder 
+                            levels = topTaxaLvls)) 
 }
