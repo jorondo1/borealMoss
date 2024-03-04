@@ -106,23 +106,23 @@ sub.tree <- MAG.tree %>%
   as.treedata
 
 # Expand a Brewer palette to 12 colours:
-nClass <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
-  tax_table %>% as.data.frame %$% Class %>% unique %>% length
-
-classCol <- colorRampPalette(brewer.pal(9, "Set1"))(nClass)
+nTax <- moss.ps %>% prune_taxa(taxa = MAG_names, .) %>% 
+  tax_table %>% as.data.frame %$% Order %>% unique %>% length
 
 # Plot the tree
 p <- ggtree(sub.tree, layout="fan", size=0.1) +
   xlim(-0.2, NA) + # prevent the high-level branches from clustering in the middle
-  geom_tippoint(mapping = aes(color = Class), size = 2.5) +
-  scale_colour_manual(values = classCol) 
+  geom_tippoint(mapping = aes(color = Order), size = 2.5) +
+  scale_colour_manual(values = col_order$Order) 
+
 # add MAG data:
 hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
   # only keep MAGs that are in our original dataset
   filter(MAG %in% MAG_names) 
 
 # Add a heatmap
-p + geom_fruit(data = hm.mx, geom = geom_tile,
+p2 <- p + guides(colour = "none") +
+  geom_fruit(data = hm.mx, geom = geom_tile,
                  mapping = aes(y = MAG, fill = MBP),
                  offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
@@ -143,8 +143,19 @@ p + geom_fruit(data = hm.mx, geom = geom_tile,
   geom_fruit(data = hm.mx, geom = geom_tile,
              mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
-  scale_fill_gradient(low = "darkred", high = "salmon1", name="Quality Score")
-  
+  scale_fill_gradient(low = "salmon", high = "darkred", name="Quality Score")
+
+# Extract legends as grobs
+order_legend <- get_legend(p)
+gradient_legends <- get_legend(p2)
+
+(tree_MAGs.plot <- cowplot::ggdraw(
+  plot_grid(order_legend, p2 + theme(legend.position = 'none'), gradient_legends, 
+            nrow = 1, ncol = 3, scale = c(3,1.2,1), rel_widths=c(2, 5,2))))
+
+ggplot2::ggsave("out/tree_MAGs.png", bg = 'white',
+                width = 4200, height = 2600, units = 'px', dpi = 300)
+
 #########################################
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
 #########################################
@@ -203,11 +214,11 @@ ggplot2::ggsave("out/DA_host_order_05.png",
 # Add LFC (from DAA) to significant species
 speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
 tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
+
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
 DA_sub.tree <- tree %>% 
-  drop.tip(setdiff(tree$tip.label, DA_species)) %>% 
-  as_tibble %>% 
+  drop.tip(setdiff(tree$tip.label, DA_species)) %>% as_tibble %>% 
   # add taxonomy :
   full_join(taxLabels %>% filter(label %in% DA_species), by = 'label') %>% 
   as.treedata # because.
@@ -230,7 +241,7 @@ tree.p$data %<>% mutate(!!sym(rank) := # dynamic management of variable name
 tree.p <- tree.p +
   geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +
   #geom_tiplab(align=TRUE, aes(label = Species)) +
-  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(n) ) +
+  scale_colour_manual(values = col_order$Order) +
   scale_fill_manual(values = compColours) +
   labs(fill = "Compartment",
        colour = paste("Bacterial", rank)) +
@@ -252,8 +263,8 @@ waterfall.p <- speciesLFC %>%
   ggplot(aes(y = Species, x = LFC, fill = compAss)) + 
   geom_bar(stat = "identity", width = 1, color = "white",
            position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(xmin = LFC - SD, 
-                    xmax = LFC + SD), 
+  geom_errorbar(aes(xmin = LFC - SE, 
+                    xmax = LFC + SE), 
                 width = 0.2, position = position_dodge(0.05), color = "black") + 
   labs(y = NULL, x = "Log fold change", fill = 'Moss section\nassociation') + 
   scale_fill_manual(values = c("Green" = compColours[2], "Brown" = compColours[1]))+
@@ -265,8 +276,10 @@ waterfall.p <- speciesLFC %>%
         legend.background = element_rect(colour='black', fill='white', linewidth=0.2),
         legend.title = element_text(size = rel(.8)))
 
-tree.p + waterfall.p +
-  plot_layout(#guides = "collect",
-              design = "AAAABBB") +
-  plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
+(DA_comp_tree <- 
+    tree.p + waterfall.p + plot_layout(design = "AAAABBB") +
+    plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'))
+
+ggplot2::ggsave("out/DA_comp_tree.png", 
+                width = 900, height = 1200, units = 'px', dpi = 120)
 

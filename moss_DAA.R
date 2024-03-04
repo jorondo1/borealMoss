@@ -58,9 +58,10 @@ write_rds(speciesLFC_comp, 'data/R_out/speciesLFC_comp.RDS')
 
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
-  ancombc2(tax_level= "Species", fix_formula="Host + Compartment", group = "Host", 
-           struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10, 
-           alpha = 0.05, )
+  ancombc2(tax_level= "Species", 
+           fix_formula="Host + Compartment + SoilpH + SoilTemp", 
+           group = "Host", alpha = 0.05,
+           struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
 # Keep only taxa for which at least one differential test is significant AND 
