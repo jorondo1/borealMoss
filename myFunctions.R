@@ -8,19 +8,19 @@ labelsItal <- c(expression(italic("D. undulatum")),
                 expression(italic("P. piliferum")))
 
 ### Order colours
-col_order = c(
-  "Acetobacterales" = "#4E79A7", "Acidobacteriales" = "#A0CBE8FF",
+col_order =  c(
+  "Acetobacterales" = "#D4A6C8FF", "Terriglobales" = "#A0CBE8FF", # Acidobacterales, https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=204433&lvl=3&lin=f&keep=1&srchmode=1&unlock
   "Actinomycetales" = "#F28E2BFF", "Armatimonadales" = "#FFBE7DFF",
-  "Baltobacterales" = "#86BCB6FF", "Bryobacterales" = "#F1CE63FF",
+  "Baltobacterales" = "#FF9D9AFF", "Bryobacterales" = "#FABFD2FF",
   "Burkholderiales" = "#9D7660FF", "Caulobacterales" = "#34B6C6",
   "Chitinophagales" = "#E15749FF", "Chthoniobacterales" = "#D7B5A6FF",
   "Cyanobacteriales" = "#59A14FFF", "Cytophagales" = "#8CD17DFF",
   "Enterobacterales_A" = "#79706EFF", "Ktedonobacterales" = "#BAB0ACFF",
-  "Methylacidiphilales" = "#D37295FF", "Mycobacteriales" = "#FABFD2FF",
+  "Methylacidiphilales" = "#D37295FF", "Mycobacteriales" = "#961F1F",
   "Rhizobiales" = "#499894FF", "Solirubrobacterales" = "#59386C",
-  "Sphingobacteriales" = "#B07AA1FF", "Sphingomonadales" = "#D4A6C8FF",
-  "Steroidobacterales" = "#132B69", "Streptosporangiales" = "#FF9D9AFF",
-  "Xanthomonadales" = "#961F1F", "Others" = "grey" ,
+  "Sphingobacteriales" = "#B07AA1FF", "Sphingomonadales" = "#4E79A7",
+  "Steroidobacterales" = "#132B69", "Streptosporangiales" = "#86BCB6FF",
+  "Xanthomonadales" = "#F1CE63FF", "Others" = "grey",
   "Pseudomonadales" = "hotpink", "Reyranellales" = "#B6992DFF"
 )
 
