@@ -1,3 +1,6 @@
+# Moss section colours
+compColours <- c('darkgoldenrod4', 'darkolivegreen3')
+
 ### Italicize species names
 labelsItal <- c(expression(italic("D. undulatum")),
                 expression(italic("P. commune")),
@@ -17,7 +20,7 @@ col_order = c(
   "Rhizobiales" = "#499894FF", "Solirubrobacterales" = "#59386C",
   "Sphingobacteriales" = "#B07AA1FF", "Sphingomonadales" = "#D4A6C8FF",
   "Steroidobacterales" = "#132B69", "Streptosporangiales" = "#FF9D9AFF",
-  "Xanthomonadales" = "#961F1F",
+  "Xanthomonadales" = "#961F1F", "Others" = "grey" ,
   "Pseudomonadales" = "hotpink", "Reyranellales" = "#B6992DFF"
 )
 

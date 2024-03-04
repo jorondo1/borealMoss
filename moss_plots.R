@@ -91,8 +91,8 @@ p <- ggtree(sub.tree, layout="fan", size=0.1) +
   guides(color = guide_legend(ncol = 1))
 
 p$data %<>% 
-  mutate(!!sym(rank) := # dynamic management of variable name
-           factor(!!sym(rank), levels = pullTreeLabels(p, rank)))
+  mutate(!!sym(taxLvl) := # dynamic management of variable name
+           factor(!!sym(taxLvl), levels = pullTreeLabels(p, taxLvl)))
 
 # add MAG data:
 hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
@@ -120,7 +120,7 @@ p2 <- p + guides(colour = "none") +
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
 
-p2 + geom_hilight(node = 121, fill = 'orange', alpha= 0.4, to.bottom = TRUE)
+# p2 + geom_hilight(node = 121, fill = 'orange', alpha= 0.4, to.bottom = TRUE)
 
 # Extract legends as grobs
 order_legend <- get_legend(p)
@@ -137,9 +137,6 @@ ggplot2::ggsave("out/tree_MAGs.png", bg = 'white',
 ### 3. DIFFERENTIAL ABUNDANCE by HOST ####
 #########################################
 hostDA <- read_rds('data/R_out/DA_host_results.RDS')
-
-# Which tax level are we showing in the legend?
-taxLvl <- "Order"
 
 # sort Species by taxLvl (descending so species are top-to-bottom on y axis)
 speciesLvl <- hostDA %>% arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% unique
@@ -200,24 +197,23 @@ DA_sub.tree <- tree %>%
   full_join(taxLabels %>% filter(label %in% DA_species), by = 'label') %>% 
   as.treedata # because.
 
-rank <- "Order"
-n <- DA_sub.tree@data %>% as.data.frame %>% .[rank] %>% unique %>% dim %>% .[1]
+n <- DA_sub.tree@data %>% as.data.frame %>% .[taxLvl] %>% unique %>% dim %>% .[1]
 
 ### Taxonomic tree (generated first to establish species factor levels)
 tree.p <- ggtree(DA_sub.tree,size = 0.2) 
 
 # Reorder factor levels 
 tree.p$data %<>% 
-  mutate(!!sym(rank) := # dynamic management of variable name
-           factor(!!sym(rank), levels = pullTreeLabels(tree.p, rank) %>% rev))
+  mutate(!!sym(taxLvl) := # dynamic management of variable name
+           factor(!!sym(taxLvl), levels = pullTreeLabels(tree.p, taxLvl) %>% rev))
 
 tree.p <- tree.p +
-  geom_tippoint(mapping = aes(color = !!sym(rank)), size = 3) +
+  geom_tippoint(mapping = aes(color = !!sym(taxLvl)), size = 3) +
   #geom_tiplab(align=TRUE, aes(label = Species)) +
   scale_colour_manual(values = col_order) +
   scale_fill_manual(values = compColours) +
   labs(fill = "Compartment",
-       colour = rank) +
+       colour = taxLvl) +
   theme(plot.margin = margin(t=20, r=0, b=20,l = 20),
         legend.margin = margin(t=30),
         axis.title.x = element_text(hjust = 0.95)) +
