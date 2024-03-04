@@ -8,16 +8,13 @@ source("myFunctions.R")
 #####################
 
 # Pathway groups we are interested in
-pwGroups_interest <- c("Aromatics degradation", "Carbon fixation", 
-                       "LPS metabolism", "Methane metabolism",
-                       "Nitrogen metabolism", "Photosynthesis",
-                       "Sulfur metabolism",
-                       "Symbiosis")
-
-pwGroups_interest <- c("Carbon fixation", "Nitrogen metabolism", 
-                       #"Aromatics degradation",
-                       "Sulfur metabolism", "Photosynthesis", 
+pwGroups_interest <- c("Nitrogen metabolism", 
+                       "Photosynthesis", 
                        "Methane metabolism")
+
+pwModules_interest <- c("M00173", "M00376", "M00375", "M00374",
+                        "M00377", "M00579", "M00260")
+
 
 # Parse Module Completeness table
 pwComp <- full_join(
@@ -25,7 +22,8 @@ pwComp <- full_join(
   read_delim("data/metabolic_summary__module_completeness.tab"),
   by = c('module', 'name', 'pathway group')) %>% 
   dplyr::rename(pwGroup = `pathway group`) %>% 
-  filter(pwGroup %in% pwGroups_interest) %>% 
+  # Keep modules of interest: 
+  filter(pwGroup %in% pwGroups_interest | module %in% pwModules_interest) %>% 
   rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
   rename_with(~simplify_name(.x)) %>% 
   mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
@@ -45,7 +43,7 @@ DAspec <- readRDS('data/R_out/speciesLFC_comp.RDS') %>%
   left_join(taxID_list, by = "Species")
 
 # Prepare values matrix for Heatmap
-pattern_regex <- gsub(" ", "_", pwGroups_interest) %>% 
+pattern_regex <- gsub(" ", "_", pwComp$pwGroup %>% unique) %>% 
   paste0("_") %>% 
   paste(collapse = "|")
 
@@ -58,7 +56,8 @@ prep_mat <- pwComp %>%
 
 # Generate pw group index to split heatmap by row
 groupIndex <- str_extract(prep_mat$pwName, pattern_regex) %>% 
-  str_replace("_", " ") %>% str_replace("_","") %>% as.vector
+  str_replace("_", " ") %>% str_replace("_","") %>%
+  str_replace("Carbon fixation", "Prokaryotic carbon fixation") %>% as.vector
 
 # remove pw group from pathway name and generate final matrix
 mat <- prep_mat %>%

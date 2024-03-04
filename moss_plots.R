@@ -41,9 +41,9 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
 
 # Plot !
 (community.plot <- 
-    ggplot(df_compart) +
-    geom_bar(stat = "identity", position = "fill", 
-             aes(x = Host, y = Abundance, fill = aggTaxo)) +
+    ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
+    geom_bar(stat = "identity", position = "fill",
+             colour = 'black', size = 0.2) +
     facet_wrap('Compartment', ncol = 1) +
     labs(fill = taxLvl, 
          y = paste("Mean sample relative k-mer abundance"), 
