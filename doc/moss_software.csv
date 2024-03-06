@@ -1,4 +1,4 @@
-;Tool;Version;Reference database;Non-default parameters
+﻿;Tool;Version;Reference database;Non-default parameters
 ;;;;
 Preprocessing;Kneaddata;0.12.0;n/a;Trimmomatic options: SLIDINGWINDOW:4:30 MINLEN:50
 ;bowtie;;;
