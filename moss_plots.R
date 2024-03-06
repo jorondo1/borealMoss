@@ -260,6 +260,7 @@ dbNames <- c("GTDB", "GTDB + MAGs", "Genbank", "Genbank + MAGs")
 
 raw <- read_delim("data/cntm_sum.txt", col_names = c("Sample", "db", "cntm")) %>% 
   filter(Sample %in% (moss.ps@sam_data %>% rownames))
+
 cntm.df <- raw %>% 
   mutate(db = case_when(db == "gtdb" ~ dbNames[1],
                         db == "custom" ~ dbNames[2],
