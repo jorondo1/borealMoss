@@ -1,3 +1,7 @@
+#####################
+### Formatting ####
+#####################
+
 # Moss section colours
 compColours <- c('darkgoldenrod4', 'darkolivegreen3')
 
