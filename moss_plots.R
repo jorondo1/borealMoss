@@ -269,10 +269,21 @@ cntm.df <- raw %>%
   ),
   db = factor(db, levels = dbNames))
 
+# Mean cntm ± sd
 cntm.df %>% group_by(db) %>% 
   summarise(mean_cntm = mean(cntm),
             sd_cntm = sd(cntm),
             n_sam = n())
+
+# Containment increase by db
+cntm.df %>% 
+  # one row per sample
+  pivot_wider(names_from = 'db', values_from = 'cntm') %>% 
+  # compute increases
+  mutate(GTDB_increase = `GTDB + MAGs` - GTDB,
+         Genbank_increase = `Genbank + MAGs` - Genbank) %>% 
+  summarise(GTDB_mean = mean(GTDB_increase),
+            GTDB_sd = sd(GTDB_increase))
 
 (ggplot(cntm.df, aes(x = db, y = cntm, fill=db)) +
     geom_violin() + geom_jitter(alpha = 0.2) + 

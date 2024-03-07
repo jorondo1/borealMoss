@@ -3,9 +3,9 @@ p_load(phyloseq, tidyverse, magrittr, ComplexHeatmap, colorRamp2, circlize,
        purrr, patchwork, kableExtra)
 source("myFunctions.R")
 
-#####################
-##### METABOLISM #####
-#####################
+##################################################################
+##### PATHWAY COMPLETENESS AND COMPARTMENT-ASSOCIATED SPECIES #####
+##################################################################
 
 # Pathway groups we are interested in
 pwGroups_interest <- c("Nitrogen metabolism", 
@@ -37,6 +37,10 @@ taxID_list <- moss.ps@tax_table %>%
   rownames_to_column("taxID") %>% 
   mutate(taxID = simplify_name(taxID)) %>% 
   filter(taxID %in% colnames(pwComp))
+
+############################
+##### METABOLIC HEATMAP #####
+############################
 
 # Prepare metadata for Heatmap
 DAspec <- readRDS('data/R_out/speciesLFC_comp.RDS') %>% 
@@ -125,9 +129,22 @@ removeCols <- sapply( # apply to columns matching pattern name:
   # extract column names: 
   function(x) {sum(x <= 0.20) / length(x) >= 0.90}) %>% names(.)[.]
 
-# Step 3: Remove identified columns from the dataframe
-pwComp_t %<>%  select(-all_of(removeCols))
+# Remove identified columns from the dataframe
+pwComp_t %<>% select(-all_of(removeCols))
 print(paste(ncol(pwComp_t), "columns left"))
+
+# Overdispersion?
+pwComp_t %>% dplyr::select(starts_with('M0')) %>% 
+  pivot_longer(cols = starts_with('M'),
+               values_to = 'Completeness',
+               names_to = 'Module') %>% 
+  group_by(Module) %>% 
+  summarise(mean = mean(Completeness),
+            sd = sd(Completeness)) %>% 
+  mutate(diff = mean-sd) %>% 
+  ggplot(aes(x = Module)) +
+  geom_point(aes(y = mean), colour = 'blue') +
+  geom_point(aes(y = sd), colour = 'red')
 
 # Regress !
 coefficients_list <- list()
@@ -146,7 +163,7 @@ for (i in pwComp_t %>% names %>% grep("^M.{5}$", ., value = TRUE)) {
     mutate(pathway = i) %>% 
     dplyr::rename(p = `Pr(>|t|)`)
 }
-results <- do.call(rbind, coefficients_list) %>% 
+test_results <- do.call(rbind, coefficients_list) %>% 
   mutate(p_adj = p.adjust(p, method = "BH"),
          sig = case_when(p_adj < 0.001 ~ '***',
                          p_adj < 0.01 ~ '**',
@@ -156,9 +173,14 @@ results <- do.call(rbind, coefficients_list) %>%
   left_join(pwComp %>% select(module,name,pwGroup), 
             by = join_by(pathway == module))
 
-results %>% filter(p_adj < 0.05 & variable == 'compAssGreen') %>% 
+test_results %>% filter(p_adj < 0.05 & variable == 'compAssGreen') %>% 
   select(-sig) %>% 
-  write_csv("out/metabolic_test.csv")
+  write_csv("out/metabolic_test_sig.csv")
+
+test_results %>% 
+  filter(variable == 'compAssGreen') %>%  
+  dplyr::select(pathway, name, pwGroup, Estimate, p_adj) %>% 
+  write_csv("out/metabolic_test_full.csv")
 
 # transpose to get MAG name as rows, modules as columns :
 # pw_t <- pw %>% dplyr::select(-module) %>% t %>% 

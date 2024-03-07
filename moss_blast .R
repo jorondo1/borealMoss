@@ -22,6 +22,8 @@ topHits <- blastout %>%
 topTax <- topHits %$% staxids %>% unique
 
 ### Automatic querying 
+# IF ALREADY DONE : ncbi_tax <- readRDS("data/R_out/taxid_results_full.RDS")
+
 # don't use parallel processing, it generates error because it queries ncbi too much
 ncbi_tax <- lapply(
   topTax, # Extract list of unique taxids
@@ -78,14 +80,17 @@ blastout_short <- blastout %>%
             by = 'sample') %>% ungroup %>% 
   mutate(Compartment = factor(Compartment, levels = c("Green","Brown")))
 
-blastout_short %>% 
+blastKingdom <- blastout_short %>% 
   group_by(Host, superkingdom, Compartment) %>% 
   summarise(sum = sum(bp)) %>% 
   slice_head(n=10) %>% 
   ggplot(aes(x = Host, y = sum, fill = superkingdom)) +
   geom_col(position = 'fill') +
   facet_grid('Compartment', scales = 'free') +
-  theme_light() + labs(title = 'Proportion of sequence hits')
+  theme_light() + 
+  labs(title = 'Proportion of sequence hits',
+       y = 'Proportion of BLASTn hits') +
+  theme(legend.position = 'bottom')
 
 ##################################################
 ### PLOT 2 : ... by eukaryotic Phylum, by Host ####

@@ -13,7 +13,7 @@ DA_pairwise_comp <- readRDS("data/R_out/DA_pairwise_comp.RDS")
 DA_pairwise_comp <- ancombc2(
   data = moss.ps, 
   tax_level= "Species",
-  p_adj_method="holm", 
+  p_adj_method="Holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment + SoilpH + SoilTemp", 
   # rand_formula = '(1|Location)',
