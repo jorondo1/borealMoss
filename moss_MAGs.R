@@ -1,5 +1,5 @@
 library(pacman)
-p_load(tidyverse, rstatix, knitr, kableExtra)
+p_load(tidyverse, rstatix, scales)
 
 # Import MAG statistics
 read_tsv("data/genome.stats") %>% 
@@ -26,9 +26,9 @@ MAG_summary <- moss.ps@tax_table %>% as.data.frame %>%
 MAG_summary %>% 
   select(MAG, Class, Genus, `L50 (kb)`, n_contigs, GC, MBP, comp, cont, QS) %>% 
   arrange(Class, Genus) %>% 
-  kbl %>% 
-  kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
-  save_kable('out/MAG_statistics.html')
+  mutate(n_contigs = number(n_contigs, accuracy = 1)) %>% 
+  mutate(across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
+  write_csv("out/nMAG_statistics_full.csv")
 
 # Eremio table
 eremio <- MAG_summary %>% 
