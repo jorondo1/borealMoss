@@ -3,7 +3,6 @@ p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestN
        phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
-threshold = 0.01 # global significance threshold
 
 ############################################################
 ### Ancom-BC differential abundance across compartment ######
@@ -13,7 +12,6 @@ DA_pairwise_comp <- readRDS("data/R_out/DA_pairwise_comp.RDS")
 DA_pairwise_comp <- ancombc2(
   data = moss.ps, 
   tax_level= "Species",
-  p_adj_method="Holm", 
   prv_cut = 0.10, 
   fix_formula="Host + Compartment + SoilpH + SoilTemp", 
   # rand_formula = '(1|Location)',
@@ -32,7 +30,7 @@ speciesLFC <- DA_pairwise_comp$res %>%
   dplyr::select(taxon, ends_with(sfx)) %>% 
   dplyr::filter(!!sym(paste0("diff_",sfx)) == 1 &
                 !!sym(paste0("passed_ss_",sfx)) == TRUE &
-                !!sym(paste0("q_",sfx)) < threshold) %>% 
+                !!sym(paste0("q_",sfx)) < 0.01) %>% 
   dplyr::arrange(desc(!!sym(paste0("lfc_",sfx))) ) %>%
   dplyr::mutate(direct = factor(ifelse(!!sym(paste0("lfc_",sfx)) > 0, "Positive LFC", "Negative LFC"),
                                 levels = c("Positive LFC", "Negative LFC")),
@@ -66,45 +64,45 @@ DA_host_species <- moss.ps %>%
            struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
-# Keep only taxa for which at least one differential test is significant AND 
-# passed the sensitivity analysis. Dynamically produce a list of conditions: 
-parse_DAA_results <- function(DAA) {
-  # Extract all column suffixes
-  suffixes <- DAA$res_dunn %>% 
-    dplyr::select(starts_with("diff_")) %>% colnames %>% 
-    str_replace("diff_Host","")
-  
-  # Create a character vector of conditions
-  conditions <- purrr::map_chr(suffixes, ~ paste0(
-    "(`diff_Host", .x, 
-    "` == TRUE & `passed_ss_Host", .x, 
-    "` == TRUE & `q_Host", .x, "` < ", threshold, ")"
-    )) %>% paste(collapse = " | ")
-  
-  # evaluate this condition in a filter argument:
-  DAA$res_dunn %>%
-    dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
-    filter(eval(parse(text = conditions))) %>% 
-    # pivot to a long dataset, with one line per pairwise test per taxa
-    pivot_longer(cols = -taxon, 
-               names_to = c(".value", "Group"), 
-               names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
-               values_drop_na = TRUE) %>% 
-    mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
-                                         TRUE~.x)),
-           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
-           Group = str_remove(Group, "Host")) %>% 
-    # add taxonomy
-    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,
-              join_by("taxon" == "Species"))
-}
-hostDA <- parse_DAA_results(DA_host_species)
+
+hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01)
 write_rds(hostDA, 'data/R_out/DA_host_results.RDS')
 
 
 #########################################################################
 #****************************** SANDBOX ****************************#####
 #########################################################################
+
+# order DAA across hosts
+DA_pw_host_Order <- ancombc2(
+  data = moss.ps, 
+  tax_level= "Order",
+  prv_cut = 0.10, 
+  fix_formula="Host + Compartment", 
+  group = "Host", 
+  struc_zero = TRUE,
+  pairwise = TRUE,
+  alpha = 0.05,
+  verbose = TRUE,
+  n_cl = 10 # cores for parallel computing
+)
+
+parse_DAA_results(DA_pw_host_Order, 'pair', 0.01) %>% 
+#  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
+  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
+    geom_tile() +
+    scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
+                         mid = "white", 
+                         high = met.brewer("Cassatt1")[8], 
+                         midpoint = 0) +
+    geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
+    scale_color_identity(guide = FALSE) + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
+    labs(x = '', y = '')
+
+
+# global test 
 
 df_fig_global <- 
   DA_global$res %>% 
@@ -195,3 +193,5 @@ waterfall_plot("CompartmentGreen", DA_pairwise_comp,
                "", #Differentially abundant species by compartment.
                "Significantly abundant at p<0.05 (ajdusted).
                Restricted to species with >10% relative abundance that passed the sensitivity analysis.")
+
+

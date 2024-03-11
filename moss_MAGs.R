@@ -30,6 +30,11 @@ MAG_summary %>%
   mutate(across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
   write_csv("out/nMAG_statistics_full.csv")
 
+# MAG summary statistics
+MAG_summary %>% 
+  summarise(across(where(is.numeric),
+                   ~ paste0(round(mean(.),2), " ± ", round(sd(.),2)))) %>% View
+
 # Eremio table
 MAG_summary %>% 
   filter(Phylum == 'Eremiobacterota') %>% 
@@ -39,7 +44,27 @@ MAG_summary %>%
          n_contigs = number(n_contigs, accuracy = 1),
          across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
   write_csv("out/nMAG_stats_eremio.csv")
-  
+
+# Baltobacterales distribution 
+balto <- moss.ps %>% psmelt %>% 
+  group_by(Sample, Order, Compartment, Host) %>%
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), 
+            .groups = 'drop') %>% 
+  group_by(Sample) %>%
+  mutate(relAb = Abundance/sum(Abundance)) %>% ungroup %>% 
+  filter(Order == 'Baltobacterales') %>% group_by(Host)
+
+balto %>% 
+  summarise(mean_relab = mean(relAb),
+            sd_relab = sd(relAb),
+            n = n(),
+            min = min(relAb))
+
+balto %>% ggplot(aes(x = Host, y = relAb, fill = Host))  +
+  geom_violin() + geom_jitter() + theme_light() +
+  facet_wrap('Compartment', ncol = 2) +
+  labs(y = "Relative abundance", x = '')
+
 ### Metabolism of Eremiobacterota for dall-e prompt:
 full_join(
   read_delim("data/metabolic_summary__module_completeness_missing.tab"),

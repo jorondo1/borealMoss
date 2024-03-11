@@ -143,9 +143,6 @@ speciesLvl <- hostDA %>% arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% uniqu
 
 DA_host.df <- hostDA %>% 
   #filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
-  # remove all orders for which diff is FALSE in every group :
-  group_by(taxon) %>% 
-  filter(!all(diff == FALSE)) %>% ungroup() %>% 
   # reorder taxa by taxLvl
   mutate(taxon = factor(taxon, levels = speciesLvl))
 
@@ -292,3 +289,5 @@ cntm.df %>%
 
 ggplot2::ggsave("out/cntm_comparison.png", bg = 'white',
                 width = 2700, height = 2400, units = 'px', dpi = 300)
+
+

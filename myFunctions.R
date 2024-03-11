@@ -115,7 +115,7 @@ listDupl <- function(tax, level) {
 }
 
 ##################
-### DIVERRSITY ####
+### DIVERSITY ####
 ##################
 
 # Variance-stabilizing transformation
@@ -144,6 +144,49 @@ pcoa.fun <- function(ps, var, vst.mx, dist) {
   out$PCoA1 <- scores(PCoA)$sites[,1]
   out$PCoA2 <- scores(PCoA)$sites[,2]
   list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
+}
+
+########################
+### Differential Abundance Analysis ####
+########################
+
+# Keep only taxa for which at least one differential test is significant AND 
+# passed the sensitivity analysis. Dynamically produce a list of conditions: 
+parse_DAA_results <- function(DAA, test, thr) {
+  
+  listItem <- paste0('res_', test)
+  
+  # Extract all column suffixes
+  suffixes <- DAA[[listItem]] %>% 
+    dplyr::select(starts_with("diff_")) %>% colnames %>% 
+    str_replace("diff_Host","")
+  
+  # Create a character vector of conditions
+  conditions <- purrr::map_chr(suffixes, ~ paste0(
+    "(`diff_Host", .x, 
+    "` == TRUE & `passed_ss_Host", .x, 
+    "` == TRUE & `q_Host", .x, "` < ", thr, ")"
+  )) %>% paste(collapse = " | ")
+  
+  # evaluate this condition in a filter argument:
+  DAA[[listItem]] %>%
+    dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
+    filter(eval(parse(text = conditions))) %>% 
+    # pivot to a long dataset, with one line per pairwise test per taxa
+    pivot_longer(cols = -taxon, 
+                 names_to = c(".value", "Group"), 
+                 names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
+                 values_drop_na = TRUE) %>% 
+    mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
+                                         TRUE~.x)),
+           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
+           Group = str_remove(Group, "Host")) %>% 
+    # add taxonomy
+    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,
+              join_by("taxon" == "Species")) %>% 
+    # remove all orders for which diff is FALSE in every group :
+    group_by(taxon) %>% 
+    filter(!all(diff == FALSE)) %>% ungroup()
 }
 
 ################
