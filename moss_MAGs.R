@@ -31,15 +31,15 @@ MAG_summary %>%
   write_csv("out/nMAG_statistics_full.csv")
 
 # Eremio table
-eremio <- MAG_summary %>% 
+MAG_summary %>% 
   filter(Phylum == 'Eremiobacterota') %>% 
-  select(MAG, Genus, comp, cont, QS) %>% 
-  arrange(desc(QS))
+  select(MAG, Class, Genus, `L50 (kb)`, n_contigs, GC, MBP, comp, cont, QS) %>% 
+  arrange(desc(QS)) %>% 
+  mutate(comp = number(comp, accuracy = 0.1),
+         n_contigs = number(n_contigs, accuracy = 1),
+         across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
+  write_csv("out/nMAG_stats_eremio.csv")
   
-kbl(eremio) %>% 
-  kable_styling(bootstrap_options = c('striped', 'hover')) %>% 
-  save_kable('out/test.html')
-
 ### Metabolism of Eremiobacterota for dall-e prompt:
 full_join(
   read_delim("data/metabolic_summary__module_completeness_missing.tab"),

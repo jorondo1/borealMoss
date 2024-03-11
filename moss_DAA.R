@@ -61,7 +61,7 @@ write_rds(speciesLFC_comp, 'data/R_out/speciesLFC_comp.RDS')
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", 
-           fix_formula="Host + Compartment + SoilpH + SoilTemp", 
+           fix_formula="Host + Compartment", 
            group = "Host", alpha = 0.05,
            struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")

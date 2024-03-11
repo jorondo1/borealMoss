@@ -17,11 +17,11 @@ MAGs_melt <- mossMAGs.ps %>% psmelt %>%
 # This function normalises if the Shannon diversity is not normal
 div.boxplot <- function(ps, title) {
   rare_MAGs <- rarefy_even_depth(ps,
-                                      #  sample.size = 260000, 
-                                      replace = FALSE,
-                                      verbose = TRUE,  
-                                      trimOTUs = TRUE,
-                                      rngseed = 4466) %>% 
+                                 #  sample.size = 260000, 
+                                 replace = FALSE,
+                                 verbose = TRUE,  
+                                 trimOTUs = TRUE,
+                                 rngseed = 4466) %>% 
     estimate_richness(measure = c("Shannon")) 
   shapiro.test(rare_MAGs$Shannon)
   
