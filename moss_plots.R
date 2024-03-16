@@ -142,7 +142,6 @@ hostDA <- read_rds('data/R_out/DA_host_results.RDS')
 speciesLvl <- hostDA %>% arrange(desc(!!sym(taxLvl)), taxon) %$% taxon %>% unique
 
 DA_host.df <- hostDA %>% 
-  #filter(Group %in% c("P_commune", "P_juniperinum", "P_piliferum")) %>% 
   # reorder taxa by taxLvl
   mutate(taxon = factor(taxon, levels = speciesLvl))
 
@@ -175,7 +174,7 @@ DA.p2 <- DA_host.df %>%
     design = "ABBBBBBBBBBBB") &
   scale_x_discrete(labels = labelsItal[2:4], position = 'top'))
 
-ggplot2::ggsave("out/DA_host_order_01.png", 
+ggplot2::ggsave("out/DA_host_species.png", plot = DA_host_order_05,
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
 ################################################
@@ -246,7 +245,7 @@ waterfall.p <- speciesLFC %>%
     tree.p + waterfall.p + plot_layout(design = "AAAABBB") +
     plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'))
 
-ggplot2::ggsave("out/DA_comp_tree.png", 
+ggplot2::ggsave("out/DA_comp_tree.png", plot = DA_comp_tree,
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
 ###############################################
