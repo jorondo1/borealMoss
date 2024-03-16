@@ -15,7 +15,6 @@ pwGroups_interest <- c("Nitrogen metabolism",
 pwModules_interest <- c("M00173", "M00376", "M00375", "M00374",
                         "M00377", "M00579", "M00260")
 
-
 # Parse Module Completeness table
 pwComp <- full_join(
   read_delim("data/metabolic_summary__module_completeness_missing.tab"),

@@ -1,6 +1,6 @@
 library(pacman)
 p_load(ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
-       phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork)
+       phyloseq, vegan, ComplexHeatmap, colorRamp2, circlize, patchwork, MetBrewer)
 source("myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
