@@ -56,6 +56,23 @@ write_rds(speciesLFC_comp, 'data/R_out/speciesLFC_comp.RDS')
 ######## PAIRWISE DUNN'S TEST ON HOST ###########
 ################################################
 
+# Location correlates with environmental variables:
+samdat <- moss.ps %>% sample_data %>% data.frame
+
+extract_r2 <- function(aov) {
+  temp_aov <- aov %>% summary
+  ssq <- temp_aov[[1]]$`Sum Sq`
+  pval <- temp_aov[[1]]$`Pr(>F)`[1]
+  message(paste("R^2 =",round(ssq[1]/(ssq[1]+ssq[2]),2), ", p=", formatC(pval, format = "e", digits = 2)))
+}
+extract_r2(aov(SoilTemp ~ Location, data = samdat))
+extract_r2(aov(SoilpH ~ Host, data = samdat))
+
+chisq.test(samdat$Location, samdat$Host) 
+
+
+### DA test : 
+
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", 
