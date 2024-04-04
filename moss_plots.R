@@ -283,7 +283,7 @@ cntm.df %>%
 
 (ggplot(cntm.df, aes(x = db, y = cntm, fill=db)) +
     geom_violin() + geom_jitter(alpha = 0.2) + 
-    theme_minimal() + guides(fill = 'none') +
+    theme_minimal(base_size = 16) + guides(fill = 'none') +
     labs(y = 'Sample k-mer containment', x = 'Reference database'))
 
 ggplot2::ggsave("out/cntm_comparison.png", bg = 'white',

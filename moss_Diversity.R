@@ -91,7 +91,7 @@ beta_GTDB.plot <- plotOrd.fun(mossGTDB.ps, "Beta diversity without nMAGs.", 'Com
 beta_MAGs.plot + beta_GTDB.plot + plot_layout(guides = 'collect')
 
 ### Compare with or without D. undulatum:
-beta_MAGs_all.plot <- ord.fun(mossMAGs.ps, "Beta diversity with Dicranum undulatum")
+beta_MAGs_all.plot <- plotOrd.fun(mossMAGs.ps, "Beta diversity with Dicranum undulatum")
 mossMAGs_poly.ps <-  mossMAGs.ps %>% 
   # remove D_undulatum samples:
   prune_samples(sample_data(.)$Host != "D_undulatum",.) %>%
@@ -103,7 +103,8 @@ beta_MAGs_Polytrichum.plot <- mossMAGs_poly.ps %>%
 #  prune_samples(sample_data(.)$Location != "Nemaska community intersection",.) %>% 
 #  prune_samples(sample_data(.)$Location != "Chemin PK",.) %>% 
   # ordinate & plot
-  ord.fun("Beta diversity without Dicranum undulatum")
+  plotOrd.fun("Beta diversity without Dicranum undulatum",
+              'Compartment', 'bray')
 
 beta_MAGs_all.plot + beta_MAGs_Polytrichum.plot +
   guides(shape = FALSE) +

@@ -146,47 +146,62 @@ pcoa.fun <- function(ps, var, vst.mx, dist) {
   list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
 }
 
-########################
+##########################
 ### Differential Abundance Analysis ####
 ########################
 
-# Keep only taxa for which at least one differential test is significant AND 
-# passed the sensitivity analysis. Dynamically produce a list of conditions: 
-parse_DAA_results <- function(DAA, test, thr) {
+# Parse the DAA results for a pairwise or dunnet test
+# We want to keep only taxa for which at least one differential test is 
+# significant AND which passed the sensitivity analysis. 
+
+# Does NOT work with the global test, as it does not produce LFC values.
+
+parse_DAA_results <- function(DAA, # ANCOMBC output
+                              test, # 'pair' or 'dunnet'
+                              thr, # p-value threshold
+                              gr, # group variable name (string)
+                              taxRank) { # Taxonomic rank tested
   
+  # define results list item name 
   listItem <- paste0('res_', test)
   
-  # Extract all column suffixes
-  suffixes <- DAA[[listItem]] %>% 
-    dplyr::select(starts_with("diff_")) %>% colnames %>% 
-    str_replace("diff_Host","")
-  
-  # Create a character vector of conditions
-  conditions <- purrr::map_chr(suffixes, ~ paste0(
-    "(`diff_Host", .x, 
-    "` == TRUE & `passed_ss_Host", .x, 
-    "` == TRUE & `q_Host", .x, "` < ", thr, ")"
-  )) %>% paste(collapse = " | ")
-  
-  # evaluate this condition in a filter argument:
+    # Extract suffixes for every relevant column
+    suffixes <- DAA[[listItem]] %>% 
+      dplyr::select(starts_with("diff_")) %>% colnames %>% 
+      str_replace(paste0("diff_",gr),"")
+    
+    # Create a character vector of conditions
+    conditions <- purrr::map_chr(suffixes, ~ paste0(
+      "(`diff_", gr, .x, # passed sensitivity analysis:
+      "` == TRUE & `passed_ss_", gr, .x, # adj. p value above certain threshold:
+      "` == TRUE & `q_", gr, .x, "` < ", thr, ")" 
+    )) %>% paste(collapse = " | ")
+
   DAA[[listItem]] %>%
+    # drop irrelevant columns: 
     dplyr::select(-starts_with('W_'), -starts_with('p_')) %>% 
+    # evaluate all these conditions through filter():
     filter(eval(parse(text = conditions))) %>% 
-    # pivot to a long dataset, with one line per pairwise test per taxa
+    # pivot to a long dataset, with one line per test per taxa
     pivot_longer(cols = -taxon, 
                  names_to = c(".value", "Group"), 
                  names_pattern = "(lfc|se|q|diff|passed_ss)_(.+)", 
                  values_drop_na = TRUE) %>% 
-    mutate(across(c(lfc,se), ~ case_when(diff==FALSE ~ 0,
-                                         TRUE~.x)),
-           textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
-           Group = str_remove(Group, "Host")) %>% 
-    # add taxonomy
-    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble,
-              join_by("taxon" == "Species")) %>% 
-    # remove all orders for which diff is FALSE in every group :
+    mutate( # change LFC values to 0 if not significant (for the plot):
+      across(c(lfc,se), ~ case_when(diff == FALSE ~ 0, TRUE ~ .x)),
+      # plot colours:
+      textcolour = case_when(lfc==0 ~ "white", TRUE ~ "black"),
+      # format group names (needs improvement...)
+      Group = str_remove(Group, gr)) %>% 
+    # add taxonomy to the data (to allow colouring by higher rank)
+    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble %>% 
+                dplyr::select(Domain:everything()[which(names(.) == taxRank)]) %>% 
+                unique,
+              by = c("taxon" = taxRank)) %>% 
+    # remove all taxa for which there is no difference in any group:
     group_by(taxon) %>% 
     filter(!all(diff == FALSE)) %>% ungroup()
+  # add sth similar to remove pairwise comparisons that have 0 DA taxa?
 }
 
 ################

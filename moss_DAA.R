@@ -72,13 +72,16 @@ chisq.test(samdat$Location, samdat$Host)
 
 
 ### DA test : 
-
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
   ancombc2(tax_level= "Species", 
            fix_formula="Host + Compartment", 
-           group = "Host", alpha = 0.05,
-           struc_zero = TRUE, dunnet = TRUE, verbose = TRUE, n_cl = 10)
+           group = "Host", 
+           alpha = 0.05,
+           struc_zero = TRUE, 
+           dunnet = TRUE, 
+           verbose = TRUE, 
+           n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
 hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01)
