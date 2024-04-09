@@ -1,4 +1,4 @@
-L50 (kb)	N50 (kb)	n_contigs	GC	MBP	MAG	comp	cont	QS
+L50 (kb)	N50 (kb)	Number of contigs	GC	MBP	MAG	comp	cont	QS
 7.544	0.142	591	0.35876	3.342727	Brown_AA.bin.1	79.8	3.9	0.603
 7.699	0.273	1197	0.4395	6.921433	Brown_AA.bin.3	92.73	1.57	0.8488
 4.691	0.335	1173	0.5734	4.709404	Brown_AA.bin.4	77.11	1.3	0.7061

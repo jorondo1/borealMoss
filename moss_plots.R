@@ -51,12 +51,14 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
     scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
     # italicize specieshost species names :
     scale_x_discrete(labels = labelsItal) +
-    theme_light() +
+    theme_light() + # fix facet headers :
+    theme(strip.background =element_rect(fill = 'white'))+
+    theme(strip.text = element_text(colour = 'black')) +
     theme(plot.title = element_text(hjust = 0.5),
           panel.grid = element_blank()))
 
 ggplot2::ggsave("out/community.png", bg = 'white',
-                width = 2200, height = 2400, units = 'px', dpi = 300)
+                width = 1600, height = 2400, units = 'px', dpi = 300)
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
