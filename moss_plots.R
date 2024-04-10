@@ -101,26 +101,31 @@ hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>%
   # only keep MAGs that are in our original dataset
   filter(MAG %in% MAG_names) 
 
-# Add a heatmap of genome length :
+# Add a heatmap of %GC Content :
 p2 <- p + guides(colour = "none") +
-  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = MBP),
-                 offset = 0.1, width = 0.1) +
-  scale_fill_gradient(low = "pink1", high = 'purple4', name="Length (Mbp)") +
-  # and GC content 
-  new_scale_fill() + 
-  geom_fruit(hm.mx, geom_tile, mapping=aes(y=MAG, fill = GC),
+    geom_fruit(hm.mx, geom_tile, mapping=aes(y=MAG, fill = GC),
                offset = 0.1,width = 0.1) +
-  scale_fill_gradient(low = 'darkgreen', high = 'gold', name="% GC Content") +
-  # and L50
+  scale_fill_gradient(low = 'seagreen4', high = 'lightgoldenrod1', name="% GC Content") +
+  # and Length
   new_scale_fill() +
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = MBP),
+             offset = 0.1, width = 0.1) +
+  scale_fill_gradient(low = 'ghostwhite', high = 'darkorange1', name="Length (Mbp)") +
+  # and n_contigs
+  new_scale_fill() +
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill =  `Number of contigs`),
+             offset = 0.1, width = 0.1) +
+  scale_fill_gradient(low = 'ghostwhite', high = 'purple4') +
+  # and L50
+  new_scale_fill() + 
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = `L50 (kb)`),
              offset = 0.1, width = 0.1) +
-  scale_fill_gradient(low = 'lightblue', high = 'darkblue') +
+  scale_fill_gradient(low = "ghostwhite", high = 'dodgerblue4') +
   # and Quality score
   new_scale_fill() +
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
-  scale_fill_gradient(low = "peachpuff", high = "darkred", name="Quality Score")
+  scale_fill_gradient(low = "ghostwhite", high = "red4", name="Quality Score"); p2
 
 #p2 + geom_hilight(node = 121, fill = "NA",size= 5)
 

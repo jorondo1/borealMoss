@@ -6,7 +6,7 @@ read_tsv("data/genome.stats") %>%
   # fix variables of interest
   transmute(`L50 (kb)` = ctg_L50/1000, 
             `N50 (kb)` = ctg_N50/1000,
-            n_contigs = n_contigs,
+            `Number of contigs`= n_contigs,
             GC = gc_avg, 
             MBP = contig_bp/1000000, 
             MAG = str_extract(filename, "[^/]+$")) %>% 
