@@ -118,7 +118,7 @@ p2 <- p + guides(colour = "none") +
   scale_fill_gradient(low = 'ghostwhite', high = 'purple4') +
   # and L50
   new_scale_fill() + 
-  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = `L50 (kb)`),
+  geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = `N50 (kb)`),
              offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = "ghostwhite", high = 'dodgerblue4') +
   # and Quality score
