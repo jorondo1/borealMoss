@@ -51,7 +51,7 @@ ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
        x = 'Host moss species') +
   scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
   # italicize specieshost species names :
-  scale_x_discrete(labels = labelsItal) +
+  scale_x_discrete(labels = labelsReg) +
   theme_light() + # fix facet headers :
   theme(strip.background =element_rect(fill = 'white'))+
   theme(strip.text = element_text(colour = 'black')) +
@@ -59,7 +59,7 @@ ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
         panel.grid = element_blank())
 
 ggplot2::ggsave("out/community.png", bg = 'white',
-                width = 1600, height = 2400, units = 'px', dpi = 300)
+                width = 1600, height = 2400, units = 'px', dpi = 240)
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
