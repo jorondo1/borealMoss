@@ -249,17 +249,15 @@ waterfall.p <- speciesLFC %>%
         legend.background = element_rect(colour='black', fill='white', linewidth=0.2),
         legend.title = element_text(size = rel(.8)))
 
-(DA_comp_tree <- 
-    tree.p + waterfall.p + plot_layout(design = "AAAABBB") #+
+tree.p + waterfall.p + plot_layout(design = "AAAABBB") #+
 #    plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
-  )
 
-ggplot2::ggsave("out/DA_comp_tree.png", plot = DA_comp_tree,
+ggplot2::ggsave("out/DA_comp_tree.png", 
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
-###############################################
+#######################################################
 ### S-X. DIFFERENTIAL ABUNDANCE by HOST with ORDERS ####
-###############################################
+#######################################################
 
 read_rds('data/R_out/DA_pw_host_Order.RDS') %>% 
   parse_DAA_results('pair', 0.01, 'Host', 'Order') %>% 

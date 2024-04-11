@@ -88,10 +88,6 @@ hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01, 'Host', 'Species')
 write_rds(hostDA, 'data/R_out/DA_host_results.RDS')
 
 
-#########################################################################
-#****************************** SANDBOX ****************************#####
-#########################################################################
-
 # order DAA across hosts
 DA_pw_host_Order <- ancombc2(
   data = moss.ps, 
@@ -107,20 +103,10 @@ DA_pw_host_Order <- ancombc2(
 ) 
 # write_rds(DA_pw_host_Order,"data/R_out/DA_pw_host_Order.RDS")
 
-parse_DAA_results(DA_pw_host_Order, 'pair', 0.01, 'Host', 'Order') %>% 
-#  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
-  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
-    geom_tile() +
-    scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
-                         mid = "white", 
-                         high = met.brewer("Cassatt1")[8], 
-                         midpoint = 0) +
-    geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
-    scale_color_identity(guide = FALSE) + 
-    theme_minimal() + 
-    theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
-    labs(x = '', y = '')
 
+#########################################################################
+#****************************** SANDBOX ****************************#####
+#########################################################################
 
 # global test 
 
