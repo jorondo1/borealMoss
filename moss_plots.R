@@ -164,7 +164,7 @@ DA.p1 <- DA_host.df %>%
   scale_color_identity(guide = FALSE) + 
   theme_void() + 
   theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
-  labs(x = '', y = '', fill = "Abundance LFC\nrelative to\nD. undulatum")
+  labs(x = '', y = '', fill = "LFC")
 
 # taxLvl -coloured tile:
 DA.p2 <- DA_host.df %>% 
@@ -175,13 +175,14 @@ DA.p2 <- DA_host.df %>%
         axis.text.y = element_text(hjust = 1)) +
   scale_fill_manual(values = col_order) 
 
-(DA_host_order_05 <- 
+(DA_host_tree_05 <- 
   DA.p2 + DA.p1 + plot_layout(
     guides = "collect",
     design = "ABBBBBBBBBBBB") &
-  scale_x_discrete(labels = labelsItal[2:4], position = 'top'))
+  scale_x_discrete(labels = labelsReg[2:4], 
+                   position = 'bottom'))
 
-ggplot2::ggsave("out/DA_host_species.png", plot = DA_host_order_05,
+ggplot2::ggsave("out/DA_host_species.png", plot = DA_host_tree_05,
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
 ################################################
@@ -238,7 +239,7 @@ waterfall.p <- speciesLFC %>%
   geom_errorbar(aes(xmin = LFC - SE, 
                     xmax = LFC + SE), 
                 width = 0.2, position = position_dodge(0.05), color = "black") + 
-  labs(y = NULL, x = "Log fold change", fill = 'Moss section\nassociation') + 
+  labs(y = NULL, x = "LFC", fill = 'Moss section\nassociation') + 
   scale_fill_manual(values = c("Green" = compColours[2], "Brown" = compColours[1]))+
   scale_color_discrete(name = NULL) +
   theme_minimal() + 
@@ -249,11 +250,41 @@ waterfall.p <- speciesLFC %>%
         legend.title = element_text(size = rel(.8)))
 
 (DA_comp_tree <- 
-    tree.p + waterfall.p + plot_layout(design = "AAAABBB") +
-    plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.'))
+    tree.p + waterfall.p + plot_layout(design = "AAAABBB") #+
+#    plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
+  )
 
 ggplot2::ggsave("out/DA_comp_tree.png", plot = DA_comp_tree,
                 width = 2700, height = 3600, units = 'px', dpi = 300)
+
+###############################################
+### S-X. DIFFERENTIAL ABUNDANCE by HOST with ORDERS ####
+###############################################
+
+read_rds('data/R_out/DA_pw_host_Order.RDS') %>% 
+  parse_DAA_results('pair', 0.01, 'Host', 'Order') %>% 
+  #  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
+  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
+  geom_tile() +
+  scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
+                       mid = "white", 
+                       high = met.brewer("Cassatt1")[8], 
+                       midpoint = 0) +
+  geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
+  scale_color_identity(guide = FALSE) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
+  labs(x = '', y = '', fill = 'LFC') + 
+  scale_x_discrete(labels = c('P. commune\n(D. undulatum)',
+                              'P. juniperinum\n(D. undulatum)',
+                              'P. juniperinum\n(P. commune)',
+                              'P. piliferum\n(D. undulatum)',
+                              'P. piliferum\n(P. commune)',
+                              'P. piliferum\n(P. juniperinum)'
+  ))
+
+ggplot2::ggsave("out/DA_host_Orders.png", bg = 'white',
+                width = 3600, height = 2800, units = 'px', dpi = 300)
 
 ###############################################
 ### S-X. CONTAINMENT IMPROVEMENT USING MAGS ####

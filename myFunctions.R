@@ -11,6 +11,11 @@ labelsItal <- c(expression(italic("D. undulatum")),
                 expression(italic("P. juniperinum")),
                 expression(italic("P. piliferum")))
 
+labelsReg <- c(expression("D. undulatum"),
+                expression("P. commune"),
+                expression("P. juniperinum"),
+                expression("P. piliferum"))
+
 ### Order colours
 col_order =  c(
   "Acetobacterales" = "#D4A6C8FF", "Terriglobales" = "#A0CBE8FF", # Acidobacterales, https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=204433&lvl=3&lin=f&keep=1&srchmode=1&unlock

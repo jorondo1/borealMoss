@@ -84,7 +84,7 @@ DA_host_species <- moss.ps %>%
            n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
-hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01)
+hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01, 'Host', 'Species')
 write_rds(hostDA, 'data/R_out/DA_host_results.RDS')
 
 
@@ -104,9 +104,10 @@ DA_pw_host_Order <- ancombc2(
   alpha = 0.05,
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
-)
+) 
+# write_rds(DA_pw_host_Order,"data/R_out/DA_pw_host_Order.RDS")
 
-parse_DAA_results(DA_pw_host_Order, 'pair', 0.01) %>% 
+parse_DAA_results(DA_pw_host_Order, 'pair', 0.01, 'Host', 'Order') %>% 
 #  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
   ggplot(aes(x = Group, y = taxon, fill = lfc)) +
     geom_tile() +
