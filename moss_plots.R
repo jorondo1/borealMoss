@@ -32,7 +32,9 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
   group_by(aggTaxo) %>% 
   aggregate(relAb ~ aggTaxo, data = ., FUN = sum) %>% 
   # order taxa by mean relative abundance
-  arrange(relAb) %$% aggTaxo %>% as.character 
+  arrange(relAb) %$% aggTaxo %>% as.character %>% 
+  # put "Others" first
+  setdiff(c('Others')) %>% c('Others',.)
 
 # Build plots dataframe :
 df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
@@ -40,22 +42,21 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
   mutate(Compartment = factor(Compartment, levels = c('Green', 'Brown')))
 
 # Plot !
-(community.plot <- 
-    ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
-    geom_bar(stat = "identity", position = "fill",
-             colour = 'black', size = 0.2) +
-    facet_wrap('Compartment', ncol = 1) +
-    labs(fill = taxLvl, 
-         y = paste("Mean sample relative k-mer abundance"), 
-         x = 'Host moss species') +
-    scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
-    # italicize specieshost species names :
-    scale_x_discrete(labels = labelsItal) +
-    theme_light() + # fix facet headers :
-    theme(strip.background =element_rect(fill = 'white'))+
-    theme(strip.text = element_text(colour = 'black')) +
-    theme(plot.title = element_text(hjust = 0.5),
-          panel.grid = element_blank()))
+ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
+  geom_bar(stat = "identity", position = "fill",
+           colour = 'black', size = 0.2) +
+  facet_wrap('Compartment', ncol = 1) +
+  labs(fill = taxLvl, 
+       y = paste("Mean sample relative k-mer abundance"), 
+       x = 'Host moss species') +
+  scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
+  # italicize specieshost species names :
+  scale_x_discrete(labels = labelsItal) +
+  theme_light() + # fix facet headers :
+  theme(strip.background =element_rect(fill = 'white'))+
+  theme(strip.text = element_text(colour = 'black')) +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank())
 
 ggplot2::ggsave("out/community.png", bg = 'white',
                 width = 1600, height = 2400, units = 'px', dpi = 300)
