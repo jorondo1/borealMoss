@@ -34,7 +34,7 @@ topTaxaLvls <- rbind(topTaxa_Brown, topTaxa_Green) %>%
   # order taxa by mean relative abundance
   arrange(relAb) %$% aggTaxo %>% as.character %>% 
   # put "Others" first
-  setdiff(c('Others')) %>% c('Others',.)
+  setdiff(.,'Others') %>% c('Others',.)
 
 # Build plots dataframe :
 df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
