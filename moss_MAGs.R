@@ -5,7 +5,7 @@ p_load(tidyverse, rstatix, scales)
 read_tsv("data/genome.stats") %>% 
   # fix variables of interest
   transmute(`L50 (kb)` = ctg_L50/1000, 
-            `N50 (kb)` = ctg_N50/1000,
+            `N50` = ctg_N50,
             `Number of contigs`= n_contigs,
             GC = gc_avg, 
             MBP = contig_bp/1000000, 
@@ -24,9 +24,9 @@ MAG_summary <- moss.ps@tax_table %>% as.data.frame %>%
 
 # MAG summary table
 MAG_summary %>% 
-  select(MAG, Class, Genus, `L50 (kb)`, n_contigs, GC, MBP, comp, cont, QS) %>% 
+  select(MAG, Class, Genus, `L50 (kb)`, N50, `Number of contigs`, GC, MBP, comp, cont, QS) %>% 
   arrange(Class, Genus) %>% 
-  mutate(n_contigs = number(n_contigs, accuracy = 1)) %>% 
+  mutate(`Number of contigs` = number(`Number of contigs`, accuracy = 1)) %>% 
   mutate(across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
   write_csv("out/nMAG_statistics_full.csv")
 
@@ -38,10 +38,10 @@ MAG_summary %>%
 # Eremio table
 MAG_summary %>% 
   filter(Phylum == 'Eremiobacterota') %>% 
-  select(MAG, Class, Genus, `L50 (kb)`, n_contigs, GC, MBP, comp, cont, QS) %>% 
+  select(MAG, Class, Genus, `L50 (kb)`, `Number of contigs`, GC, MBP, comp, cont, QS) %>% 
   arrange(desc(QS)) %>% 
   mutate(comp = number(comp, accuracy = 0.1),
-         n_contigs = number(n_contigs, accuracy = 1),
+         `Number of contigs` = number(`Number of contigs`, accuracy = 1),
          across(where(is.numeric), ~number(.x, accuracy = 0.01))) %>% 
   write_csv("out/nMAG_stats_eremio.csv")
 
