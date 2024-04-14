@@ -42,7 +42,7 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
   mutate(Compartment = factor(Compartment, levels = c('Green', 'Brown')))
 
 # Plot !
-ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
+comm.p <- ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
   geom_bar(stat = "identity", position = "fill",
            colour = 'black', size = 0.2) +
   facet_wrap('Compartment', ncol = 1) +
@@ -58,8 +58,10 @@ ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
   theme(plot.title = element_text(hjust = 0.5),
         panel.grid = element_blank())
 
-ggplot2::ggsave("out/community.png", bg = 'white',
+ggplot2::ggsave("out/community.png", bg = 'white', plot = comm.p,
                 width = 1600, height = 2400, units = 'px', dpi = 240)
+
+write_rds(comm.p, 'out/community.RDS')
 
 #####################################
 #### PLOT 2. MAGs characteristics ####
