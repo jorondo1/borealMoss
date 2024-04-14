@@ -107,7 +107,7 @@ p2 <- p + guides(colour = "none") +
     geom_fruit(hm.mx, geom_tile, mapping=aes(y=MAG, fill = GC),
                offset = 0.1,width = 0.1) +
   scale_fill_gradient(low = 'seagreen4', high = 'lightgoldenrod1', name="% GC",
-                      guide = guide_colourbar(order = 1)) +
+                      guide = guide_colourbar(order = 1)) + #enforce legend display order
   # and Length
   new_scale_fill() +
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = MBP),
@@ -120,7 +120,7 @@ p2 <- p + guides(colour = "none") +
              offset = 0.1, width = 0.1) +
   scale_fill_gradient(low = 'ghostwhite', high = 'purple4',
                       guide = guide_colourbar(order = 3)) +
-  # and L50
+  # and N50
   new_scale_fill() + 
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = `N50`),
              offset = 0.1, width = 0.1) +
