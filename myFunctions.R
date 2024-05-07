@@ -165,7 +165,8 @@ parse_DAA_results <- function(DAA, # ANCOMBC output
                               test, # 'pair' or 'dunnet'
                               thr, # p-value threshold
                               gr, # group variable name (string)
-                              taxRank) { # Taxonomic rank tested
+                              taxRank, # Taxonomic rank tested
+                              ps) { # phyloseq object
   
   # define results list item name 
   listItem <- paste0('res_', test)
@@ -199,7 +200,7 @@ parse_DAA_results <- function(DAA, # ANCOMBC output
       # format group names (needs improvement...)
       Group = str_remove(Group, gr)) %>% 
     # add taxonomy to the data (to allow colouring by higher rank)
-    left_join(moss.ps@tax_table %>% as.data.frame %>% tibble %>% 
+    left_join(ps@tax_table %>% as.data.frame %>% tibble %>% 
                 dplyr::select(Domain:everything()[which(names(.) == taxRank)]) %>% 
                 unique,
               by = c("taxon" = taxRank)) %>% 

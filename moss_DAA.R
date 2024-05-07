@@ -84,9 +84,9 @@ DA_host_species <- moss.ps %>%
            n_cl = 10)
 # write_rds(DA_host_species,"data/R_out/DA_host_species.RDS")
 
-hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01, 'Host', 'Species')
+hostDA <- parse_DAA_results(DA_host_species, 'dunn', 0.01, 
+                            'Host', 'Species', moss.ps)
 write_rds(hostDA, 'data/R_out/DA_host_results.RDS')
-
 
 # order DAA across hosts
 DA_pw_host_Order <- ancombc2(

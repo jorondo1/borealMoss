@@ -47,19 +47,22 @@ comm.p <- ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
            colour = 'black', size = 0.2) +
   facet_wrap('Compartment', ncol = 1) +
   labs(fill = taxLvl, 
-       y = paste("Mean sample relative k-mer abundance"), 
-       x = 'Host moss species') +
+       y = paste("Mean relative sequence abundance by sample")) +
   scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
-  # italicize specieshost species names :
   scale_x_discrete(labels = labelsReg) +
   theme_light() + # fix facet headers :
-  theme(strip.background =element_rect(fill = 'white'))+
-  theme(strip.text = element_text(colour = 'black')) +
-  theme(plot.title = element_text(hjust = 0.5),
-        panel.grid = element_blank())
+  theme(strip.background =element_rect(fill = 'white'),
+    strip.text = element_text(colour = 'black', size = 18),
+    panel.grid = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size=14, color="black"), 
+    axis.title.y = element_text(size = 16, color = "black"),
+    axis.text.y  = element_text(size=14, color="black"),
+    legend.title = element_text(colour="black", size=14, face="bold"),
+    legend.text = element_text(colour="black", size = 12))
 
-ggplot2::ggsave("out/community.png", bg = 'white', plot = comm.p,
-                width = 1600, height = 2400, units = 'px', dpi = 240)
+#ggplot2::ggsave("out/community.png", bg = 'white', plot = comm.p,
+#                width = 1600, height = 2400, units = 'px', dpi = 240)
 
 write_rds(comm.p, 'out/community.RDS')
 
