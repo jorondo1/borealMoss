@@ -96,7 +96,9 @@ p <- ggtree(sub.tree, layout="fan", size=0.1) +
   xlim(-0.2, NA) + # prevent the high-level branches from clustering in the middle
   geom_tippoint(mapping = aes(color = Order), size = 2.5) +
   scale_colour_manual(values = col_order) +
-  guides(color = guide_legend(ncol = 1))
+  guides(color = guide_legend(ncol = 1)) +
+  theme(legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14))
 
 p$data %<>% 
   mutate(!!sym(taxLvl) := # dynamic management of variable name
@@ -146,7 +148,7 @@ gradient_legends <- get_legend(p2)
 
 (tree_MAGs.plot <- cowplot::ggdraw(
   plot_grid(order_legend, p2 + theme(legend.position = 'none'), gradient_legends, 
-            nrow = 1, ncol = 3, scale = c(3,1.2,1), rel_widths=c(2, 5,2))))
+            nrow = 1, ncol = 3, scale = c(3,1.2,1), rel_widths=c(3, 5,2))))
 
 ggplot2::ggsave("out/tree_MAGs.png", bg = 'white',
                 width = 4200, height = 2600, units = 'px', dpi = 300)

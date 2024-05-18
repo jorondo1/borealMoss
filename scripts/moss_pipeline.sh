@@ -169,7 +169,7 @@ assembly_stats
 # 	gtdbtk classify_wf --cpus 32 --genome_dir  $DREP_OUT/dereplicated_genomes\
 # 	--out_dir MAG_analysis/Annotation --mash_db $gtdb_db --extension fa
 #
-# The wvhole annotation pipeline:
+# The whole annotation pipeline:
 bash $ILL_PIPELINES/scripts/annotate_bins.sh \
 	-o MAG_analysis/Annotation \
 	-t 72 -drep $DREP_OUT/dereplicated_genomes
