@@ -6,7 +6,7 @@
 library(pacman)
 p_load(phyloseq, ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
        vegan, ComplexHeatmap, colorRamp2, circlize, patchwork, MetBrewer)
-source("myFunctions.R")
+source("scripts/myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
 ############################################################

@@ -5,6 +5,7 @@
 
 library(pacman)
 p_load(tidyverse, rstatix, scales)
+source("scripts/myFunctions.R")
 
 # Import MAG statistics
 read_tsv("data/genome.stats") %>% 

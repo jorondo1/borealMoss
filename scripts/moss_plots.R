@@ -6,7 +6,7 @@
 library(pacman)
 p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
        ggtree, ggtreeExtra, treeio, ggnewscale, cowplot, MetBrewer)
-source("myFunctions.R")
+source("scripts/myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
 # Taxonomic level for trees and groupings

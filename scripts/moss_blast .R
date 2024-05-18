@@ -6,7 +6,7 @@
 library(pacman)
 p_load(tidyverse, magrittr, taxize, doParallel, foreach, RColorBrewer)
 options(ENTREZ_KEY = "b69981923f198d72f31791714be0639a2507")
-source("myFunctions.R")
+source("scripts/myFunctions.R")
 
 # Parse blast output
 colNames<- c("staxids", "slen", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "score", "length", "pident", "nident", "mismatch", "qseqid", "qlen", "sseqid")

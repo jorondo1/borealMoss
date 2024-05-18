@@ -6,7 +6,7 @@
 library(pacman)
 p_load(phyloseq, tidyverse, magrittr, ComplexHeatmap, colorRamp2, circlize,
        purrr, patchwork, kableExtra)
-source("myFunctions.R")
+source("scripts/myFunctions.R")
 
 ##################################################################
 ##### PATHWAY COMPLETENESS AND COMPARTMENT-ASSOCIATED SPECIES #####

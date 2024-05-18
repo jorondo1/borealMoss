@@ -5,7 +5,7 @@
 
 library(pacman)
 p_load(tidyverse, magrittr, RColorBrewer, phyloseq, ape)
-source("myFunctions.R")
+source("scripts/myFunctions.R")
 
 # Sarah's PS object (based on Kraken taxonomic assignment)
 sarah.ps <- readRDS("data/ps_comptype.RDS")
