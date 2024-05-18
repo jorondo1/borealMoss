@@ -1,3 +1,8 @@
+################################################################################
+### AUTHOR : JONATHAN RONDEAU-LECLAIRE #########################################
+### Manuscript Plots ###########################################################
+################################################################################
+
 library(pacman)
 p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
        ggtree, ggtreeExtra, treeio, ggnewscale, cowplot, MetBrewer)

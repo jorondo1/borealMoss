@@ -1,3 +1,8 @@
+################################################################################
+### AUTHOR : JONATHAN RONDEAU-LECLAIRE #########################################
+### Differential abundance tests ###############################################
+################################################################################
+
 library(pacman)
 p_load(phyloseq, ANCOMBC, betareg, tidyverse, magrittr, DESeq2, vegan, RColorBrewer, bestNormalize,
        vegan, ComplexHeatmap, colorRamp2, circlize, patchwork, MetBrewer)

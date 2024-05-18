@@ -1,3 +1,8 @@
+################################################################################
+### AUTHOR : JONATHAN RONDEAU-LECLAIRE #########################################
+### Metabolism tests ###########################################################
+################################################################################
+
 library(pacman)
 p_load(phyloseq, tidyverse, magrittr, ComplexHeatmap, colorRamp2, circlize,
        purrr, patchwork, kableExtra)
@@ -111,82 +116,3 @@ test_results %>%
   filter(variable == 'compAssGreen') %>%  
   dplyr::select(pathway, name, pwGroup, Estimate, p_adj) %>% 
   write_csv("out/metabolic_test_full.csv")
-
-############################
-##### METABOLIC HEATMAP #####
-############################
-
-# taxID to Species conversion table
-taxID_list <- moss.ps@tax_table %>% 
-  data.frame %>% 
-  select(Species) %>%
-  rownames_to_column("taxID") %>% 
-  mutate(taxID = simplify_name(taxID)) %>% 
-  filter(taxID %in% colnames(pwComp))
-
-# Prepare metadata for Heatmap
-DAspec <- readRDS('data/R_out/speciesLFC_comp.RDS') %>% 
-  left_join(taxID_list, by = "Species")
-
-# Prepare values matrix for Heatmap
-pattern_regex <- gsub(" ", "_", pwComp$pwGroup %>% unique) %>% 
-  paste0("_") %>% 
-  paste(collapse = "|")
-
-prep_mat <- pwComp %>% 
-  dplyr::select(pwName, any_of(DAspec$taxID)) %>% 
-  # Filter out rows where the max of all values (except pwName) is 30% or less
-  filter(apply(select(., -pwName), 1, max) > 0.30) %>% 
-  # Remove rows full of zeros
-  filter(rowSums(select(., -pwName)) != 0)
-
-# Generate pw group index to split heatmap by row
-groupIndex <- str_extract(prep_mat$pwName, pattern_regex) %>% 
-  str_replace("_", " ") %>% str_replace("_","") %>%
-  str_replace("Carbon fixation", "Prokaryotic carbon fixation") %>% as.vector
-
-# remove pw group from pathway name and generate final matrix
-mat <- prep_mat %>%
-  mutate(pwName = str_remove(pwName, pattern_regex)) %>% 
-  column_to_rownames('pwName') %>% as.matrix
-
-# Create Heatmap!
-ht <- Heatmap(
-  mat,
-  name = "Pathway Completeness across Compartments",
-  col = colorRamp2(c(0, 0.5, 1), c("beige", "red", "darkorchid4")),
-  column_split = DAspec$compAss,
-  row_split = groupIndex,
-  heatmap_legend_param = list(
-    title = "Completeness",
-    title_position = "lefttop",
-    legend_direction = "horizontal"),
-  top_annotation = HeatmapAnnotation(
-    df = data.frame(Compartment = DAspec$compAss),
-    col = list(Compartment = c("Green" = compColours[2], 
-                               "Brown" = compColours[1])),
-    which = "col",  # 'col' or 'row' based on the orientation
-    show_legend = FALSE,
-    show_annotation_name = FALSE),
-  row_names_gp = gpar(fontsize = 8),
-  #row_names_rot=-45,
-  column_names_gp = gpar(fontsize = 12),
-  show_column_dend = FALSE,
-  show_row_dend = FALSE,
-  cluster_columns = TRUE)  # To keep the order of taxon as in DAspec
-
-draw(ht, heatmap_legend_side = "bot", 
-     annotation_legend_side = "bot",
-     #  column_title = "Carbon fixation and Methane metabolism pathway completeness.",
-     # column_title_gp=grid::gpar(fontsize=16)
-)
-
-# transpose to get MAG name as rows, modules as columns :
-# pw_t <- pw %>% dplyr::select(-module) %>% t %>% 
-#   data.frame %>% setNames(pw$module)
-
-# DA results only list the Species, not the shortened MAG name
-# Pathways matrix only has shortened MAG name as rows + modules as columns
-# I extracted the Species for these MAGs from the taxonomy list in JO_psMossMAGs.RDS file
-# But the MAG names written in the taxonomy file are written in the long form, so I had to shorten the names with one of the functions you wrote
-# I think I just x_joined (can't remember if it was left or inner) to match the Species to the pathway matrix names then left_joined that to DA results to get a matrix of all the DA output + modules

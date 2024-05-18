@@ -1,3 +1,8 @@
+################################################################################
+### AUTHOR : JONATHAN RONDEAU-LECLAIRE #########################################
+### Community Abundance Data Processing ########################################
+################################################################################
+
 library(pacman)
 p_load(tidyverse, magrittr, RColorBrewer, phyloseq, ape)
 source("myFunctions.R")
