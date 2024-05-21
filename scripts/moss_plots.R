@@ -143,7 +143,7 @@ p2 <- p + guides(colour = "none") +
   geom_fruit(hm.mx, geom_tile, mapping = aes(y = MAG, fill = QS),
              offset = 0.1, width = 0.1) + 
   scale_fill_gradient(low = "ghostwhite", high = "red4", name="Quality Score",
-                      guide = guide_colourbar(order = 5)); p2
+                      guide = guide_colourbar(order = 5))
 
 #p2 + geom_hilight(node = 121, fill = "NA",size= 5)
 
@@ -278,7 +278,7 @@ ggplot2::ggsave("out/DA_comp_tree.png",
 #######################################################
 
 read_rds('data/R_out/DA_pw_host_Order.RDS') %>% 
-  parse_DAA_results('pair', 0.01, 'Host', 'Order') %>% 
+  parse_DAA_results('pair', 0.01, 'Host', 'Order', moss.ps) %>% 
   #  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
   ggplot(aes(x = Group, y = taxon, fill = lfc)) +
   geom_tile() +
@@ -342,5 +342,36 @@ cntm.df %>%
 
 ggplot2::ggsave("out/cntm_comparison.png", bg = 'white',
                 width = 2700, height = 2400, units = 'px', dpi = 300)
+
+
+(cntm.df %>% filter(db == dbNames[2] | db == dbNames[4]) %>% 
+  ggplot(aes(x = db, y = cntm, fill=db, group = Sample)) +
+    geom_point() + geom_line() +
+    theme_minimal(base_size = 16) + guides(fill = 'none') +
+    labs(y = 'Sample k-mer containment', x = 'Reference database'))
+
+# Increase in containment across databases
+cont.increase <- raw %>% 
+  pivot_wider(names_from = db, values_from = cntm) %>% 
+  dplyr::select(Sample, custom, genbank) %>% 
+  mutate(increase = 100*(genbank - custom) / custom) %>% 
+  left_join(moss.ps@sam_data %>% data.frame %>% rownames_to_column("Sample"), 
+            by = "Sample")
+
+cont.increase %>% 
+  ggplot(aes(x = Host, y = increase, colour = Host)) + 
+  geom_boxplot() +
+  theme_light() +
+  labs(y = "% increase in containment") +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        panel.grid = element_blank())
+
+cont.increase %>% 
+  ggplot(aes(x = Compartment, y = custom, colour = Compartment)) + 
+  geom_boxplot() +
+  theme_light() +
+  labs(y = "containment") +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+        panel.grid = element_blank())
 
 

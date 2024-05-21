@@ -70,21 +70,3 @@ balto %>% ggplot(aes(x = Host, y = relAb, fill = Host))  +
   geom_violin() + geom_jitter() + theme_light() +
   facet_wrap('Compartment', ncol = 2) +
   labs(y = "Relative abundance", x = '')
-
-### Metabolism of Eremiobacterota for dall-e prompt:
-full_join(
-  read_delim("data/metabolic_summary__module_completeness_missing.tab"),
-  read_delim("data/metabolic_summary__module_completeness.tab"),
-  by = c('module', 'name', 'pathway group')) %>% 
-  dplyr::rename(pwGroup = `pathway group`) %>% 
-  rename_with(~str_remove_all(.x, "\\.faa\\.ko")) %>% 
-  mutate(pwName = paste0(gsub(" ","_", pwGroup), "_",name),
-         across(where(is.numeric), ~./100)) %>% 
-  select(module, name, pwGroup, eremio$MAG) %>% 
-  filter(rowSums(select(., where(is.numeric))) != 0) %$%
-  pwGroup %>% unique %>% intersect(c("Aromatics degradation", "Carbon fixation", 
-                                     "LPS metabolism", "Methane metabolism",
-                                     "Nitrogen metabolism", "Photosynthesis",
-                                     "Sulfur metabolism",
-                                     "Symbiosis"))
-

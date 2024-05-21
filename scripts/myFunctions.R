@@ -4,6 +4,13 @@
 
 # Moss section colours
 compColours <- c('darkgoldenrod4', 'darkolivegreen3')
+compColoursContour <- c("tan4", "darkolivegreen4")
+
+mossSpecies <- c("D. undulatum", "P. commune", "P. juniperinum", "P. piliferum")
+mossNamesFormatted <- c("D_undulatum" = "D. undulatum",
+                        "P_commune" = "P. commune",
+                        "P_juniperinum" = "P. juniperinum",
+                        "P_piliferum" = "P. piliferum")
 
 ### Italicize species names
 labelsItal <- c(expression(italic("D. undulatum")),

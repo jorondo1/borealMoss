@@ -15,7 +15,8 @@ source("scripts/myFunctions.R")
 # Pathway groups we are interested in
 pwGroups_interest <- c("Nitrogen metabolism", 
                        "Photosynthesis", 
-                       "Methane metabolism", "Carbon fixation")
+                       "Methane metabolism", 
+                       "Carbon fixation")
 
 pwModules_interest <- c("M00173", "M00376", "M00375", "M00374",
                         "M00377", "M00579", "M00260")
