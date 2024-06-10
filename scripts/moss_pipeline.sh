@@ -1,10 +1,9 @@
-newgrp def-ilafores
 ILAFORES=/home/def-ilafores
-PARENT_DIR=${ILAFORES}/analysis/boreal_moss
+MOSS=${ILAFORES}/analysis/boreal_moss
 ILL_PIPELINES=${ILAFORES}/programs/ILL_pipelines
 SOURMASH="/home/def-ilafores/programs/ILL_pipelines/containers/sourmash.4.7.0.sif sourmash"
-MAG_DIR="$PARENT_DIR/MAG_analysis"
-cd $PARENT_DIR
+MAG_DIR="$MOSS/MAG_analysis"
+cd $MOSS
 source /home/ronj2303/functions.sh 
 	
 ###############
@@ -16,11 +15,11 @@ while read -r SAM A B; do
 	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> raw_samples.tsv
 done < metadata.txt
 
-mkdir -p $PARENT_DIR/preproc
+mkdir -p $MOSS/preproc
 export HOST=/cvmfs/datahub.genap.ca/vhost34/def-ilafores/host_genomes
 bash $ILL_PIPELINES/generateslurm_preprocess.kneaddata.sh \
---sample_tsv ${PARENT_DIR}/raw_samples.tsv \
---out ${PARENT_DIR}/preproc \
+--sample_tsv ${MOSS}/raw_samples.tsv \
+--out ${MOSS}/preproc \
 --db "${HOST}/Pschreberi_index/Pschreberi ${HOST}/Ppatens_index/Ppatens" \
 --slurm_email "ronj2303@usherbrooke.ca" \
 --trimmomatic_options "SLIDINGWINDOW:4:30 MINLEN:50" \
@@ -41,8 +40,8 @@ while read SAM A1 A2; do
 done < metadata.txt # NEED DIFERENT FILE FOR CAT
 
 bash $ILL_PIPELINES/generateslurm_assembly_bin_refinement.metawrap.sh \
---sample_tsv ${PARENT_DIR}/preproc/clean_samples.tsv \
---out ${PARENT_DIR}/assembly \
+--sample_tsv ${MOSS}/preproc/clean_samples.tsv \
+--out ${MOSS}/assembly \
 --slurm_email "ronj2303@usherbrooke.ca" \
 --refinement_min_compl 50 --refinement_max_cont 10 \
 --slurm_walltime 72:00:00
@@ -77,7 +76,7 @@ mkdir -p cat_reads
 cat_samples metadata.txt
 
 sed 's/\t/_/g' unique_combinations.txt > cat_samples.txt
-tsv=${PARENT_DIR}/cat_reads/cat_samples.tsv
+tsv=${MOSS}/cat_reads/cat_samples.tsv
 :> $tsv
 while read SAM; do
 	SAM1=$(find cat_reads -type f -name "${SAM}_1.fastq" -exec realpath {} \;)
@@ -88,7 +87,7 @@ done < cat_samples.txt
 # NODES:
 bash $ILL_PIPELINES/generateslurm_assembly_bin_refinement.metawrap.sh \
 --sample_tsv $tsv \
---out ${PARENT_DIR}/coassembly \
+--out ${MOSS}/coassembly \
 --slurm_email "ronj2303@usherbrooke.ca" \
 --refinement_min_compl 50 --refinement_max_cont 10 \
 --slurm_walltime 72:00:00 --slurm_threads 48 --slurm_mem 240G
@@ -116,10 +115,10 @@ done < cat_left.txt
 ###################
 
 # Gather/rename all bins
-DREP_OUT=${PARENT_DIR}/MAG_analysis/drep_genomes
-mkdir -p $DREP_OUT ${PARENT_DIR}/MAG_analysis/all_bins
+DREP_OUT=${MOSS}/MAG_analysis/drep_genomes
+mkdir -p $DREP_OUT ${MOSS}/MAG_analysis/all_bins
 
-for bin in $(find ${PARENT_DIR}/coassembly/bin_refinement/*/metawrap_50_10_bins/ -type f); do
+for bin in $(find ${MOSS}/coassembly/bin_refinement/*/metawrap_50_10_bins/ -type f); do
 	SAM=$(echo $bin | sed 's/.*bin_refinement\///' | sed 's/\/metawrap.*//')
 	BIN=$(basename $bin)
 	cp $bin MAG_analysis/all_bins/${BIN/#bin/${SAM}_bin}
@@ -181,7 +180,7 @@ mkdir -p $MAG_DIR/mash_dist
 
 # Build sketch
 cd $ILAFORES/EnsemblBacteria57
-cp $PARENT_DIR/Hannah_MAGs/*.gz .
+cp $MOSS/Hannah_MAGs/*.gz .
 find -type f -name '*.fa.gz' | sed 's/\.\///' > $MAG_DIR/mash_dist/genomes_list.txt
 cd $MAG_DIR/mash_dist
 
