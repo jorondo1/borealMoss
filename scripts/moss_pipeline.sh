@@ -220,10 +220,19 @@ find $MAG_DIR/all_bins/ -type f -name '*.f*a*' -print0 | xargs -0 realpath |
 
 # sketch novel genomes
 ml apptainer; tmp=$PWD
-singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \ 
+singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
 	$SOURMASH sketch dna -p scaled=1000,k=31,abund \
 	--name-from-first --from-file moss_MAGs.txt \
 		--output-dir moss_MAGs
+
+## Novel genomes need renaming...
+mkdir moss_MAGs_renamed/
+for file in $(find moss_MAGs -type f -name '*.sig'); do
+	new_name=$(basename $file)
+	singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
+	$SOURMASH sig rename $file "${new_name%.fa.sig}" -o moss_MAGs_renamed/${new_name}
+done
+
 
 ml apptainer; tmp=$PWD
 singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast \
@@ -238,14 +247,6 @@ singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast 
 # singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
 # 	$SOURMASH sig describe ./Brown_AD.bin.9.fa.sig
 #
-
-mkdir moss_MAGs_renamed/
-for file in $(find moss_MAGs -type f -name '*.sig'); do
-	new_name=$(basename $file)
-	singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp \
-	$SOURMASH sig rename $file "${new_name%.fa}" -o moss_MAGs_renamed/${new_name}
-done
-
 
 #################################
 ### CONTAINMENT & ABUNDANCE #####
@@ -265,7 +266,7 @@ mkdir -p genome_sketches/moss_samples $gather/logs
 sbatch --array=1-140 $PWD/scripts/sourmash_compare_custom.sh
 
 # If some didn,t work, find the missing array numbers you need to rerun :
-redo=$(grep -vnf <(ls SM_abund/*genbank_default* | sed 's/.genbank_default_gather.csv//' | sed 's/SM_abund\///') preproc/clean_samples.tsv | cut -d':' -f1 |  paste -sd,)
+redo=$(grep -vn <(ls SM_abund/*genbank_default* | sed 's/.genbank_default_gather.csv//' | sed 's/SM_abund\///') preproc/clean_samples.tsv | cut -d':' -f1 |  paste -sd,)
 sbatch --array="$redo" $PWD/scripts/sourmash_compare_custom.sh
 
 # HOST CONTAMINATION
