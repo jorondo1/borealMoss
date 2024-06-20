@@ -438,3 +438,23 @@ for file in $(find DarkMatter/blast/nt -name '*blastout'); do
 done
 
 tar -zcvf blast.tar.gz $(find DarkMatter/blast/nt/staxid_slen -name "*.blastout")
+
+
+############# 
+# IF you deleted the coverage files you're gonna need it for ENA upload... FML
+#############
+
+export ANCHOR=/nfs3_ib/nfs-ip34
+export COVERAGE=$ANCHOR/$PWD/coassembly/assembly/assembly_coverage.txt
+
+> "$COVERAGE"
+for sample in $(find coassembly/assembly/ -maxdepth 1 -mindepth 1 -type d -exec basename {} \;); do
+	F1=${ANCHOR}$PWD/cat_reads/${sample}_1.fastq.gz
+	F2=${ANCHOR}$PWD/cat_reads/${sample}_2.fastq.gz
+	ASSEMBLY=${ANCHOR}$PWD/coassembly/assembly/${sample}/${sample}.fa.gz
+	echo -e "${sample}\t${F1}\t${F2}\t${ASSEMBLY}" >> $COVERAGE
+done
+wc $COVERAGE
+sbatch --array=1-$(wc $COVERAGE | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh
+
+
