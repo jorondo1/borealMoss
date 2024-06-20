@@ -443,18 +443,42 @@ tar -zcvf blast.tar.gz $(find DarkMatter/blast/nt/staxid_slen -name "*.blastout"
 ############# 
 # IF you deleted the coverage files you're gonna need it for ENA upload... FML
 #############
-
 export ANCHOR=/nfs3_ib/nfs-ip34
-export COVERAGE=$ANCHOR/$PWD/coassembly/assembly/assembly_coverage.txt
+assemblies=$MOSS/coassembly/assembly
+for dir in $(ls "$assemblies"); do
+	gzip -c $assemblies/$dir/final_assembly.fasta > $assemblies/$dir/${dir}.fa.gz
+done
 
-> "$COVERAGE"
-for sample in $(find coassembly/assembly/ -maxdepth 1 -mindepth 1 -type d -exec basename {} \;); do
+### PRIMARY ASSEMBLIES ############
+DIR=$ANCHOR/$PWD/coassembly/assembly
+LIST=$DIR/assembly_coverage.txt
+> "$LIST"
+for sample in $(find $DIR -maxdepth 1 -mindepth 1 -type d -exec basename {} \;); do
 	F1=${ANCHOR}$PWD/cat_reads/${sample}_1.fastq.gz
 	F2=${ANCHOR}$PWD/cat_reads/${sample}_2.fastq.gz
-	ASSEMBLY=${ANCHOR}$PWD/coassembly/assembly/${sample}/${sample}.fa.gz
-	echo -e "${sample}\t${F1}\t${F2}\t${ASSEMBLY}" >> $COVERAGE
-done
-wc $COVERAGE
-sbatch --array=1-$(wc $COVERAGE | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh
+	ASSEMBLY=$DIR/${sample}/${sample}.fa.gz
+	echo -e "${sample}\t${F1}\t${F2}\t${ASSEMBLY}" >> $LIST
+done; wc $LIST
 
+sbatch --array=1-$(wc $LIST | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh "$LIST"
 
+### BINS ##########################
+bins=${MOSS}/MAG_analysis/all_bins
+# gzip and create coverage directory 
+for bin in $(find ${bins} -name '*.fa'); do
+	gzip -k $bin
+	mkdir ${bin%.fa}_coverage && mv $bin.gz $_
+done 
+
+DIR=$ANCHOR$PWD/MAG_analysis/all_bins
+LIST=$DIR/assembly_coverage.txt
+> "$LIST"
+for sample in $(find $DIR -type f -name '*.fa.gz' -exec basename {} \;); do
+	F1=${ANCHOR}$PWD/cat_reads/${sample%%.*}_1.fastq.gz
+	F2=${ANCHOR}$PWD/cat_reads/${sample%%.*}_2.fastq.gz
+	BIN=$DIR/${sample%.fa*}_coverage/${sample}
+	echo -e "${sample%.fa*}\t${F1}\t${F2}\t${BIN}" >> $LIST
+done; wc $LIST
+
+sbatch --array=1-$(wc $LIST | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh "$LIST"
+# rm $DIR/*coverage/*.txt $DIR/*coverage/*.sam $DIR/*coverage/*.bam

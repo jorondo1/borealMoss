@@ -13,16 +13,23 @@ ml mugqic/bwa mugqic/samtools/1.19.2 mugqic/bedtools/2.30.0 mugqic/seqkit/2.5.0
 module list
 
 # parse paths to required files
-export SAM_NUM=$(awk "NR==$SLURM_ARRAY_TASK_ID" ${COVERAGE})
+export SAM_NUM=$(awk "NR==$SLURM_ARRAY_TASK_ID" "${1}")
 IFS=$'\t' read -r SAM_ID FQ1 FQ2 ASSEMBLY <<< "$SAM_NUM" # array it up
 export SAM_ID FQ1 FQ2 ASSEMBLY
-OUT=$(dirname $ASSEMBLY)/coverage
+OUT=$(dirname $ASSEMBLY)
 
-mkdir -p $OUT
+if [ ! -d "${OUT}" ]; then
+	echo "bin coverage directory not found!"
+	exit 1
+fi
 
+# Check if script output file is already available, and whether it's empty
+if [ -f "$OUT"/average_coverage.txt ]; then 
 if [ $(wc -l < "$OUT"/average_coverage.txt) -gt 0 ]; then
 	echo "Average coverage already computed!"
 	exit 1
+else echo "Empty coverage file found, proceeding"
+fi
 fi
 
 # BWT index
@@ -45,14 +52,14 @@ fi
 
 # Alignemnt
 echo "Aligning reads to the assembly..."
-if [[ -f "$OUT/aligned_reads.sam" ]]; then
+if [[ ! -f "$OUT/aligned_reads.sam" ]]; then
 	bwa mem -t 48 "$ASSEMBLY" "$FQ1_s" "$FQ2_s" > $OUT/aligned_reads.sam
 else echo "Reads already aligned. Skipping..."
 fi
 
 #Conversions
 echo "Converting and sorting SAM file..."
-samtools view -@ 48 -S -b $OUT/aligned_reads.sam > $OUT/aligned_reads.bam
+samtools view -@ 48 -S -b $OUT/aligned_reads.sam -o $OUT/aligned_reads.bam
 samtools sort -@ 48 $OUT/aligned_reads.bam -o $OUT/sorted_reads.bam
 samtools index $OUT/sorted_reads.bam
 

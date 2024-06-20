@@ -1,6 +1,4 @@
 MOSS=/home/def-ilafores/analysis/boreal_moss
-assemblies=$MOSS/coassembly/assembly
-bins=${MOSS}/MAG_analysis/all_bins
 cd $MOSS
 module load java
 
@@ -37,27 +35,19 @@ done
 ###################################
 
 # These are co-assemblies, therefore I am supplying the original samples they are from in the REF_RUN field, which can be removed for regular assemblies.
-
+assemblies=$MOSS/coassembly/assembly
 # Requires a reference file mapping which samples were concatenated
 # here it's ./unique_combinations.txt
 
 # Also requires the accessions-to-sample name file
-
-for dir in $(ls "$assemblies"); do
-	gzip -c $assemblies/$dir/final_assembly.fasta > $assemblies/$dir/${dir}.fa.gz
-done
-
 mkdir -p ENA_submission/assembly_manifests
 
 while IFS=$'\t' read -r id sample; do 
 
-if [[ ! -d "$assemblies/$sample" ]]; then
-	continue #skip iteration if assembly doesn't exist
-fi
-
 file="ENA_submission/assembly_manifests/${id}_manifest.txt"
 COM=${sample%_*} # compartment
 MS=${sample#*_} # microsite
+
 # find samples from this compartment & microsite
 sam_list=($(cut -f1,5,6 comptype.tsv | awk -v com="$COM" -v ms="$MS" '$2 == com && $3 == ms' | cut -f1))
 echo ${sam_ID[@]}
@@ -67,14 +57,13 @@ sam_ID=()
 for samples in "${sam_list[@]}"; do
 	sam_ID+=($(grep -l $samples ENA_submission/run_manifests/*.txt | xargs grep SAMPLE | cut -f2))
 done
-# compute coverage 
 
 > ${file}
 echo -e "STUDY\tPRJEB76464" >> "$file"
-echo -e "SAMPLE\t${id}" >> "$file" ### MULTIPLE ?!
-echo -e "ASSEMBLYNAME\tBoreal Moss Metagenome Assembly" >> "$file" 
+echo -e "SAMPLE\t${id}" >> "$file" 
+echo -e "ASSEMBLYNAME\tBoreal Moss Metagenome Co-Assembly ${COM}_${MS}" >> "$file" 
 echo -e "ASSEMBLY_TYPE\tprimary metagenome" >> "$file" 
-echo -e "COVERAGE\t$(cat $assemblies/$sample/coverage/average_coverage.txt)" >> "$file" 
+echo -e "COVERAGE\t$(cat $assemblies/$sample/${sample}_coverage/average_coverage.txt)" >> "$file" 
 echo -e "PROGRAM\tSPAdes3.15.4,MEGAHIT1.2.9" >> "$file" 
 echo -e "PLATFORM\tIllumina Novaseq 6000" >> "$file" 
 echo -e "DESCRIPTION\tCoassembly of multiple samples by host species, gametophyte section and microsite." >> "$file" 
@@ -92,12 +81,37 @@ done
 ##################################
 ### Submitting binned assemblies #
 ##################################
+bins=${MOSS}/MAG_analysis/all_bins
 
-for bin in $(find ${bins} -name '*.fa'); do
-	gzip -k $bin
-done 
+mkdir -p ENA_submission/bin_manifests
 
-mkdir -p ENA_submission/bins_manifests
+while IFS=$'\t' read -r id bin; do 
 
+file="ENA_submission/bin_manifests/${id}_manifest.txt"
+COM=${sample%_*} # compartment
+segment=${sample#*_}; MS=${segment%%.*} # microsite
+NUM=${segment##*.} # bin number
 
+# find samples from this compartment & microsite
+sam_list=($(cut -f1,5,6 comptype.tsv | awk -v com="$COM" -v ms="$MS" '$2 == com && $3 == ms' | cut -f1))
 
+# extract their corresponding ENA id
+sam_ID=()
+for samples in "${sam_list[@]}"; do
+	sam_ID+=($(grep -l $samples ENA_submission/run_manifests/*.txt | xargs grep SAMPLE | cut -f2))
+done
+
+> ${file}
+echo -e "STUDY\tPRJEB76464" >> "$file"
+echo -e "SAMPLE\t${id}" >> "$file" 
+echo -e "ASSEMBLYNAME\tBoreal Moss Metagenome Coassembled Bin ${COM}_${MS}_${NUM}" >> "$file" 
+echo -e "ASSEMBLY_TYPE\tbinned metagenome" >> "$file" 
+echo -e "COVERAGE\t$(cat ${bins}/${bin}_coverage/average_coverage.txt)" >> "$file" 
+echo -e "PROGRAM\tSPAdes3.15.4,MEGAHIT1.2.9" >> "$file" 
+echo -e "PLATFORM\tIllumina Novaseq 6000" >> "$file" 
+echo -e "DESCRIPTION\tCoassembly of multiple samples by host species, gametophyte section and microsite. Binned using Concoct, Maxbin2 and Metabat2, refined using metawrap's bin_refinement module." >> "$file" 
+echo -e "FASTA\t$bins/$bin.fa.gz" >> "$file"
+echo -e "RUN_REF\t$(echo ${sam_ID[@]} | tr ' ', ',')" >> "$file"
+
+# find samples from this compartment & microsite
+done <(tail -n +2 ENA_submission/accessions_bins.tsv | awk -F'\t' '{print $2 "\t" $3}')
