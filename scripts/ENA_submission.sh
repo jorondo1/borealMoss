@@ -1,5 +1,8 @@
 MOSS=/home/def-ilafores/analysis/boreal_moss
+assemblies=$MOSS/coassembly/assembly
+bins=${MOSS}/MAG_analysis/all_bins
 cd $MOSS
+module load java
 
 ####################################
 ### Submitting raw (clean) samples #
@@ -18,9 +21,9 @@ echo -e "INSERT_SIZE\t150" >> "$file"
 echo -e "LIBRARY_SOURCE\tMETAGENOMIC" >> "$file"
 echo -e "LIBRARY_SELECTION\tRANDOM" >> "$file"
 echo -e "LIBRARY_STRATEGY\tWGS" >> "$file"
-for fastq in $(find "$MOSS"/preproc/"$sample" -type f -name '*.fastq.gz'); do
-	echo -e "FASTQ\t${fastq}" >> "$file"
-done
+echo -e "FASTQ\t$MOSS"/preproc/$sample/${sample}_1.fastq.gz >> "$file"
+echo -e "FASTQ\t$MOSS"/preproc/$sample/${sample}_2.fastq.gz >> "$file"
+
 done < <(tail -n +2 ENA_submission/samples_report.tsv | awk -F'\t' '{print $1 "\t" $2}')
 
 for man in $(find ENA_submission/run_manifests -type f -name '*manifest.txt'); do
@@ -33,27 +36,68 @@ done
 ### Submitting primary assemblies #
 ###################################
 
+# These are co-assemblies, therefore I am supplying the original samples they are from in the REF_RUN field, which can be removed for regular assemblies.
+
+# Requires a reference file mapping which samples were concatenated
+# here it's ./unique_combinations.txt
+
+# Also requires the accessions-to-sample name file
+
+for dir in $(ls "$assemblies"); do
+	gzip -c $assemblies/$dir/final_assembly.fasta > $assemblies/$dir/${dir}.fa.gz
+done
+
 mkdir -p ENA_submission/assembly_manifests
 
-assemblies=$MOSS/coassembly/assembly
-for dir in $(ls "$assemblies"); do
-	gzip -c $assemblies/$dir/final_assembly.fasta > $assemblies/$dir/${dir}_coassembly.fa.gz
+while IFS=$'\t' read -r id sample; do 
 
-while read -r sample Host; do 
-file="ENA_submission/assembly_manifests/${sample}_manifest.txt"
-> ${file}
-echo -e "STUDY\tPRJEB76464" >> "$file" 
-echo -e "SAMPLE\t${sample}" >> "$file" ### MULTIPLE ?!
-echo -e "ASSEMBLYNAME\tBoreal Moss Metagenome Assembly"
-echo -e "ASSEMBLY_TYPE\tprimary metagenome"
-echo -e "COVERAGE\t"
-echo -e "PROGRAM\tSPAdes3.15.4;MEGAHIT1.2.9"
-echo -e "FASTQ\t$(find coassembly/assembly/$assembly -type f -name '*.fastq.gz')" >> "$file"
-###### INCOMPLETE
-done < <(tail -n +2 ENA_submission/samples_report.tsv)
+if [[ ! -d "$assemblies/$sample" ]]; then
+	continue #skip iteration if assembly doesn't exist
+fi
 
-for man in $(find ENA_submission/run_manifests -type f '*manifest.txt'); do
-java -jar /home/def-ilafores/programs/webin-cli-7.2.1.jar \
-	-context reads -userName Webin-67053 -password LRCGsnth==1 \
-	-submit -manifest "$man"
+file="ENA_submission/assembly_manifests/${id}_manifest.txt"
+COM=${sample%_*} # compartment
+MS=${sample#*_} # microsite
+# find samples from this compartment & microsite
+sam_list=($(cut -f1,5,6 comptype.tsv | awk -v com="$COM" -v ms="$MS" '$2 == com && $3 == ms' | cut -f1))
+echo ${sam_ID[@]}
+
+# extract their corresponding ENA id
+sam_ID=()
+for samples in "${sam_list[@]}"; do
+	sam_ID+=($(grep -l $samples ENA_submission/run_manifests/*.txt | xargs grep SAMPLE | cut -f2))
 done
+# compute coverage 
+
+> ${file}
+echo -e "STUDY\tPRJEB76464" >> "$file"
+echo -e "SAMPLE\t${id}" >> "$file" ### MULTIPLE ?!
+echo -e "ASSEMBLYNAME\tBoreal Moss Metagenome Assembly" >> "$file" 
+echo -e "ASSEMBLY_TYPE\tprimary metagenome" >> "$file" 
+echo -e "COVERAGE\t$(cat $assemblies/$sample/coverage/average_coverage.txt)" >> "$file" 
+echo -e "PROGRAM\tSPAdes3.15.4,MEGAHIT1.2.9" >> "$file" 
+echo -e "PLATFORM\tIllumina Novaseq 6000" >> "$file" 
+echo -e "DESCRIPTION\tCoassembly of multiple samples by host species, gametophyte section and microsite." >> "$file" 
+echo -e "FASTA\t$assemblies/$sample/$sample.fa.gz" >> "$file"
+echo -e "RUN_REF\t$(echo ${sam_ID[@]} | tr ' ', ',')" >> "$file"
+
+done < <(tail -n +2 ENA_submission/accessions_coass.tsv | awk -F'\t' '{print $2 "\t" $3}')
+
+for man in $(find ENA_submission/assembly_manifests -type f -name '*manifest.txt'); do
+java -jar /home/def-ilafores/programs/webin-cli-7.2.1.jar \
+	-context genome -userName Webin-67053 -password LRCGsnth==1 \
+	-submit -test -manifest "$man" #THIS IS A TEST 
+done
+
+##################################
+### Submitting binned assemblies #
+##################################
+
+for bin in $(find ${bins} -name '*.fa'); do
+	gzip -k $bin
+done 
+
+mkdir -p ENA_submission/bins_manifests
+
+
+
