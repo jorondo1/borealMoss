@@ -1,10 +1,8 @@
-ILAFORES=/home/def-ilafores
-MOSS=${ILAFORES}/analysis/boreal_moss
-ILL_PIPELINES=${ILAFORES}/programs/ILL_pipelines
-SOURMASH="/home/def-ilafores/programs/ILL_pipelines/containers/sourmash.4.7.0.sif sourmash"
-MAG_DIR="$MOSS/MAG_analysis"
+export SOURMASH="/home/def-ilafores/programs/ILL_pipelines/containers/sourmash.4.7.0.sif sourmash"
+export MAG_DIR="$MOSS/MAG_analysis"
+export HOST=$ANCHOR/fast/def-ilafores/host_genomes
 cd $MOSS
-source /home/ronj2303/functions.sh 
+source /home/ronj2303/functions.sh
 	
 ###############
 ### CLEANING ###
@@ -15,15 +13,13 @@ while read -r SAM A B; do
 	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> raw_samples.tsv
 done < metadata.txt
 
-mkdir -p $MOSS/preproc
-export HOST=/cvmfs/datahub.genap.ca/vhost34/def-ilafores/host_genomes
+mkdir -p $MOSS/preproc_polcom
 bash $ILL_PIPELINES/generateslurm_preprocess.kneaddata.sh \
 --sample_tsv ${MOSS}/raw_samples.tsv \
---out ${MOSS}/preproc \
---db "${HOST}/Pschreberi_index/Pschreberi ${HOST}/Ppatens_index/Ppatens" \
---slurm_email "ronj2303@usherbrooke.ca" \
+--out ${MOSS}/preproc_polcom \
+--db "${HOST}/PolCom_index/PolCom_genome" \
 --trimmomatic_options "SLIDINGWINDOW:4:30 MINLEN:50" \
---slurm_walltime "12:00:00"
+--slurm_walltime "24:00:00"
 
 find preproc/S-* -name '*paired_1*.fastq' | parallel -j 72 'echo -n {}" "; grep -c "^@" {}' > sequence_counts.txt
 find ../20220825_boreal_moss/data -name '*.S-*R1.fastq.gz' | parallel -j 72 "echo -n {} ' '; zcat {} | grep -c '^@'" > raw_sequence_counts.txt
@@ -121,7 +117,7 @@ mkdir -p $DREP_OUT ${MOSS}/MAG_analysis/all_bins
 for bin in $(find ${MOSS}/coassembly/bin_refinement/*/metawrap_50_10_bins/ -type f); do
 	SAM=$(echo $bin | sed 's/.*bin_refinement\///' | sed 's/\/metawrap.*//')
 	BIN=$(basename $bin)
-	cp $bin MAG_analysis/all_bins/${BIN/#bin/${SAM}_bin}
+	cp $bin MAG_analysis/all_bins/${BIN/#bin/${SAM}_bin} 
 done
 
 bash $ILL_PIPELINES/scripts/dereplicate_bins.dRep.sh \
@@ -149,7 +145,7 @@ cat $DREP_OUT/gunc/GUNC.progenomes_2.1.maxCSS_level.tsv | \
 	awk '{if($8 > 0.45 && $9 > 0.05 && $12 > 0.5)print$1}' > $DREP_OUT/gunc/gunc_contaminated.txt
 
 for R in $(cat $DREP_OUT/gunc/gunc_contaminated.txt); do 
-rm $DREP_OUT/dereplicated_genomes/${R}.fa 
+	rm $DREP_OUT/dereplicated_genomes/${R}.fa 
 done
 
 # Print assembly stats (custom function in /home/ronj2303/functions.sh)
@@ -481,4 +477,4 @@ for sample in $(find $DIR -type f -name '*.fa.gz' -exec basename {} \;); do
 done; wc $LIST
 
 sbatch --array=1-$(wc $LIST | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh "$LIST"
-# rm $DIR/*coverage/*.txt $DIR/*coverage/*.sam $DIR/*coverage/*.bam
+# rm $bins/${bin}_coverage/*.gz.* $bins/${bin}_coverage/aligned* $bins/${bin}_coverage/*.txt

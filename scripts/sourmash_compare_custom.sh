@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 
 #SBATCH --mail-type=END,FAIL
 #SBATCH -D /nfs3_ib/nfs-ip34/home/def-ilafores/analysis/boreal_moss/SM_abund
