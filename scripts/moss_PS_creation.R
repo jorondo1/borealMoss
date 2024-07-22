@@ -50,7 +50,12 @@ tax_GTDB <- read_delim("data/gtdbtk_summary.tsv") %>%
                   " ", unique_MAGs),
            Species
          )) %>% 
-  select(-unique_MAGs)
+  select(-unique_MAGs) %>% 
+  
+  # From manuscript reviewing: we swap Rhizobiales for Hyphomicrobiales and Cyanobacteriales for Nostocales
+  mutate(Order = case_when(Order == 'Cyanobacteriales' ~ 'Nostocales',
+                           Order == 'Rhizobiales' ~ 'Hyphomicrobiales',
+                           TRUE ~ Order))
 
 # Some taxonomic levels have redundancies because higher levels use alternative names,
 # herego there can be a duplicate Order whose Class or Phylum is different. Some 
@@ -71,10 +76,10 @@ corrFamily <- c("Enterobacteriaceae_A" = "Enterobacteriaceae",
                 "Burkholderiaceae_B" = "Burkholderiaceae")
 
 # correct, but check family too...
-tax_GTDB %<>% mutate(Phylum = recode(Phylum, !!!corrPhylum),
-                     Class = recode(Class, !!!corrClass),
-                     Order = recode(Order, !!!corrOrder),
-                     Family = recode(Family, !!!corrFamily))
+tax_GTDB %<>% mutate(Phylum = dplyr::recode(Phylum, !!!corrPhylum),
+                     Class = dplyr::recode(Class, !!!corrClass),
+                     Order = dplyr::recode(Order, !!!corrOrder),
+                     Family = dplyr::recode(Family, !!!corrFamily))
 
 ##########################
 #### Genbank Taxonomy #####

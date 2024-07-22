@@ -1,15 +1,23 @@
-pathway,name,pwGroup,Estimate,p_adj
-M00173,Reductive citrate cycle (Arnon-Buchanan cycle),Carbon fixation,-0.26536534710272935,0.06440647523830326
-M00374,Dicarboxylate-hydroxybutyrate cycle,Carbon fixation,-0.06119972656966076,0.6314799784768205
-M00376,3-Hydroxypropionate bi-cycle,Carbon fixation,-0.1123066696188367,0.571128191214718
-M00377,Reductive acetyl-CoA pathway (Wood-Ljungdahl pathway),Carbon fixation,0.21552035471924688,0.2958900207774076
-M00579,"Phosphate acetyltransferase-acetate kinase pathway, acetyl-CoA => acetate",Carbon fixation,-1.3714414258458751,0.011165171592898199
-M00174,"Methane oxidation, methanotroph, methane => formaldehyde",Methane metabolism,0.6115342584309897,0.2899710961479536
-M00344,"Formaldehyde assimilation, xylulose monophosphate pathway",Methane metabolism,-0.2876122756352767,0.4920521927733354
-M00345,"Formaldehyde assimilation, ribulose monophosphate pathway",Methane metabolism,-1.089959549457592,0.03147004454345958
-M00346,"Formaldehyde assimilation, serine pathway",Methane metabolism,0.2414521762252061,0.2899710961479536
-M00357,"Methanogenesis, acetate => methane",Methane metabolism,-0.47745076206247566,0.01799215358819623
-M00358,Coenzyme M biosynthesis,Methane metabolism,-2.0460556202193185,0.01327403208005062
-M00378,F420 biosynthesis,Methane metabolism,-1.4116428912635284,0.1546132434452438
-M00531,"Assimilatory nitrate reduction, nitrate => ammonia",Nitrogen metabolism,-0.049717484327182516,0.9279719105510232
-M00597,Anoxygenic photosystem II [BR:ko00194],Photosynthesis,3.9999166550668184,0.008133414613307039
+pathway,name,pwGroup,Estimate,p_adj,sig
+M00165,Reductive pentose phosphate cycle (Calvin cycle),Carbon fixation,-0.297,0.301,
+M00166,"Reductive pentose phosphate cycle, ribulose-5P => glyceraldehyde-3P",Carbon fixation,-0.317,0.347,
+M00167,"Reductive pentose phosphate cycle, glyceraldehyde-3P => ribulose-5P",Carbon fixation,-0.352,0.442,
+M00168,"CAM (Crassulacean acid metabolism), dark",Carbon fixation,0.215,0.828,
+M00169,"CAM (Crassulacean acid metabolism), light",Carbon fixation,-1.403,0.069,
+M00170,"C4-dicarboxylic acid cycle, phosphoenolpyruvate carboxykinase type",Carbon fixation,0.19,0.515,
+M00172,"C4-dicarboxylic acid cycle, NADP - malic enzyme type",Carbon fixation,-0.38,0.231,
+M00173,Reductive citrate cycle (Arnon-Buchanan cycle),Carbon fixation,-0.265,0.071,
+M00374,Dicarboxylate-hydroxybutyrate cycle,Carbon fixation,-0.061,0.611,
+M00376,3-Hydroxypropionate bi-cycle,Carbon fixation,-0.112,0.543,
+M00377,Reductive acetyl-CoA pathway (Wood-Ljungdahl pathway),Carbon fixation,0.216,0.301,
+M00579,"Phosphate acetyltransferase-acetate kinase pathway, acetyl-CoA => acetate",Carbon fixation,-1.371,0.012,*
+M00620,"Incomplete reductive citrate cycle, acetyl-CoA => oxoglutarate",Carbon fixation,-0.357,0.008,**
+M00174,"Methane oxidation, methanotroph, methane => formaldehyde",Methane metabolism,0.612,0.299,
+M00344,"Formaldehyde assimilation, xylulose monophosphate pathway",Methane metabolism,-0.288,0.473,
+M00345,"Formaldehyde assimilation, ribulose monophosphate pathway",Methane metabolism,-1.09,0.039,*
+M00346,"Formaldehyde assimilation, serine pathway",Methane metabolism,0.241,0.299,
+M00357,"Methanogenesis, acetate => methane",Methane metabolism,-0.477,0.021,*
+M00358,Coenzyme M biosynthesis,Methane metabolism,-2.046,0.015,*
+M00378,F420 biosynthesis,Methane metabolism,-1.412,0.169,
+M00531,"Assimilatory nitrate reduction, nitrate => ammonia",Nitrogen metabolism,-0.05,0.928,
+M00597,Anoxygenic photosystem II [BR:ko00194],Photosynthesis,4,0.008,**

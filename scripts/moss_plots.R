@@ -4,7 +4,7 @@
 ################################################################################
 
 library(pacman)
-p_load(ape, tidyverse, magrittr, RColorBrewer, colorRamp2, patchwork,
+p_load(ape, tidyverse, magrittr, colorRamp2, patchwork,
        ggtree, ggtreeExtra, treeio, ggnewscale, cowplot, MetBrewer)
 source("scripts/myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
@@ -47,7 +47,7 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
   mutate(Compartment = factor(Compartment, levels = c('Green', 'Brown')))
 
 # Plot !
-comm.p <- ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
+(comm.p <- ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
   geom_bar(stat = "identity", position = "fill",
            colour = 'black', size = 0.2) +
   facet_wrap('Compartment', ncol = 1) +
@@ -65,7 +65,7 @@ comm.p <- ggplot(df_compart, aes(x = Host, y = Abundance, fill = aggTaxo)) +
     axis.text.y  = element_text(size=14, color="black"),
     legend.title = element_text(colour="black", size=14, face="bold"),
     legend.text = element_text(colour="black", size = 12))
-
+)
 #ggplot2::ggsave("out/community.png", bg = 'white', plot = comm.p,
 #                width = 1600, height = 2400, units = 'px', dpi = 240)
 

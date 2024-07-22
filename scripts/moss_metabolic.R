@@ -115,5 +115,6 @@ test_results %>% filter(p_adj < 0.05 & variable == 'compAssGreen') %>%
 
 test_results %>% 
   filter(variable == 'compAssGreen') %>%  
-  dplyr::select(pathway, name, pwGroup, Estimate, p_adj) %>% 
+  dplyr::select(pathway, name, pwGroup, Estimate, p_adj, sig) %>% 
+  mutate(across(where(is.numeric),  ~ round(.x, 3))) %>% 
   write_csv("out/metabolic_test_full.csv")

@@ -1,6 +1,7 @@
 variable,Estimate,p_adj,p,pathway,name,pwGroup
-compAssGreen,-1.3714414258458751,0.011165171592898199,0.0023925367699067566,M00579,"Phosphate acetyltransferase-acetate kinase pathway, acetyl-CoA => acetate",Carbon fixation
-compAssGreen,-1.089959549457592,0.03147004454345958,0.012363231784930548,M00345,"Formaldehyde assimilation, ribulose monophosphate pathway",Methane metabolism
-compAssGreen,-0.47745076206247566,0.01799215358819623,0.0051406153109132095,M00357,"Methanogenesis, acetate => methane",Methane metabolism
-compAssGreen,-2.0460556202193185,0.01327403208005062,0.003318508020012655,M00358,Coenzyme M biosynthesis,Methane metabolism
-compAssGreen,3.9999166550668184,0.008133414613307039,0.0014523954666619712,M00597,Anoxygenic photosystem II [BR:ko00194],Photosynthesis
+compAssGreen,-1.3714414258458751,0.011696846430655255,0.0023925367699067566,M00579,"Phosphate acetyltransferase-acetate kinase pathway, acetyl-CoA => acetate",Carbon fixation
+compAssGreen,-0.35669427301868756,0.0077207453230997885,0.00122830039231133,M00620,"Incomplete reductive citrate cycle, acetyl-CoA => oxoglutarate",Carbon fixation
+compAssGreen,-1.089959549457592,0.03885587132406744,0.012363231784930548,M00345,"Formaldehyde assimilation, ribulose monophosphate pathway",Methane metabolism
+compAssGreen,-0.47745076206247566,0.020562461243652838,0.0051406153109132095,M00357,"Methanogenesis, acetate => methane",Methane metabolism
+compAssGreen,-2.0460556202193185,0.014601435288055683,0.003318508020012655,M00358,Coenzyme M biosynthesis,Methane metabolism
+compAssGreen,3.9999166550668184,0.007988175066640842,0.0014523954666619712,M00597,Anoxygenic photosystem II [BR:ko00194],Photosynthesis

@@ -13,7 +13,7 @@ read_tsv("data/genome.stats") %>%
   transmute(`L50 (kb)` = ctg_L50/1000, 
             `N50` = ctg_N50,
             `Number of contigs`= n_contigs,
-            GC = gc_avg, 
+            GC = gc_avg*100, 
             MBP = contig_bp/1000000, 
             MAG = str_extract(filename, "[^/]+$")) %>% 
   left_join(read_tsv("data/novel_quality_scores.txt",
