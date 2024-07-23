@@ -24,7 +24,6 @@ bash $ILL_PIPELINES/generateslurm_preprocess.kneaddata.sh \
 find preproc/S-* -name '*paired_1*.fastq' | parallel -j 72 'echo -n {}" "; grep -c "^@" {}' > sequence_counts.txt
 find ../20220825_boreal_moss/data -name '*.S-*R1.fastq.gz' | parallel -j 72 "echo -n {} ' '; zcat {} | grep -c '^@'" > raw_sequence_counts.txt
 
-
 #######################
 ### REGULAR ASSEMBLY ###
 #######################
@@ -459,6 +458,7 @@ done; wc $LIST
 sbatch --array=1-$(wc $LIST | awk '{print $1}') ${ANCHOR}${PWD}/scripts/coverage.sh "$LIST"
 
 ### BINS ##########################
+
 bins=${MOSS}/MAG_analysis/all_bins
 # gzip and create coverage directory 
 for bin in $(find ${bins} -name '*.fa'); do

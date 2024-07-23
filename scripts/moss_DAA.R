@@ -106,4 +106,4 @@ DA_pw_host_Order <- ancombc2(
   verbose = TRUE,
   n_cl = 10 # cores for parallel computing
 ) 
-# write_rds(DA_pw_host_Order,"data/R_out/DA_pw_host_Order.RDS")
+write_rds(DA_pw_host_Order,"data/R_out/DA_pw_host_Order.RDS")
