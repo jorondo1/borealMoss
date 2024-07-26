@@ -6,6 +6,7 @@
 library(pacman)
 p_load(tidyverse, rstatix, scales)
 source("scripts/myFunctions.R")
+moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
 # Import MAG statistics
 read_tsv("data/genome.stats") %>% 

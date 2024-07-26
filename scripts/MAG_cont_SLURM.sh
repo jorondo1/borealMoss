@@ -60,11 +60,6 @@ numReads_MAG=$(zcat $OUT/$SAMPLE/aligned_paired.1.fastq.gz | wc -l)
 numReads_HOST=$(zcat $OUT/$SAMPLE/aligned.${MAG}.1.fastq.gz | wc -l)
 
 # Compute the ratio using awk
-if [[ "${numReads_MAG}" -ne 0 ]]; then
-	ratio=$(awk "BEGIN {print $numReads_HOST / $numReads_MAG}")
-else 
-	ratio="NA"
-fi
-echo -e "$MAG\t$SAMPLE\t$ratio" >> $OUT/contamination_by_sample.txt
+echo -e "$MAG\t$SAMPLE\t$numReads_MAG\t$numReads_HOST" >> $OUT/contamination_by_sample.txt
 
 done < $SAMPLE_LIST

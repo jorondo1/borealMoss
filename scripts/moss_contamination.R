@@ -64,7 +64,6 @@ for (i in 1:length(ncbi_tax)) {
 
 #################################################
 ### PLOT 1 : Sequence distribution by Kingdom ####
-#################################################
 
 # Create a reduced dataset limited to top species by sample
 blastout_short <- blastout %>% 
@@ -99,7 +98,6 @@ blastKingdom <- blastout_short %>%
 
 ##################################################
 ### PLOT 2 : ... by eukaryotic Phylum, by Host ####
-##################################################
 
 # Look at what phyla of eukaryotes there are
 blast_euk_host <- blastout_short %>% 
@@ -120,7 +118,6 @@ blast_euk_host %>%
 
 ########################################################
 ### PLOT 3 : ...by eukaryotic Phylum and compartment ####
-########################################################
 
 blast_euk_sample <- blastout_short %>% 
   filter(superkingdom == 'Eukaryota') %>% 
@@ -144,7 +141,6 @@ blast_euk_sample %>%
 
 ########################################################
 ### PLOT 3 : ...by streptophyta class ####
-########################################################
 
 blastout_short %>% 
   filter(phylum == 'Streptophyta') %>% 
@@ -161,4 +157,35 @@ blastout_short %>%
     scale_fill_manual(values = phylaCols2) + 
     theme_light() +
     theme(axis.text.x = element_blank())
+
+
+########################################################################
+### Contamination of P.commune sequences in our MAGs ###################
+########################################################################
+
+raw_contam <- read_delim('data/all_contam.txt', col_names=c("MAG", "Sample", "MAG_reads", "Host_reads"))
+
+MAG_names <- moss.ps@tax_table %>% as.data.frame %>%  
+  dplyr::filter(str_detect(Species,"MAG")) %>% rownames
+
+contamination_summary <- raw_contam %>% 
+  group_by(MAG) %>% 
+  filter(MAG_reads!=0) %>% 
+  filter(MAG %in% MAG_names) %>% 
+  summarise(MAG_reads = sum(MAG_reads),
+            Host_reads = sum(Host_reads)) %>% 
+  mutate(Proportion=100*Host_reads/MAG_reads) %>% 
+  arrange(desc(Proportion)) %>% ungroup
+
+contamination_summary
+
+contamination_summary %>%   
+  filter(MAG!="Green_N.bin.3") %>% 
+  summarise(mean = mean(Proportion),
+            sd = sd(Proportion))
+
+
+
+
+
 
