@@ -163,7 +163,7 @@ blastout_short %>%
 ### Contamination of P.commune sequences in our MAGs ###################
 ########################################################################
 
-raw_contam <- read_delim('data/all_contam.txt', col_names=c("MAG", "Sample", "MAG_reads", "Host_reads"))
+raw_contam <- read_delim('data/BLAST/all_contam.txt', col_names=c("MAG", "Sample", "MAG_reads", "Host_reads"))
 
 MAG_names <- moss.ps@tax_table %>% as.data.frame %>%  
   dplyr::filter(str_detect(Species,"MAG")) %>% rownames
