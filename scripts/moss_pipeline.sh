@@ -197,7 +197,7 @@ find $PWD/genomes/ -type f -name '*.fa' > novel_species_mash.txt
 
 # Compute additionnal MAG statistics
 module load bbmap/38.86
-statswrapper.sh MAG_analysis/novel_species/genomes/*.fa > MAG_analysis/novel_species/genomes/genome.stats
+statswrapper.sh MAG_analysis/novel_species/genomes/*.fa > MAG_analysis/novel_species/genome.stats
 
 #############
 ## SOURMASH #
@@ -394,8 +394,8 @@ phylophlan --nproc 48 \
 -t a -i /home/def-ilafores/analysis/boreal_moss/Annotations/found_genomes \
 -o Phylogeny_acc_MAGs \
 --diversity high --accurate \
---databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
--f /home/def-ilafores/analysis/boreal_moss/Phylogeny_accurate/phylophlan_nodes.cfg 
+--databases_folder $ILAFORES/ref_dbs/phylophlan_db -d phylophlan \
+-f $MOSS/Phylogeny_acc_MAGs/phylophlan_nodes.cfg 
 # To rerun if crashed: find Phylogeny/Phylophlan -type f -name "*.bkp" -size 0 -exec rm {} \;
 
 # We -output to /fast/ to avoid some performance problems, lets copy results
