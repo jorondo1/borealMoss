@@ -9,7 +9,7 @@ source("scripts/myFunctions.R")
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 
 # Import MAG statistics
-read_tsv("data/genome.stats") %>% 
+read_tsv("data/MAG_analysis/novel_species/genome.stats") %>% 
   # fix variables of interest
   transmute(`L50 (kb)` = ctg_L50/1000, 
             `N50` = ctg_N50,
@@ -17,16 +17,16 @@ read_tsv("data/genome.stats") %>%
             GC = gc_avg*100, 
             MBP = contig_bp/1000000, 
             MAG = str_extract(filename, "[^/]+$")) %>% 
-  left_join(read_tsv("data/novel_quality_scores.txt",
+  left_join(read_tsv("data/MAG_analysis/novel_species/novel_quality_scores.txt",
                      col_names = c('MAG', 'comp', 'cont', 'QS')),
             by = 'MAG') %>% 
   mutate(MAG = str_remove(MAG, ".fa"),
          QS = QS/100) %>% 
-  write_tsv("data/R_out/MAG_summary.tsv")
+  write_tsv("data/MAG_analysis/MAG_summary.tsv")
 
 MAG_summary <- moss.ps@tax_table %>% as.data.frame %>% 
   rownames_to_column("MAG") %>% as_tibble %>% 
-  inner_join(read_tsv("data/R_out/MAG_summary.tsv"),
+  inner_join(read_tsv("data/MAG_analysis/MAG_summary.tsv"),
              by = 'MAG')
 
 # MAG summary table

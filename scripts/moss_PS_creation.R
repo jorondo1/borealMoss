@@ -8,7 +8,7 @@ p_load(tidyverse, magrittr, RColorBrewer, phyloseq, ape)
 source("scripts/myFunctions.R")
 
 # Sarah's PS object (based on Kraken taxonomic assignment)
-sarah.ps <- readRDS("data/ps_comptype.RDS")
+sarah.ps <- readRDS("data/R_out/ps_comptype.RDS")
 
 ###################
 #### Abundance #####
@@ -23,7 +23,7 @@ abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv")
 #######################
 taxLvls <- c("Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 
-tax_GTDB <- read_delim("data/gtdbtk_summary.tsv") %>% 
+tax_GTDB <- read_delim("data/MAG_analysis/gtdbtk_out/gtdbtk_summary.tsv") %>% 
   separate(classification, into = taxLvls, sep = ";", fill = "right") %>% 
   
   # We rename the bins, because we'll add these to the species
@@ -35,7 +35,7 @@ tax_GTDB <- read_delim("data/gtdbtk_summary.tsv") %>%
   
   # Adding known GTDB taxa
   bind_rows(
-    read_delim("data/gtdb_taxonomy_subset.csv", delim=',', col_names = F) %>% 
+    read_delim("data/MAG_analysis/gtdbtk_out/gtdb_taxonomy_subset.csv", delim=',', col_names = F) %>% 
       select(-X2) %>% 
       set_names(c('genome',taxLvls))
   ) %>% 

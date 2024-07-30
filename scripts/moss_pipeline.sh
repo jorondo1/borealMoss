@@ -10,19 +10,19 @@ source /home/ronj2303/functions.sh
 while read -r SAM A B; do
 	SAM1=$(find $(realpath ../20220825_boreal_moss/data/) -type f -name "*${SAM}_R1.fastq.gz")
 	SAM2=$(find $(realpath ../20220825_boreal_moss/data/) -type f -name "*${SAM}_R2.fastq.gz")
-	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> raw_samples.tsv
-done < metadata.txt
+	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> sample_data/raw_samples.tsv
+done < <(cat sample_data/sample_data_mines.csv sample_data/sample_data_natural.csv | cut -f1 | grep '-')
 
 mkdir -p $MOSS/preproc_polcom
 bash $ILL_PIPELINES/generateslurm_preprocess.kneaddata.sh \
---sample_tsv ${MOSS}/raw_samples.tsv \
+--sample_tsv ${MOSS}/sample_data/raw_samples.tsv \
 --out ${MOSS}/preproc_polcom \
 --db "${HOST}/PolCom_index/PolCom_genome" \
 --trimmomatic_options "SLIDINGWINDOW:4:30 MINLEN:50" \
 --slurm_walltime "24:00:00"
 
-find preproc/S-* -name '*paired_1*.fastq' | parallel -j 72 'echo -n {}" "; grep -c "^@" {}' > sequence_counts.txt
-find ../20220825_boreal_moss/data -name '*.S-*R1.fastq.gz' | parallel -j 72 "echo -n {} ' '; zcat {} | grep -c '^@'" > raw_sequence_counts.txt
+find preproc/S-* -name '*paired_1*.fastq' | parallel -j 72 'echo -n {}" "; grep -c "^@" {}' > sample_data/sequence_counts.txt
+find ../20220825_boreal_moss/data -name '*.S-*R1.fastq.gz' | parallel -j 72 "echo -n {} ' '; zcat {} | grep -c '^@'" > sample_data/raw_sequence_counts.txt
 
 #######################
 ### REGULAR ASSEMBLY ###
@@ -32,7 +32,7 @@ while read SAM A1 A2; do
 	SAM1=$(find preproc/${SAM} -type f -name '*paired_1.fastq' -exec realpath {} \;)
 	SAM2=$(find preproc/${SAM} -type f -name '*paired_2.fastq' -exec realpath {} \;)
 	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> preproc/clean_samples.tsv
-done < metadata.txt # NEED DIFERENT FILE FOR CAT
+done < <(cat sample_data/sample_data_mines.csv sample_data/sample_data_natural.csv | cut -f1 | grep '-')
 
 bash $ILL_PIPELINES/generateslurm_assembly_bin_refinement.metawrap.sh \
 --sample_tsv ${MOSS}/preproc/clean_samples.tsv \
@@ -45,14 +45,21 @@ bash $ILL_PIPELINES/generateslurm_assembly_bin_refinement.metawrap.sh \
 ### CO ASSEMBLY ###
 ##################
 # sbatch --array=1-50 /nfs3_ib/nfs-ip34/home/def-ilafores/analysis/boreal_moss/coassembly/assembly_bin_refinement.metawrap.slurm.sh
+# Concatenate samples : 
+mkdir -p cat_reads
+tsv=${MOSS}/cat_reads/cat_samples.txt
+:> $tsv
+
 cat_samples() {
     local metadata_file="$1"
-
+	local column_index="$2" # column metadata index to coassemble by
+	local filename=$(basename $metadata_file)
     # Extract unique combinations of COM and MS from metadata
-    cut -f2,3 "$metadata_file" | sort -u > unique_combinations.txt
+    cut -f$column_index "$metadata_file" | sort -u | grep -v Compartment > unique_comb_${filename%.*}.txt
 
     # Loop through the unique combinations and concatenate the files
     while read -r COM MS; do
+	local COMBINATION="${COM}_${MS}"
         # Create an array to store the filenames matching the combination
         file_array_1=()
         file_array_2=()
@@ -63,21 +70,14 @@ cat_samples() {
         done < <(grep -P "$COM\t$MS" "$metadata_file" | cut -f1)
 
         # Concatenate the matching files to create the output file
-        cat "${file_array_1[@]}" > cat_reads/"${COM}_${MS}_1.fastq"
-        cat "${file_array_2[@]}" > cat_reads/"${COM}_${MS}_2.fastq"
-    done < unique_combinations.txt
+        #cat "${file_array_1[@]}" > cat_reads/"${COMBINATION}_1.fastq"
+        #cat "${file_array_2[@]}" > cat_reads/"${COMBINATION}_2.fastq"
+	echo -e "${COMBINATION}\t$PWD/cat_reads/${COMBINATION}_1.fastq\t$PWD/cat_reads/${COMBINATION}_2.fastq" >> $tsv
+    done < unique_comb_${filename%.*}.txt ; rm unique_comb_${filename%.*}.txt
 }
-mkdir -p cat_reads
-cat_samples metadata.txt
 
-sed 's/\t/_/g' unique_combinations.txt > cat_samples.txt
-tsv=${MOSS}/cat_reads/cat_samples.tsv
-:> $tsv
-while read SAM; do
-	SAM1=$(find cat_reads -type f -name "${SAM}_1.fastq" -exec realpath {} \;)
-	SAM2=$(find cat_reads -type f -name "${SAM}_2.fastq" -exec realpath {} \;)
-	echo -e "${SAM}\t${SAM1}\t${SAM2}" >> $tsv
-done < cat_samples.txt
+cat_samples sample_data/sample_data_natural.csv "5,6"
+cat_samples sample_data/sample_data_mines.csv "7,8"
 
 # NODES:
 bash $ILL_PIPELINES/generateslurm_assembly_bin_refinement.metawrap.sh \
@@ -275,14 +275,14 @@ fix_gtdb # GTDB taxonomy has commas in it, this messes up the column recognition
 eval_cont SM_abund # Compare containment before and after adding MAGs
 
 # Assign taxonomy
-cat /fast/def-ilafores/sourmash_db/gtdb-rs214.lineages.csv \
-	MAG_analysis/mash_dist/novel_MAGs.txt > genome_sketches/custom_lineages.csv
+export GTDB_LINEAGES=$ILAFORES/ref_dbs/sourmash_db/gtdb-rs214.lineages.csv
+cat $GTDB_LINEAGES MAG_analysis/mash_dist/novel_MAGs.txt > genome_sketches/custom_lineages.csv
 # $sourmash tax prepare --taxonomy $SM_DB/gtdb-rs214.taxonomy.sqldb $SM_DB/gtdb-rs214.lineages.csv.gz -o tax.db
 
 # Subset gtdb taxonomy with species found only
-head -n1 /fast/def-ilafores/sourmash_db/gtdb-rs214.lineages.csv > SM_abund/gtdb_taxonomy_subset.csv
+head -n1 $GTDB_LINEAGES > MAG_analysis/gtdbtk_out/gtdb_taxonomy_subset.csv
 cat SM_abund/*.csv | cut -d',' -f10 | sed 's/\ .*//' | sed 's/\"//' | sort -u | \
-	grep -wf - /fast/def-ilafores/sourmash_db/gtdb-rs214.lineages.csv >> SM_abund/gtdb_taxonomy_subset.csv
+	grep -wf - $GTDB_LINEAGES >> MAG_analysis/gtdbtk_out/gtdb_taxonomy_subset.csv
 
 
 #######################################
@@ -364,7 +364,7 @@ singularity exec --writable-tmpfs -e -B /home:/home -B $tmp:$tmp -B /fast:/fast 
 ##############################
 
 # Download relevant genomes
-readarray -t ids < <(cut -d',' -f1 SM_abund/gtdb_taxonomy_subset.csv | grep GC)
+readarray -t ids < <(cut -d',' -f1 MAG_analysis/gtdbtk_out/gtdb_taxonomy_subset.csv | grep GC)
 mkdir -p Phylogeny_fast/genomes && cd $_
 
 # Download all genomes found by Sourmash in GTDB (via Genbank)
@@ -392,7 +392,7 @@ singularity exec --writable-tmpfs -e -B /fast:/fast \
 phylophlan --nproc 48 \
 --verbose --genome_extension .fna \
 -t a -i /home/def-ilafores/analysis/boreal_moss/Annotations/found_genomes \
--o /fast/def-ilafores/temp/phylophlan_acc_full \
+-o Phylogeny_acc_MAGs \
 --diversity high --accurate \
 --databases_folder /fast/def-ilafores/phylophlan_db -d phylophlan \
 -f /home/def-ilafores/analysis/boreal_moss/Phylogeny_accurate/phylophlan_nodes.cfg 

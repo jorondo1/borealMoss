@@ -24,7 +24,7 @@ MAGs_melt <- moss.ps %>% psmelt %>%
   # Compute Class level abundance :
   group_by(Sample, across(all_of(taxLvl)), Compartment, Host) %>%
   summarise(Abundance = sum(Abundance, na.rm = TRUE), 
-            .groups = 'drop') %>% 
+            .groups = 'drop') %>%
   group_by(Sample) %>% # Convert to relative abundance
   mutate(relAb = Abundance/sum(Abundance)) %>% ungroup
 
@@ -84,7 +84,7 @@ taxLabels <- moss.ps@tax_table %>% as.data.frame %>%
   select(label, Domain:Species) %>% 
   tibble
 
-MAG.tree <- read.tree("data/RAxML_bestTree.MAGs_refined.tre")
+MAG.tree <- read.tree("data/Phylogeny_acc_MAGs/RAxML_bestTree.MAGs_refined.tre")
 # Subset tree to MAGs only and add taxonomy
 sub.tree <- MAG.tree %>% 
   drop.tip(setdiff(MAG.tree$tip.label, MAG_names)) %>% 
@@ -110,7 +110,7 @@ p$data %<>%
            factor(!!sym(taxLvl), levels = pullTreeLabels(p, taxLvl)))
 
 # add MAG data:
-hm.mx <- read_tsv("data/R_out/MAG_summary.tsv") %>% 
+hm.mx <- read_tsv("data/MAG_analysis/MAG_summary.tsv") %>% 
   # only keep MAGs that are in our original dataset
   filter(MAG %in% MAG_names) 
 
@@ -209,7 +209,7 @@ ggplot2::ggsave("out/DA_host_species.png", plot = DA_host_tree_05,
 
 # Add LFC (from DAA) to significant species
 speciesLFC <- readRDS("data/R_out/speciesLFC_comp.RDS")
-tree <- read.tree("data/RAxML_bestTree.genomes_refined.tre") 
+tree <- read.tree("data/Phylogeny_acc_MAGs/RAxML_bestTree.genomes_refined.tre") 
 
 # Subset taxa for tree layer
 DA_species <- speciesLFC %$% MAG
@@ -308,7 +308,7 @@ ggplot2::ggsave("out/DA_host_Orders.png", bg = 'white',
 
 dbNames <- c("GTDB", "GTDB + MAGs", "Genbank", "Genbank + MAGs")
 
-raw <- read_delim("data/cntm_sum.txt", col_names = c("Sample", "db", "cntm")) %>% 
+raw <- read_delim("data/SM_abund/cntm_sum.txt", col_names = c("Sample", "db", "cntm")) %>% 
   filter(Sample %in% (moss.ps@sam_data %>% rownames))
 
 cntm.df <- raw %>% 
