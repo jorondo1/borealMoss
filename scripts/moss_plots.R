@@ -52,7 +52,7 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
            colour = 'black', size = 0.2) +
   facet_wrap('Compartment', ncol = 1) +
   labs(fill = taxLvl, 
-       y = paste("Mean relative sequence abundance by sample")) +
+       y = paste("Mean relative sequence abundance")) +
   scale_fill_manual(values = col_order, breaks = topTaxaLvls) +
   scale_x_discrete(labels = labelsReg) +
   theme_light() + # fix facet headers :
