@@ -13,7 +13,7 @@ moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 taxLvl <- 'Order'
 
 ###################################
-#### PLOT 1. Community Overview ####
+#### Fig.2d Community Overview ####
 ###################################
 
 topN=10 # Desired # top taxa to display
@@ -66,13 +66,13 @@ df_compart <- rbind(df_comm(MAGs_melt, 'Brown', taxLvl, topTaxa_Brown),
     legend.title = element_text(colour="black", size=14, face="bold"),
     legend.text = element_text(colour="black", size = 12))
 )
-#ggplot2::ggsave("out/community.png", bg = 'white', plot = comm.p,
-#                width = 1600, height = 2400, units = 'px', dpi = 240)
+ggplot2::ggsave("out/community.pdf", bg = 'white', plot = comm.p,
+                width = 1600, height = 2400, units = 'px', dpi = 240)
 
-write_rds(comm.p, 'out/community.RDS')
+# write_rds(comm.p, 'out/community.RDS')
 
 #####################################
-#### PLOT 2. MAGs characteristics ####
+#### Fig.3 MAGs characteristics ####
 #####################################
 
 # extract MAG names
@@ -155,11 +155,11 @@ gradient_legends <- get_legend(p2)
   plot_grid(order_legend, p2 + theme(legend.position = 'none'), gradient_legends, 
             nrow = 1, ncol = 3, scale = c(3,1.2,1), rel_widths=c(3, 5,2))))
 
-ggplot2::ggsave("out/tree_MAGs.png", bg = 'white',
+ggplot2::ggsave("out/tree_MAGs.pdf", bg = 'white',
                 width = 4200, height = 2600, units = 'px', dpi = 300)
 
 #########################################
-### 3. DIFFERENTIAL ABUNDANCE by HOST ####
+### Fig.4a DIFFERENTIAL ABUNDANCE by HOST ####
 #########################################
 hostDA <- read_rds('data/R_out/DA_host_results.RDS')
 
@@ -200,11 +200,11 @@ DA.p2 <- DA_host.df %>%
   scale_x_discrete(labels = labelsReg[2:4], 
                    position = 'bottom'))
 
-ggplot2::ggsave("out/DA_host_species.png", plot = DA_host_tree_05,
+ggplot2::ggsave("out/DA_host_species.pdf", plot = DA_host_tree_05,
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
 ################################################
-### 4. DIFFERENTIAL ABUNDANCE by COMPARTMENT ####
+### Fig.4b DIFFERENTIAL ABUNDANCE by COMPARTMENT ####
 ################################################
 
 # Add LFC (from DAA) to significant species
@@ -270,40 +270,11 @@ waterfall.p <- speciesLFC %>%
 tree.p + waterfall.p + plot_layout(design = "AAAABBB") #+
 #    plot_annotation(caption = 'Significantly abundant at p<0.05 (ajdusted).\nRestricted to species with >10% relative abundance that passed the sensitivity analysis.')
 
-ggplot2::ggsave("out/DA_comp_tree.png", 
+ggplot2::ggsave("out/DA_comp_tree.pdf", 
                 width = 2700, height = 3600, units = 'px', dpi = 300)
 
-#######################################################
-### S-X. DIFFERENTIAL ABUNDANCE by HOST with ORDERS ####
-#######################################################
-
-read_rds('data/R_out/DA_pw_host_Order.RDS') %>% 
-  parse_DAA_results('pair', 0.01, 'Host', 'Order', moss.ps) %>% 
-  #  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
-  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
-  geom_tile() +
-  scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
-                       mid = "white", 
-                       high = met.brewer("Cassatt1")[8], 
-                       midpoint = 0) +
-  geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
-  scale_color_identity(guide = FALSE) + 
-  theme_minimal() + 
-  theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
-  labs(x = '', y = '', fill = 'LFC') + 
-  scale_x_discrete(labels = c('P. commune\n(D. undulatum)',
-                              'P. juniperinum\n(D. undulatum)',
-                              'P. juniperinum\n(P. commune)',
-                              'P. piliferum\n(D. undulatum)',
-                              'P. piliferum\n(P. commune)',
-                              'P. piliferum\n(P. juniperinum)'
-  ))
-
-ggplot2::ggsave("out/DA_host_Orders.png", bg = 'white',
-                width = 3600, height = 2800, units = 'px', dpi = 300)
-
 ###############################################
-### S-X. CONTAINMENT IMPROVEMENT USING MAGS ####
+### S1. CONTAINMENT IMPROVEMENT USING MAGS ####
 ###############################################
 
 dbNames <- c("GTDB", "GTDB + MAGs", "Genbank", "Genbank + MAGs")
@@ -340,12 +311,88 @@ cntm.df %>%
     theme_minimal(base_size = 16) + guides(fill = 'none') +
     labs(y = 'Sample k-mer containment', x = 'Reference database'))
 
-ggplot2::ggsave("out/cntm_comparison.png", bg = 'white',
+ggplot2::ggsave("out/cntm_comparison.pdf", bg = 'white',
                 width = 2700, height = 2400, units = 'px', dpi = 300)
 
+#######################################################
+### S2. DIFFERENTIAL ABUNDANCE by HOST with ORDERS ####
+#######################################################
+
+read_rds('data/R_out/DA_pw_host_Order.RDS') %>% 
+  parse_DAA_results('pair', 0.01, 'Host', 'Order', moss.ps) %>% 
+  #  mutate(taxon = factor(taxon, levels = speciesLvl)) %>% 
+  ggplot(aes(x = Group, y = taxon, fill = lfc)) +
+  geom_tile() +
+  scale_fill_gradient2(low = met.brewer("Cassatt1")[1], 
+                       mid = "white", 
+                       high = met.brewer("Cassatt1")[8], 
+                       midpoint = 0) +
+  geom_text(aes(Group, taxon, label = round(lfc, 2), color=textcolour)) +
+  scale_color_identity(guide = FALSE) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(margin = margin(t = 5, r = 5, b = 5, l = 5))) +
+  labs(x = '', y = '', fill = 'LFC') + 
+  scale_x_discrete(labels = c('P. commune\n(D. undulatum)',
+                              'P. juniperinum\n(D. undulatum)',
+                              'P. juniperinum\n(P. commune)',
+                              'P. piliferum\n(D. undulatum)',
+                              'P. piliferum\n(P. commune)',
+                              'P. piliferum\n(P. juniperinum)'
+  ))
+
+ggplot2::ggsave("out/DA_host_Orders.pdf", bg = 'white',
+                width = 3600, height = 2800, units = 'px', dpi = 300)
+
+###############################################
+### S4. Sequence distribution by Kingdom ######
+###############################################
+blastout_short <- read_rds("data/R_out/blastout_short.RDS")
+
+blastout_short %>% 
+  group_by(Host, superkingdom, Compartment) %>% 
+  summarise(sum = sum(bp)) %>% 
+  slice_head(n=10) %>% 
+  ggplot(aes(x = Host, y = sum, fill = superkingdom)) +
+  geom_col(position = 'fill') +
+  facet_grid('Compartment', scales = 'free') +
+  theme_light() + 
+  labs(y = 'Proportion of BLASTn hits') +
+  theme(legend.position = 'bottom')
+
+ggplot2::ggsave("out/blast_kingdom.pdf", bg = 'white',
+                width = 3000, height = 2400, units = 'px', dpi = 300)
+
+########################################################
+### PLOT 3 : ...by eukaryotic Phylum and compartment ####
+
+blast_euk_sample <- blastout_short %>% 
+  filter(superkingdom == 'Eukaryota') %>% 
+  group_by(sample, phylum, Compartment, Host) %>% 
+  summarise(sum = sum(bp)) %>% 
+  ungroup %>% group_by(sample) %>% 
+  slice_max(n=4, order_by = sum) 
+
+phylaCols2 <- colorRampPalette(
+  brewer.pal(8, "Set1"))(blast_euk_sample$phylum %>% 
+                           unique %>% length)
+blast_euk_sample %>% 
+  ggplot(aes(x = sample, y = sum, fill = phylum)) +
+  geom_col(position = 'fill') +
+  facet_wrap(~Compartment, nrow=2, scales = 'free_x') +
+  scale_fill_manual(values = phylaCols2) + 
+  theme_light() +
+  labs(fill = 'Eukaryotic phylum') +
+  theme(axis.text.x = element_blank())
+
+ggplot2::ggsave("out/blast_eukaryotic_phyla.pdf", bg = 'white',
+                width = 3000, height = 2400, units = 'px', dpi = 300)
+
+#############################################################################
+# Extra tests
+###
 
 (cntm.df %>% filter(db == dbNames[2] | db == dbNames[4]) %>% 
-  ggplot(aes(x = db, y = cntm, fill=db, group = Sample)) +
+    ggplot(aes(x = db, y = cntm, fill=db, group = Sample)) +
     geom_point() + geom_line() +
     theme_minimal(base_size = 16) + guides(fill = 'none') +
     labs(y = 'Sample k-mer containment', x = 'Reference database'))
@@ -375,3 +422,42 @@ cont.increase %>%
         panel.grid = element_blank())
 
 
+### Seq distribution by eukaryotic Phylum, by Host ####
+
+# Look at what phyla of eukaryotes there are
+blast_euk_host <- blastout_short %>% 
+  filter(superkingdom == 'Eukaryota') %>% 
+  group_by(Host, phylum) %>% 
+  summarise(sum = sum(bp)) %>% 
+  slice_max(n=8, order_by = sum)
+
+# Custom palette
+phylaCols <- colorRampPalette(
+  brewer.pal(8, "Set1"))(blast_euk_host$phylum %>% 
+                           unique %>% length)
+blast_euk_host %>% 
+  ggplot(aes(x = Host, y = sum, fill = phylum)) +
+  geom_col(position = 'fill') +
+  labs(title = 'Eukaryota phyla sequences') +
+  scale_fill_manual(values = phylaCols)
+
+
+
+########################################################
+###  ...by streptophyta class ####
+
+blastout_short %>% 
+  filter(phylum == 'Streptophyta') %>% 
+  group_by(sample, class, Compartment, Host) %>% 
+  summarise(sum = sum(bp)) %>% 
+  ungroup %>% group_by(sample) %>% 
+  slice_max(n=4, order_by = sum) %>% 
+  mutate(Compartment = factor(Compartment, levels = c("Green","Brown"))) %>% 
+  
+  ggplot(aes(x = sample, y = sum, fill = class)) +
+  geom_col(position = 'fill') +
+  facet_wrap(~ Compartment+Host, nrow=2, scales = 'free_x') +
+  labs(title = 'Streptophyta class sequences') +
+  scale_fill_manual(values = phylaCols2) + 
+  theme_light() +
+  theme(axis.text.x = element_blank())
