@@ -38,6 +38,16 @@ pwComp <- full_join(
 #################################################
 ### Relationship between PW% and compartment #####
 #################################################
+# taxID to Species conversion table
+taxID_list <- moss.ps@tax_table %>% 
+  data.frame %>% 
+  select(Species) %>%
+  rownames_to_column("taxID") %>% 
+  mutate(taxID = simplify_name(taxID)) %>% 
+  filter(taxID %in% colnames(pwComp))
+
+DAspec <- readRDS('data/R_out/speciesLFC_comp.RDS') %>% 
+  left_join(taxID_list, by = "Species")
 
 # create a transposed data set that will be used for hypothesis testing
 pwComp_t <- pwComp %>% 
@@ -116,7 +126,7 @@ test_results %>% filter(p_adj < 0.05 & variable == 'compAssGreen') %>%
 test_results %>% 
   filter(variable == 'compAssGreen') %>%  
   dplyr::select(pathway, name, pwGroup, Estimate, p_adj, sig) %>% 
-  mutate(across(where(is.numeric),  ~ round(.x, 3))) %>% 
+  mutate(across(where(is.numeric),  ~ round(.x, 3))) %>% View
   write_csv("out/metabolic_test_full.csv")
 
 
@@ -126,7 +136,7 @@ test_results %>%
 # Author : Sarah Ishak
 # Second half of this code should be moved to moss_plots.R
 
-mossPW <- as.data.frame(readRDS("data/R_out/pathway_completeness_table.RDS")) ##### I NEED THIS 
+mossPW <- as.data.frame(readRDS("data/R_out/pathway_completeness_table.RDS")) 
 moss.ps <- readRDS("data/R_out/mossMAGs.RDS")
 DA_results <- readRDS("data/R_out/speciesLFC_comp.RDS")
 

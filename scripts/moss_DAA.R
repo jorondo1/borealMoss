@@ -75,7 +75,6 @@ extract_r2(aov(SoilpH ~ Host, data = samdat))
 
 chisq.test(samdat$Location, samdat$Host) 
 
-
 ### DA test : 
 DA_host_species <- readRDS("data/R_out/DA_host_species.RDS")
 DA_host_species <- moss.ps %>% 
