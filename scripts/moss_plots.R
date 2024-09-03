@@ -288,7 +288,9 @@ cntm.df <- raw %>%
                         db == "genbank_default" ~ dbNames[3],
                         db == "genbank" ~ dbNames[4]
   ),
-  db = factor(db, levels = dbNames))
+  db = factor(db, levels = dbNames),
+  db_col = case_when(str_detect(db, 'GTDB') ~ 'GTDB',
+                     str_detect(db, 'Genbank') ~ 'Genbank'))
 
 # Mean cntm ± sd
 cntm.df %>% group_by(db) %>% 
@@ -298,6 +300,7 @@ cntm.df %>% group_by(db) %>%
 
 # Containment increase by db
 cntm.df %>% 
+  select(-db_col) %>% 
   # one row per sample
   pivot_wider(names_from = 'db', values_from = 'cntm') %>% 
   # compute increases
@@ -306,7 +309,7 @@ cntm.df %>%
   summarise(GTDB_mean = mean(GTDB_increase),
             GTDB_sd = sd(GTDB_increase))
 
-(ggplot(cntm.df, aes(x = db, y = cntm, fill=db)) +
+(ggplot(cntm.df, aes(x = db, y = cntm, fill=db_col)) +
     geom_violin() + geom_jitter(alpha = 0.2) + 
     theme_minimal(base_size = 16) + guides(fill = 'none') +
     labs(y = 'Sample k-mer containment', x = 'Reference database'))
