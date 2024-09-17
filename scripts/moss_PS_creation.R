@@ -14,9 +14,9 @@ sarah.ps <- readRDS("data/R_out/ps_comptype.RDS")
 #### Abundance #####
 ###################
 
-abund_GTDB <- parse_SM("data/SM_abund/*gtdb_gather.csv")
-abund_GBNK <- parse_SM("data/SM_abund/*genbank_gather.csv")
-abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv")
+abund_GTDB <- parse_SM("data/SM_abund/*gtdb_gather.csv") %>% column_to_rownames("genome")
+abund_GBNK <- parse_SM("data/SM_abund/*genbank_gather.csv") %>% column_to_rownames("genome")
+abund_MAGs <- parse_SM("data/SM_abund/*custom_gather.csv") %>% column_to_rownames("genome")
 
 #######################
 #### GTDB Taxonomy #####

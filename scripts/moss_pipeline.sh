@@ -155,13 +155,13 @@ assembly_stats
 ##############
 # mash_db=/cvmfs/datahub.genap.ca/vhost34/def-ilafores/GTDB/release207_v2
 # mkdir -p coassembly/gtdb_tmp; tmp=$(realpath gtdb_tmp)
-# singularity exec --writable-tmpfs -e \
-# --env GTDBTK_DATA_PATH=$gtdb_db \
-# -B $tmp:$tmp \
-# -B $gtdb_db:$gtdb_db \
-# -e $ILL_PIPELINES/containers/gtdbtk.2.2.5.sif \
-# 	gtdbtk classify_wf --cpus 32 --genome_dir  $DREP_OUT/dereplicated_genomes\
-# 	--out_dir MAG_analysis/Annotation --mash_db $gtdb_db --extension fa
+ singularity exec --writable-tmpfs -e \
+ --env GTDBTK_DATA_PATH=$gtdb_db \
+ -B $tmp:$tmp \
+ -B $gtdb_db:$gtdb_db \
+ -e $ILL_PIPELINES/containers/gtdbtk.2.2.5.sif \
+ 	gtdbtk classify_wf --cpus 32 --genome_dir  $DREP_OUT/dereplicated_genomes\
+ 	--out_dir MAG_analysis/Annotation --mash_db $gtdb_db --extension fa
 #
 # The whole annotation pipeline:
 bash $ILL_PIPELINES/scripts/annotate_bins.sh \
