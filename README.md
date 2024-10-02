@@ -1,6 +1,6 @@
 ## Bioinformatic scripts for _Boreal moss-microbe interactions are revealed through metagenome assembly of novel bacterial species_
 
-Preprint available [here](https://doi.org/10.1101/2023.04.06.535926) (currently in review).
+Published in Nature Scientific Reports : [Ishak et al, 2024](https://www.nature.com/articles/s41598-024-73045-z)
 
 The `moss_pipeline.sh` script contains the main steps for metagenome processing, assembly, and profiling. The pipeline in not seamless and I highly recommend to run it step by step. These steps rely on modules of a pipeline implemented by our team [available here](https://github.com/jflucier/ILL_pipelines) and are scripted to work with the SLURM workload manager. Several steps use singularity-contained programs to process data in parallel, but the underlying scripts (in the [ILL_pipelines repository](https://github.com/jflucier/ILL_pipelines)) can be run on a sample-wise basis.
 
