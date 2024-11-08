@@ -126,20 +126,21 @@ vst.fun <- function(ps, var) {
 }
 
 # PCOA
-pcoa.fun <- function(ps, var, vst.mx, dist) {
-  # compute distance matrix
-  dist.mx <- vegan::vegdist(vst.mx, distance = dist)
-  # compute PCoA
+compute_pcoa <- function(ps, dist) {
+  dist.mx <- ps@otu_table %>%
+    { if (taxa_are_rows(ps)) t(.) else . } %>%
+    # Compute Aitchison distance
+    vegan::vegdist(method = dist)
+  
   PCoA <- capscale(dist.mx~1, distance = dist)
-  # Print first 3 coordinates
   eig <- round(PCoA$CA$eig[1:3]/sum(PCoA$CA$eig),2)
-  message("First 3 principal coordinates :")
-  message(paste(eig[1], ',', eig[2], ',', eig[3]))
+  message(paste("First 3 PCo :",eig[1], ',', eig[2], ',', eig[3]))
   # create output list
   out <- data.frame(sample_data(ps))
-  out$PCoA1 <- scores(PCoA)$sites[,1]
-  out$PCoA2 <- scores(PCoA)$sites[,2]
-  list(metadata = out, eig = PCoA$CA$eig, dissMx = vst.mx)
+  out$PCo1 <- scores(PCoA)$sites[,1]
+  out$PCo2 <- scores(PCoA)$sites[,2]
+  
+  list(metadata = out, eig = PCoA$CA$eig, dissMx = dist.mx)
 }
 
 ##########################
