@@ -1,9 +1,9 @@
 MOSS=/home/def-ilafores/analysis/boreal_moss
 cd $MOSS
 module purge
-cd /home/def-ilafores/programs
-sh ibm-aspera-connect_4.2.12.780_linux_x86_64.sh
-export PATH=/home/ronj2303/.aspera/connect/bin:$PATH
+# cd /home/def-ilafores/programs # Install aspera latest :
+# sh ibm-aspera-connect_4.2.12.780_linux_x86_64.sh 
+export PATH=/home/ronj2303/.aspera/connect/bin:$PATH # or add to bashrc
 ml java
 
 ## TODO 
