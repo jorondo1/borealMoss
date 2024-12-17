@@ -1,0 +1,11 @@
+Samples;Species;LocType;Month;Compartment;Microsite;Location;CoMoss;Vege1;Vege2;Vege3;Vege4;SoilMoisture;SoilpH;SiteHumidity;AmbientTemp;SoilTemp;OrgLayer;LeafLitter;LeafLitterSpec
+N-1-POLJUN-G;Polytrichum juniperinum;Natural;June;Green;AK;Nemaska community intersection;NA;NA;NA;NA;NA;12.10;4.49;NA;NA;NA;NA;NA;NA
+N-2-POLJUN-G;Polytrichum juniperinum;Natural;June;Green;AK;Nemaska community intersection;NA;NA;NA;NA;NA;12.10;4.49;NA;NA;NA;NA;NA;NA
+N-3-POLJUN-G;Polytrichum juniperinum;Natural;June;Green;AK;Nemaska community intersection;NA;NA;NA;NA;NA;12.10;4.49;NA;NA;NA;NA;NA;NA
+N-1-TORTOR-G;Tortella tortuosa;Natural;June;Green;AM;Nemaska community intersection;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA
+N-2-TORTOR-G;Tortella tortuosa;Natural;June;Green;AM;Nemaska community intersection;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA
+W-1-TORTOR-G;Tortella tortuosa;Mine;June;Green;AO;Mine;NA;NA;NA;NA;NA;9.62;4.97;NA;NA;NA;NA;NA;NA
+W-2-TORTOR-G;Tortella tortuosa;Mine;June;Green;AO;Mine;NA;NA;NA;NA;NA;9.62;4.97;NA;NA;NA;NA;NA;NA
+W-1-POLJUN-G;Polytrichum juniperinum;Mine;June;Green;AP;Mine;NA;NA;NA;NA;NA;17.52;5.45;NA;NA;NA;NA;NA;NA
+W-2-POLJUN-G;Polytrichum juniperinum;Mine;June;Green;AP;Mine;NA;NA;NA;NA;NA;17.52;5.45;NA;NA;NA;NA;NA;NA
+W-3-POLJUN-G;Polytrichum juniperinum;Mine;June;Green;AP;Mine;NA;NA;NA;NA;NA;17.52;5.45;NA;NA;NA;NA;NA;NA

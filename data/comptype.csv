@@ -1,0 +1,132 @@
+"","Species","LocType","Month","Compartment","Microsite","Location","CoMoss","Vege1","Vege2","Vege3","Vege4","SoilMoisture","SoilpH","SiteHumidity","AmbientTemp","SoilTemp","OrgLayer","LeafLitter","LeafLitterSpec","Canopy"
+"S-1-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","J","Chemin PK","polstr","alninc","betpap","picmar",NA,14.99,4.8,45,26.5,19,0,"Low","alninc",64.38
+"S-2-POLPIL-G","Polytrichum piliferum","Natural","September","Green","J","Chemin PK","polstr","alninc","betpap","picmar",NA,14.99,4.8,45,26.5,19,0,"Low","alninc",64.38
+"S-2-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","J","Chemin PK","polstr","alninc","betpap","picmar",NA,14.99,4.8,45,26.5,19,0,"Low","alninc",64.38
+"S-3-POLPIL-G","Polytrichum piliferum","Natural","September","Green","J","Chemin PK","polstr","alninc","betpap","picmar",NA,14.99,4.8,45,26.5,19,0,"Low","alninc",64.38
+"S-3-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","J","Chemin PK","polstr","alninc","betpap","picmar",NA,14.99,4.8,45,26.5,19,0,"Low","alninc",64.38
+"S-4-POLPIL-G","Polytrichum piliferum","Natural","September","Green","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-4-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-5-POLPIL-G","Polytrichum piliferum","Natural","September","Green","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-5-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-6-POLPIL-G","Polytrichum piliferum","Natural","September","Green","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-6-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","K","Chemin PK",NA,"alninc",NA,NA,NA,5.89,5.32,43,23.9,12.4,0,"High","alninc",49.13
+"S-7-POLPIL-G","Polytrichum piliferum","Natural","September","Green","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-7-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-8-POLPIL-G","Polytrichum piliferum","Natural","September","Green","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-8-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-9-POLPIL-G","Polytrichum piliferum","Natural","September","Green","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-9-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","L","Chemin PK",NA,"alninc",NA,NA,NA,7.56,5.21,41,24,16.6,0,"Medium","alninc",55.02
+"S-10-POLPIL-G","Polytrichum piliferum","Natural","September","Green","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-10-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-11-POLPIL-G","Polytrichum piliferum","Natural","September","Green","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-11-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-12-POLPIL-G","Polytrichum piliferum","Natural","September","Green","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-12-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","M","Eastmain 1","polstr","alninc","popbal",NA,NA,8.83,5.18,70,18.1,14.6,0,"Medium","alninc",76.76
+"S-13-POLPIL-G","Polytrichum piliferum","Natural","September","Green","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-13-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-14-POLPIL-G","Polytrichum piliferum","Natural","September","Green","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-14-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-15-POLPIL-G","Polytrichum piliferum","Natural","September","Green","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-15-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","N","Eastmain 1","polstr","alninc",NA,NA,NA,7.57,5.23,61,20.6,11.9,0,"Low","alninc",37.45
+"S-16-POLPIL-G","Polytrichum piliferum","Natural","September","Green","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-16-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-17-POLPIL-G","Polytrichum piliferum","Natural","September","Green","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-17-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-18-POLPIL-G","Polytrichum piliferum","Natural","September","Green","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-18-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","O","Eastmain 1",NA,"alninc",NA,NA,NA,7.76,5.41,64,20.5,13.9,0,"Medium","alninc",45.41
+"S-1-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-1-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-2-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-2-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-3-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-3-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","P","Eastmain 1",NA,"salixsp ","alninc","pinban",NA,7.76,5.08,73,17.5,14.6,0,"High","alninc",62.42
+"S-7-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-7-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-8-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-8-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-9-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-9-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","Q","Eastmain 1",NA,"betnan",NA,NA,NA,8.05,5.16,67,22.6,15.2,0,"Medium","betnan",72.51
+"S-1-POLCOM-G","Polytrichum commune","Natural","September","Green","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-1-POLCOM-B","Polytrichum commune","Natural","September","Brown","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-2-POLCOM-G","Polytrichum commune","Natural","September","Green","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-2-POLCOM-B","Polytrichum commune","Natural","September","Brown","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-3-POLCOM-G","Polytrichum commune","Natural","September","Green","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-3-POLCOM-B","Polytrichum commune","Natural","September","Brown","R","Eastmain 2",NA,"vacbor","pinban","rhogro","salixsp",6.57,5.22,56,22.4,12.5,2,"High","vacbor",37.66
+"S-4-POLCOM-G","Polytrichum commune","Natural","September","Green","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-4-POLCOM-B","Polytrichum commune","Natural","September","Brown","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-5-POLCOM-G","Polytrichum commune","Natural","September","Green","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-5-POLCOM-B","Polytrichum commune","Natural","September","Brown","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-6-POLCOM-G","Polytrichum commune","Natural","September","Green","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-6-POLCOM-B","Polytrichum commune","Natural","September","Brown","S","Eastmain 2",NA,"vacbor ","pinban","salixsp ",NA,5.95,5.26,57,25.8,15.5,2,"Medium","vacbor",25.86
+"S-7-POLCOM-G","Polytrichum commune","Natural","September","Green","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-7-POLCOM-B","Polytrichum commune","Natural","September","Brown","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-8-POLCOM-G","Polytrichum commune","Natural","September","Green","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-8-POLCOM-B","Polytrichum commune","Natural","September","Brown","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-9-POLCOM-G","Polytrichum commune","Natural","September","Green","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-9-POLCOM-B","Polytrichum commune","Natural","September","Brown","T","Eastmain 2","polpil","vacbor","alncri","kalang",NA,6.39,5.14,55,29.3,14.1,2,"Medium","vacbor",52.71
+"S-1-DICUND-B","Dicranum undulatum","Natural","September","Brown","U","Eastmain 2",NA,"alncri","rhogro",NA,NA,224.22,4.11,67,29.5,14.5,0,"None","none",69.22
+"S-3-DICUND-G","Dicranum undulatum","Natural","September","Green","U","Eastmain 2",NA,"alncri","rhogro",NA,NA,224.22,4.11,67,29.5,14.5,0,"None","none",69.22
+"S-3-DICUND-B","Dicranum undulatum","Natural","September","Brown","U","Eastmain 2",NA,"alncri","rhogro",NA,NA,224.22,4.11,67,29.8,14.5,0,"None","none",69.22
+"S-4-DICUND-G","Dicranum undulatum","Natural","September","Green","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-4-DICUND-B","Dicranum undulatum","Natural","September","Brown","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-5-DICUND-G","Dicranum undulatum","Natural","September","Green","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-5-DICUND-B","Dicranum undulatum","Natural","September","Brown","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-6-DICUND-G","Dicranum undulatum","Natural","September","Green","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-6-DICUND-B","Dicranum undulatum","Natural","September","Brown","V","Eastmain 2","plesp","pinban","rhogro",NA,NA,146.42,3.82,45,29.8,12.5,0,"None","none",75.74
+"S-7-DICUND-G","Dicranum undulatum","Natural","September","Green","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-7-DICUND-B","Dicranum undulatum","Natural","September","Brown","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-8-DICUND-G","Dicranum undulatum","Natural","September","Green","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-8-DICUND-B","Dicranum undulatum","Natural","September","Brown","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-9-DICUND-G","Dicranum undulatum","Natural","September","Green","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-9-DICUND-B","Dicranum undulatum","Natural","September","Brown","W","Eastmain 2",NA,"kalang","rhogro","pinban",NA,190.92,3.75,50,28.6,12.1,0,"None","none",59.24
+"S-19-POLPIL-G","Polytrichum piliferum","Natural","September","Green","X","Pine Forest","poljun","kalang","pinban",NA,NA,12.35,4.95,63,25,22.6,0,"Low","pinban",71.57
+"S-19-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","X","Pine Forest","poljun","kalang","pinban",NA,NA,12.35,4.95,63,25,22.6,0,"Low","pinban",71.57
+"S-20-POLPIL-G","Polytrichum piliferum","Natural","September","Green","X","Pine Forest","poljun","kalang","pinban",NA,NA,12.35,4.95,63,25,22.6,0,"Low","pinban",71.57
+"S-20-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","X","Pine Forest","poljun","kalang","pinban",NA,NA,12.35,4.95,63,25,22.6,0,"Low","pinban",71.57
+"S-21-POLPIL-G","Polytrichum piliferum","Natural","September","Green","X","Pine Forest","poljun","kalang","pinban",NA,NA,12.35,4.95,63,25,22.6,0,"Low","pinban",71.57
+"S-22-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-22-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-23-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-23-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-24-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-24-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Y","Pine Forest","poljun","kalang","pinban",NA,NA,18.26,4.31,63,25.3,16.8,0,"Low","pinban",75.67
+"S-25-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-25-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-26-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-26-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-27-POLPIL-G","Polytrichum piliferum","Natural","September","Green","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-27-POLPIL-B","Polytrichum piliferum","Natural","September","Brown","Z","Pine Forest","poljun","pinban","kalang",NA,NA,11.86,4.29,59,27.4,18.5,0,"Medium","pinban",61.28
+"S-10-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-10-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-11-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-11-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-12-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-12-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AA","Nemaska community intersection",NA,"kalang","alninc",NA,NA,21.84,4.86,63,25.9,16.4,0,"Medium","pinban",72.05
+"S-13-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-13-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-14-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-14-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-15-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-15-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AB","Nemaska community intersection",NA,"kalang","vacbor",NA,NA,39.38,4.65,65,25.6,13.6,0,"Low","pinban",91.14
+"S-16-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-16-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-17-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-17-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-18-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-18-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AC","Nemaska community intersection",NA,"pinban","vacbor","kalang",NA,54.88,4.89,64,26.7,14.7,0,"Low","pinban",47.88
+"S-19-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AD","Pine Forest","polpil","kal","pinban",NA,NA,18.44,4.38,64,25.4,17.4,0,"High","pinban",71.18
+"S-20-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AD","Pine Forest","polpil","kal","pinban",NA,NA,18.44,4.38,64,25.4,17.4,0,"High","pinban",71.18
+"S-20-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AD","Pine Forest","polpil","kal","pinban",NA,NA,18.44,4.38,64,25.4,17.4,0,"High","pinban",71.18
+"S-21-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AD","Pine Forest","polpil","kal","pinban",NA,NA,18.44,4.38,64,25.4,17.4,0,"High","pinban",71.18
+"S-21-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AD","Pine Forest","polpil","kal","pinban",NA,NA,18.44,4.38,64,25.4,17.4,0,"High","pinban",71.18
+"S-22-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-22-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-23-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-23-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-24-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-24-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AE","Pine Forest","polpil","kal","pinban",NA,NA,16.25,4.67,68,24.5,18.9,0,"Low","pinban",77.69
+"S-25-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AF","Pine Forest","polpil","kal","pinban",NA,NA,25.13,4.73,65,24.6,16.9,0,"Medium","pinban",65.52
+"S-25-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AF","Pine Forest","polpil","kal","pinban",NA,NA,25.13,4.73,65,24.6,16.9,0,"Medium","pinban",65.52
+"S-26-POLJUN-G","Polytrichum juniperinum","Natural","September","Green","AF","Pine Forest","polpil","kal","pinban",NA,NA,25.13,4.73,65,24.6,16.9,0,"Medium","pinban",65.52
+"S-26-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AF","Pine Forest","polpil","kal","pinban",NA,NA,25.13,4.73,65,24.6,16.9,0,"Medium","pinban",65.52
+"S-27-POLJUN-B","Polytrichum juniperinum","Natural","September","Brown","AF","Pine Forest","polpil","kal","pinban",NA,NA,25.13,4.73,65,24.6,16.9,0,"Medium","pinban",65.52
