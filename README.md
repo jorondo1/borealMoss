@@ -8,3 +8,5 @@ The `moss_pipeline.sh` script was run on Université de Sherbrooke's [Mammouth-m
 
 Pipeline summary :
 ![alt text](https://github.com/jorondo1/borealMoss/blob/main/out/Boreal_Moss_WF.jpg)
+
+Moss artwork by [Isabel Ramirez](https://www.ilustrobiologia.com/portfolio) 
