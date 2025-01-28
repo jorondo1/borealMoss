@@ -10,3 +10,4 @@ Pipeline summary :
 ![alt text](https://github.com/jorondo1/borealMoss/blob/main/out/Boreal_Moss_WF.jpg)
 
 Moss artwork by [Isabel Ramirez](https://www.ilustrobiologia.com/portfolio) 
+![moss_artwork_isabel_ramirez](https://github.com/jorondo1/borealMoss/blob/main/out/Bryophytes.jpg)
